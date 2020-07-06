@@ -2,17 +2,18 @@
 #include <QLabel>
 #include <QtDebug>
 #include <QWidget>
-#include "Authorization/Headers/AuthForm.h"
+#include "Authorization/Headers/AuthPresenter.h"
 
 using namespace ETClient;
 
 int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
-
+//    qDebug() << "App path : " << qApp->applicationDirPath();
     qDebug("Hello console");
-    AuthForm auth;
-    auth.show();
+    AuthForm* authView = new AuthForm;
+    AuthPresenter authPresenter(authView);
+    authPresenter.show();
     return app.exec();
 }
 
