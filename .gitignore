@@ -52,3 +52,15 @@ compile_commands.json
 *creator.user*
 
 *_qmlcache.qrc
+
+
+.idea/
+
+*.pyc
+*~
+/.vscode
+__pycache__
+venv
+db.sqlite3
+/static
+.DS_Store

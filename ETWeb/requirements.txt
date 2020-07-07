@@ -1,0 +1,3 @@
+django==3.0.8
+channels==2.4.0
+channels_redis
