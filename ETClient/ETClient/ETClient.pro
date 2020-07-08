@@ -9,13 +9,15 @@ HEADERS += \
     Authorization/Headers/AuthForm.h \
     Authorization/Headers/AuthModel.h \
     Authorization/Headers/AuthPresenter.h \
+    WebsocketClient.h \
     definitions.h
 
 SOURCES += \
     Authorization/Sources/AuthForm.cpp \
     Authorization/Sources/AuthModel.cpp \
     Authorization/Sources/AuthPresenter.cpp \
-    Main.cpp
+    Main.cpp \
+    WebsocketClient.cpp
 
 FORMS += \
     Authorization/AuthForm.ui

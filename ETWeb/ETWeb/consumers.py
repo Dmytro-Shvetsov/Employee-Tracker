@@ -18,20 +18,17 @@ class AsyncClientConnectionsConsumer(AsyncWebsocketConsumer):
     #         "text": event["text"]
     #     })
 
-    groups = ["broadcast"]
+    groups = ["clients"]
 
     async def connect(self):
         # Called on connection.
-
+        print(self.scope["user"])
         user_authenticated = True
         if user_authenticated:
             # Accepting the connection call:
             await self.accept()
-            # Or accept the connection and specify a chosen subprotocol.
-            # A list of subprotocols specified by the connecting client
-            # will be available in self.scope['subprotocols']
-            # await self.accept("subprotocol")
-            # print(self.scope['protocols']) # err
+
+            self.channel_layer.group_add("clients", self.channel_name)
 
             response = {
                 "type": "websocket.accept",
@@ -44,15 +41,20 @@ class AsyncClientConnectionsConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data=None, bytes_data=None):
         # Called with either text_data or bytes_data for each frame
+        data = json.loads(text_data)
+        print(data)
         # You can call:
         await self.send(text_data="Hello world!")
         # Or, to send a binary frame:
         await self.send(bytes_data="Hello world!")
         # Want to force-close the connection? Call:
-        await self.close()
-        # Or add a custom WebSocket error code!
-        # await self.close(code=4123)
+        error = False
+        if error:
+            await self.close()
+            # Or add a custom WebSocket error code!
+            # await self.close(code=4123)
 
     async def disconnect(self, close_code):
         # Called when the socket closes
-        pass
+        self.channel_layer.group_discard("clients", self.channel_name)
+

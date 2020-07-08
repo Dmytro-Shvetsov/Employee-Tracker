@@ -1,12 +1,13 @@
 import os
 from channels.routing import ProtocolTypeRouter
+from authorization.token_auth import TokenAuthMiddlewareStack
 from .consumers import AsyncClientConnectionsConsumer
 
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ETWeb.settings')
 
 channel_routing = ProtocolTypeRouter({
-    "websocket": AsyncClientConnectionsConsumer
+    "websocket": TokenAuthMiddlewareStack(AsyncClientConnectionsConsumer)
 })
 
 # application = ProtocolTypeRouter({

@@ -19,8 +19,10 @@ namespace ETClient
         void show();
         ~AuthPresenter();
     private slots:
-        void submitForm();
-        void checkChangedText();
+        void onFormSubmit();
+        void onTextChanged();
+        void onAuthorizationSuccessful();
+        void onInvalidCredentials();
     };
 }
 

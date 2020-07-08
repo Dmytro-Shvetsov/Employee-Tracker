@@ -53,9 +53,8 @@ compile_commands.json
 
 *_qmlcache.qrc
 
-
+# Python / Django / Pycharm
 .idea/
-
 *.pyc
 *~
 /.vscode
@@ -64,3 +63,8 @@ venv
 db.sqlite3
 /static
 .DS_Store
+settings.py
+
+# Redis
+*.rdb
+
