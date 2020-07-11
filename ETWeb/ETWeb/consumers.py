@@ -1,23 +1,9 @@
+import asyncio
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 import channels.exceptions
 
 
 class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
-    # groups = ["broadcast"]
-    #
-    # async def websocket_connect(self, event):
-    #     print(event)
-    #     await self.send({
-    #         "type": "websocket.accept"
-    #     })
-    #
-    # async def websocket_receive(self, event):
-    #     print(event)
-    #     await self.send({
-    #         "type": "websocket.send",
-    #         "text": event["text"]
-    #     })
-
     groups = ["clients"]
 
     async def connect(self):

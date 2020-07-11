@@ -5,8 +5,8 @@
 #include <QIcon>
 #include <QDebug>
 #include "ui_AuthForm.h"
-
 #include "definitions.h"
+
 
 namespace Ui
 {
@@ -22,7 +22,9 @@ namespace ETClient
         virtual QString getInputPassword() = 0;
         virtual void setAlertMessage(const QString& text) = 0;
         virtual void setLoginButtonActive(bool value) = 0;
+        virtual bool rememberMeChecked() = 0;
         virtual void showView() = 0;
+        virtual void hideView() = 0;
         virtual ~IAuthForm() {}
     public: // signals
         virtual void loginBtnClicked() = 0;
@@ -42,7 +44,9 @@ namespace ETClient
         QString getInputPassword()override;
         void setAlertMessage(const QString& text)override;
         void setLoginButtonActive(bool value)override;
+        bool rememberMeChecked()override;
         void showView()override;
+        void hideView()override;
     signals:
         void loginBtnClicked()override;
         void textInput()override;

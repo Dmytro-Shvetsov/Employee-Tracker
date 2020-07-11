@@ -3,11 +3,23 @@
 
 namespace ETClient
 {
-    AuthPresenter::AuthPresenter(ETClient::IAuthForm* authForm, QObject* parent)
+    AuthPresenter::AuthPresenter(QObject* parent)
         :QObject(parent),
-         authForm(authForm),
-         authModel(new AuthModel())
+         appSettings(new QSettings(COMPANY_NAME, APPLICATION_TITLE)),
+         authForm(new AuthForm),
+         authModel(new AuthModel),
+         mvp(nullptr)
     {
+
+        // Check if user has already signed in.
+        if (this->appSettings->contains("user"))
+        {
+            auto* usrInfo = new UserInfo();
+            usrInfo->deserialize(this->appSettings->value("user").toByteArray());
+            this->mvp = new MainWindowPresenter(usrInfo, this);
+            return;
+        }
+
         this->authForm->setAlertMessage("");
         this->authForm->setLoginButtonActive(false);
 
@@ -30,17 +42,21 @@ namespace ETClient
                          SIGNAL(invalidCredentials()),
                          this,
                          SLOT(onInvalidCredentials()));
-    }
+        QObject::connect(modelObj,
+                         SIGNAL(unhandledError()),
+                         this,
+                         SLOT(onUnhandledError()));
 
-    void AuthPresenter::show()
-    {
         this->authForm->showView();
     }
+
     AuthPresenter::~AuthPresenter()
     {
         qDebug() << "Deleted AuthPresenter";
+        delete this->appSettings;
         delete this->authForm;
         delete this->authModel;
+        delete this->mvp;
     }
 
     void AuthPresenter::onFormSubmit()
@@ -48,17 +64,8 @@ namespace ETClient
         QString username = this->authForm->getInputUsername();
         QString password = this->authForm->getInputPassword();
 
-        this->authForm->setAlertMessage("Connecting...");
+        this->authForm->setAlertMessage("Connecting to the server...");
         this->authModel->authorize(username, password);
-//        if (!response)
-//        {
-//            this->authForm->setAlertMessage("Invalid data.");
-//        }
-//        else
-//        {
-//            // switch to the main window.
-//        }
-
     }
 
     void AuthPresenter::onTextChanged()
@@ -72,15 +79,36 @@ namespace ETClient
 
     void AuthPresenter::onAuthorizationSuccessful()
     {
-        QString token = this->authModel->getToken();
-        // load main window
+        UserInfo* usrInfo = nullptr;
+        if (!this->appSettings->contains("user"))
+        {
+            usrInfo = new UserInfo(this->authForm->getInputUsername(),
+                                   this->authModel->getToken());
+            if (this->authForm->rememberMeChecked())
+            {
+                this->appSettings->setValue("user", usrInfo->serialize());
+                this->appSettings->sync();
+            }
+        }
+        else
+        {
+            usrInfo = new UserInfo;
+            usrInfo->deserialize(this->appSettings->value("user").toByteArray());
+        }
+
+        this->authForm->hideView();
+        this->mvp = new MainWindowPresenter(usrInfo, this);
     }
 
     void AuthPresenter::onInvalidCredentials()
     {
-        this->authForm->setAlertMessage("Invalid data.");
+        this->authForm->setAlertMessage("Wrong username or password.");
     }
 
+    void AuthPresenter::onUnhandledError()
+    {
+        this->authForm->setAlertMessage("Couldn't authorize. Make sure you have internet connection, or retry later.");
+    }
 }
 
 

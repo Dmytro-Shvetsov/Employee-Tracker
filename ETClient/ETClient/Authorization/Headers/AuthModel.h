@@ -22,18 +22,19 @@ namespace ETClient
         QString authToken;
 
         void setToken(const QString& value);
-
     private slots:
         void onAuthRequestFinish(QNetworkReply* reply);
 
-    signals:
-        void authorizationSuccessful();
-        void invalidCredentials();
     public:
         explicit AuthModel(QObject* parent = nullptr);
         ~AuthModel();
 
         void authorize(QString username, QString password);
         QString getToken()const;
+
+    signals:
+        void authorizationSuccessful();
+        void invalidCredentials();
+        void unhandledError();
     };
 }

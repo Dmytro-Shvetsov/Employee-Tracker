@@ -65,22 +65,31 @@ namespace ETClient
 
     void AuthModel::onAuthRequestFinish(QNetworkReply* reply)
     {
-        if (!reply)
+        if (!reply || reply->error() != QNetworkReply::NoError)
         {
-            qDebug() << "Unknown error";
+            try
+            {
+                qDebug() << reply->error();
+                reply->deleteLater();
+            } catch (std::exception&)
+            {
+                qDebug() << "Unknown error";
+            }
+            emit this->unhandledError();
             return;
         }
 
-        if (reply->error() == QNetworkReply::NoError && reply->bytesAvailable() > 0)
+        QJsonDocument response = QJsonDocument::fromJson(reply->readAll());
+        QString errors = response["errors"].toString();
+        if (errors.isEmpty() || errors.isNull())
         {
-            QJsonDocument response = QJsonDocument::fromJson(reply->readAll());
             qDebug() << "Token " << response["token"].toString();
             this->setToken(response["token"].toString());
-            reply->deleteLater();
         }
         else
         {
             emit invalidCredentials();
         }
+        reply->deleteLater();
     }
 }

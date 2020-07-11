@@ -1,5 +1,6 @@
 #include "Authorization/Headers/AuthForm.h"
 
+
 namespace ETClient
 {
     AuthForm::AuthForm(QWidget* parent) :
@@ -23,7 +24,8 @@ namespace ETClient
                                    Qt::KeepAspectRatio)
                     );
 
-        this->ui->alertMessage->setStyleSheet("color:red;");
+        this->ui->alertFrame->setStyleSheet("color:red;");
+        this->ui->alertMessage->setAlignment(Qt::AlignCenter);
 
         this->ui->loginButton->setStyleSheet(
                     "background-color: rgba(219, 219, 219, 0);" \
@@ -65,6 +67,11 @@ namespace ETClient
         this->show();
     }
 
+    void AuthForm::hideView()
+    {
+        this->hide();
+    }
+
     void AuthForm::onLoginBtnClicked()
     {
         emit this->loginBtnClicked();
@@ -72,12 +79,12 @@ namespace ETClient
 
     void AuthForm::onTextInput()
     {
-        qDebug() << "TextChanged";
         emit this->textInput();
     }
 
     void AuthForm::setAlertMessage(const QString& text)
     {
+        this->ui->alertFrame->setVisible(text != "");
         this->ui->alertMessage->setText(text);
     }
 
@@ -96,6 +103,11 @@ namespace ETClient
                         "color: gray;" \
                         "background-color: rgba(219, 219, 219, 0.3);");
         }
+    }
+
+    bool AuthForm::rememberMeChecked()
+    {
+        return this->ui->rememberMeChbox->isChecked();
     }
 }
 

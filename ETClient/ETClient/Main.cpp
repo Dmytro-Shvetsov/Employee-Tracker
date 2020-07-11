@@ -10,14 +10,16 @@ int main(int argc, char* argv[])
 {
     // for memory leak checking
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+//    QSettings q("Content Innovations", "Employee Tracker");
+//    q.setValue("a", "1");
+//    q.sync();
+//    qDebug() << q.value("a").toString();
+//    q.clear();
 
     QApplication app(argc, argv);
-//    qDebug() << "App path : " << qApp->applicationDirPath();
-    qDebug("Hello console");
-    AuthForm* authView = new AuthForm;
-    AuthPresenter authPresenter(authView);
-    authPresenter.show();
 
+    qDebug("Hello console");
+    AuthPresenter authPresenter;
     return app.exec();
 }
 

@@ -3,8 +3,11 @@
 #include <QObject>
 #include <QDebug>
 #include <QString>
-#include "Authorization/Headers/AuthForm.h"
-#include "Authorization/Headers/AuthModel.h"
+#include <QSettings>
+#include "AuthForm.h"
+#include "AuthModel.h"
+#include "UserInfo.h"
+#include "MainWindow/Headers/MainWindowPresenter.h"
 
 namespace ETClient
 {
@@ -12,17 +15,19 @@ namespace ETClient
     {
         Q_OBJECT
     private:
+        QSettings* appSettings;
         IAuthForm* authForm;
         AuthModel* authModel;
+        MainWindowPresenter* mvp;
     public:
-        explicit AuthPresenter(IAuthForm* authForm, QObject* parent = nullptr);
-        void show();
+        explicit AuthPresenter(QObject* parent = nullptr);
         ~AuthPresenter();
     private slots:
         void onFormSubmit();
         void onTextChanged();
         void onAuthorizationSuccessful();
         void onInvalidCredentials();
+        void onUnhandledError();
     };
 }
 
