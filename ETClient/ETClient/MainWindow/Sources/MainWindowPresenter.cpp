@@ -10,6 +10,8 @@ namespace ETClient
         usrInfo(usrInfo)
     {
         qDebug() << usrInfo->getUsername();
+
+        this->initUiComponents();
         this->mwForm->showView();
     }
 
@@ -19,5 +21,26 @@ namespace ETClient
         delete this->mwForm;
         delete this->mwModel;
         delete this->usrInfo;
+    }
+
+    void MainWindowPresenter::initUiComponents()
+    {
+        this->mwForm->initUiComponents();
+
+        QObject* viewObj = dynamic_cast<QObject*>(this->mwForm);
+        connect(viewObj,
+                SIGNAL(logout()),
+                this,
+                SLOT(onLogout()));
+
+        QObject::connect(viewObj,
+                         SIGNAL(logout()),
+                         this->parent(),
+                         SLOT(onLogout()));
+    }
+
+    void MainWindowPresenter::onLogout()
+    {
+        emit this->logout();
     }
 }

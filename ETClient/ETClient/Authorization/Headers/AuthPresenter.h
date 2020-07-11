@@ -19,8 +19,10 @@ namespace ETClient
         IAuthForm* authForm;
         AuthModel* authModel;
         MainWindowPresenter* mvp;
+        void initUiComponents();
     public:
         explicit AuthPresenter(QObject* parent = nullptr);
+        void resetFormInfo();
         ~AuthPresenter();
     private slots:
         void onFormSubmit();
@@ -28,6 +30,7 @@ namespace ETClient
         void onAuthorizationSuccessful();
         void onInvalidCredentials();
         void onUnhandledError();
+        void onLogout();
     };
 }
 

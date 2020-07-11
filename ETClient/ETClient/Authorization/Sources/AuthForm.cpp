@@ -4,9 +4,18 @@
 namespace ETClient
 {
     AuthForm::AuthForm(QWidget* parent) :
-        QWidget(parent)
+        QWidget(parent),
+        ui(new Ui::AuthForm())
     {
-        this->ui = new Ui::AuthForm();
+    }
+    AuthForm::~AuthForm()
+    {
+        qDebug() << "Deleted AuthForm";
+        delete this->ui;
+    }
+
+    void AuthForm::initUiComponents()
+    {
         this->ui->setupUi(this);
 
         QWidget::setWindowTitle(APPLICATION_TITLE);
@@ -36,7 +45,7 @@ namespace ETClient
                 this,
                 SLOT(onTextInput()));
 
-        connect(this->ui->passwordLIneEdit,
+        connect(this->ui->passwordLineEdit,
                 SIGNAL(textEdited(const QString&)),
                 this,
                 SLOT(onTextInput()));
@@ -46,11 +55,6 @@ namespace ETClient
                 this,
                 SLOT(onLoginBtnClicked()));
     }
-    AuthForm::~AuthForm()
-    {
-        qDebug() << "Deleted AuthForm";
-        delete this->ui;
-    }
 
     QString AuthForm::getInputUsername()
     {
@@ -59,7 +63,17 @@ namespace ETClient
 
     QString AuthForm::getInputPassword()
     {
-        return this->ui->passwordLIneEdit->text();
+        return this->ui->passwordLineEdit->text();
+    }
+
+    void AuthForm::setInputUsername(const QString& value)
+    {
+        this->ui->usernameLineEdit->setText(value);
+    }
+
+    void AuthForm::setInputPassword(const QString &value)
+    {
+        this->ui->passwordLineEdit->setText(value);
     }
 
     void AuthForm::showView()
@@ -108,6 +122,11 @@ namespace ETClient
     bool AuthForm::rememberMeChecked()
     {
         return this->ui->rememberMeChbox->isChecked();
+    }
+
+    void AuthForm::setRememberMeChecked(bool value)
+    {
+        this->ui->rememberMeChbox->setChecked(value);
     }
 }
 

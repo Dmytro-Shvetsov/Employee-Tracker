@@ -12,6 +12,11 @@ namespace ETClient
 
     }
 
+    UserInfo::~UserInfo()
+    {
+        qDebug() << "Deleted UserInfo";
+    }
+
     QString UserInfo::getUsername() const
     {
         return this->username;

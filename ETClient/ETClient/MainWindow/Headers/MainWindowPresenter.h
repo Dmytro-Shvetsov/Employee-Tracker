@@ -15,8 +15,13 @@ namespace ETClient
         IMainWindowForm* mwForm;
         MainWindowModel* mwModel;
         UserInfo* usrInfo;
+        void initUiComponents();
+    private slots:
+        void onLogout();
     public:
         explicit MainWindowPresenter(UserInfo* usrInfo, QObject* parent = nullptr);
         ~MainWindowPresenter();
+    signals:
+        void logout();
     };
 }

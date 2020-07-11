@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QDataStream>
+#include <QDebug>
 
 
 namespace ETClient
@@ -20,6 +21,7 @@ namespace ETClient
                           const QString& token,
                           const bool online = true,
                           QObject* parent = nullptr);
+        ~UserInfo();
         QString getUsername()const;
         void setActive(bool value);
         QByteArray& serialize();

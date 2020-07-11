@@ -16,10 +16,10 @@ namespace ETClient
     class IMainWindowForm
     {
     public:
+        virtual void initUiComponents() = 0;
         virtual void showView() = 0;
         virtual void hideView() = 0;
         virtual ~IMainWindowForm() {};
-
     };
 
     class MainWindowForm : public QMainWindow, public IMainWindowForm
@@ -27,12 +27,16 @@ namespace ETClient
         Q_OBJECT
     private:
         Ui::MainWindowForm* ui;
-
+    private slots:
+        void onLogoutClick();
     public:
         explicit MainWindowForm(QWidget* parent = nullptr);
+        virtual ~MainWindowForm();
+        void initUiComponents()override;
         void showView()override;
         void hideView()override;
-        ~MainWindowForm();
+    signals:
+        void logout();
     };
 }
 

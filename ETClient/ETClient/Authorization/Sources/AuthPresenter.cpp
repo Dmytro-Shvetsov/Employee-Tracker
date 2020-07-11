@@ -10,7 +10,6 @@ namespace ETClient
          authModel(new AuthModel),
          mvp(nullptr)
     {
-
         // Check if user has already signed in.
         if (this->appSettings->contains("user"))
         {
@@ -20,8 +19,24 @@ namespace ETClient
             return;
         }
 
+        this->initUiComponents();
+        this->authForm->showView();
+    }
+
+    void AuthPresenter::resetFormInfo()
+    {
         this->authForm->setAlertMessage("");
+        this->authForm->setInputUsername("");
+        this->authForm->setInputPassword("");
         this->authForm->setLoginButtonActive(false);
+        this->authForm->setRememberMeChecked(false);
+    }
+
+    void AuthPresenter::initUiComponents()
+    {
+        this->authForm->initUiComponents();
+
+        this->resetFormInfo();
 
         QObject* viewObj = dynamic_cast<QObject*>(this->authForm);
         QObject::connect(viewObj,
@@ -46,8 +61,6 @@ namespace ETClient
                          SIGNAL(unhandledError()),
                          this,
                          SLOT(onUnhandledError()));
-
-        this->authForm->showView();
     }
 
     AuthPresenter::~AuthPresenter()
@@ -108,6 +121,14 @@ namespace ETClient
     void AuthPresenter::onUnhandledError()
     {
         this->authForm->setAlertMessage("Couldn't authorize. Make sure you have internet connection, or retry later.");
+    }
+
+    void AuthPresenter::onLogout()
+    {
+        this->appSettings->remove("user");
+        delete this->mvp;
+        this->resetFormInfo();
+        this->authForm->showView();
     }
 }
 

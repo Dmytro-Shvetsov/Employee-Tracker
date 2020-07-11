@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>464</width>
-    <height>199</height>
+    <height>183</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -291,12 +291,12 @@
                <string>Password:</string>
               </property>
               <property name="buddy">
-               <cstring>passwordLIneEdit</cstring>
+               <cstring>passwordLineEdit</cstring>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="passwordLIneEdit">
+             <widget class="QLineEdit" name="passwordLineEdit">
               <property name="minimumSize">
                <size>
                 <width>160</width>
