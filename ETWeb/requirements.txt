@@ -4,3 +4,4 @@ channels==2.4.0
 channels_redis
 djangorestframework==3.11.0
 psycopg2
+Pillow

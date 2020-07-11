@@ -20,6 +20,8 @@ class TokenAuthMiddleware:
                     scope['user'] = token.user
             except Token.DoesNotExist:
                 scope['user'] = AnonymousUser()
+                a = AnonymousUser()
+                a.is_authenticated
         return self.inner(scope)
 
 

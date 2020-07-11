@@ -6,13 +6,27 @@
 </head>
 <script>
     var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-    var chat_socket = new WebSocket(ws_scheme + '://' + window.location.host + window.location.pathname);
-    console.log(ws_scheme + '://127.0.0.1:8000')
+    var chat_socket = new WebSocket(ws_scheme + '://' + window.location.host + "/client/");
 
+    console.log(chat_socket)
+    chat_socket.onopen = function(e) {
+        console.log(e)
+        console.log('opened')
+        var msg = {
+            'type': 'websocket.message',
+            'text': 'cool'
+        }
+        chat_socket.send(JSON.stringify(msg))
+    };
 
     chat_socket.onmessage = function(message) {
         var data = JSON.parse(message.data);
         console.log(data)
+        var msg =
+            {
+                'message': 'a'
+            }
+        chat_socket.send(JSON.stringify(msg))
     }
 </script>
 <body>

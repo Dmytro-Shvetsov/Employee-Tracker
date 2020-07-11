@@ -1,8 +1,8 @@
-from channels.generic.websocket import AsyncWebsocketConsumer
-import json
+from channels.generic.websocket import AsyncJsonWebsocketConsumer
+import channels.exceptions
 
 
-class AsyncClientConnectionsConsumer(AsyncWebsocketConsumer):
+class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
     # groups = ["broadcast"]
     #
     # async def websocket_connect(self, event):
@@ -21,32 +21,31 @@ class AsyncClientConnectionsConsumer(AsyncWebsocketConsumer):
     groups = ["clients"]
 
     async def connect(self):
-        # Called on connection.
         print(self.scope["user"])
-        user_authenticated = True
-        if user_authenticated:
-            # Accepting the connection call:
-            await self.accept()
+        if not self.scope['user'].is_authenticated:
+            raise channels.exceptions.DenyConnection
 
-            self.channel_layer.group_add("clients", self.channel_name)
+        # Accepting the connection call:
+        await self.accept()
 
-            response = {
-                "type": "websocket.accept",
-                "text": "sup bruv"
-            }
-            await self.send(json.dumps(response))
-        else:
-            # To reject the connection, call:
-            await self.close()
+        self.channel_layer.group_add("clients", self.channel_name)
+        print(self.scope.keys())
+        # print(self.scope['headers'])
+        print(self.scope['type'])
 
-    async def receive(self, text_data=None, bytes_data=None):
-        # Called with either text_data or bytes_data for each frame
-        data = json.loads(text_data)
-        print(data)
+        await self.send_json({
+            "type": "websocket.accept",
+            "text": "sup bruv"
+        })
+    #     await self.close()
+
+    async def receive_json(self, content, **kwargs):
+        print(content)
+        print(11111111111111111111111111111111111111111111)
         # You can call:
-        await self.send(text_data="Hello world!")
-        # Or, to send a binary frame:
-        await self.send(bytes_data="Hello world!")
+        await self.send_json({
+            'text': 'ya good?'
+        })
         # Want to force-close the connection? Call:
         error = False
         if error:
