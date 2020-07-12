@@ -8,7 +8,7 @@ namespace ETClient
         QObject(parent),
         reqManager(new QNetworkAccessManager(this))
     {
-        this->host = new QUrl(COMMUNICATION_HOST_URL + HOST_AUTH_ROUTE);
+        this->host = new QUrl(AUTH_URL);
 
         connect(this->reqManager,
                 SIGNAL(finished(QNetworkReply*)),

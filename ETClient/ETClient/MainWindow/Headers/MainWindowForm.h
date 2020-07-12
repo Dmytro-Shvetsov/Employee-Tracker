@@ -19,6 +19,7 @@ namespace ETClient
         virtual void initUiComponents() = 0;
         virtual void showView() = 0;
         virtual void hideView() = 0;
+        virtual QWindow* getWindowObj() = 0;
         virtual ~IMainWindowForm() {};
     };
 
@@ -35,6 +36,7 @@ namespace ETClient
         void initUiComponents()override;
         void showView()override;
         void hideView()override;
+        QWindow* getWindowObj() override;
     signals:
         void logout();
     };

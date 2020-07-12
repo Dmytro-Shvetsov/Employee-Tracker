@@ -4,11 +4,13 @@
 #include <QUrl>
 #include <QDebug>
 #include <QWebSocket>
+#include <QNetworkAccessManager>
+#include "Authorization/Headers/UserInfo.h"
 #include "definitions.h"
 
 namespace ETClient
 {
-    class WebsocketClient: QObject
+    class WebsocketClient: public QObject
     {
         Q_OBJECT
     private:
@@ -26,6 +28,7 @@ namespace ETClient
 
     public:
         WebsocketClient(QObject* parent = nullptr, bool debug = false);
+        void connectClient(UserInfo* usrInfo);
         ~WebsocketClient();
 
     };

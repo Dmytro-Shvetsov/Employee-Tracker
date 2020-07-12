@@ -1,6 +1,6 @@
 QT += core gui
 
-greaterThan(QT_MAJOR_VERSION, 4) : QT += widgets websockets
+greaterThan(QT_MAJOR_VERSION, 4) : QT += widgets websockets concurrent
 
 TARGET = ETClient
 TEMPLATE = app
@@ -13,6 +13,7 @@ HEADERS += \
     MainWindow/Headers/MainWindowForm.h \
     MainWindow/Headers/MainWindowModel.h \
     MainWindow/Headers/MainWindowPresenter.h \
+    MainWindow/Headers/ScreenshotManager.h \
     WebsocketClient.h \
     definitions.h
 
@@ -26,6 +27,7 @@ SOURCES += \
     MainWindow/Sources/MainWindowForm.cpp \
     MainWindow/Sources/MainWindowModel.cpp \
     MainWindow/Sources/MainWindowPresenter.cpp \
+    MainWindow/Sources/ScreenshotManager.cpp \
     WebsocketClient.cpp
 
 FORMS += \

@@ -2,7 +2,6 @@
 
 namespace ETClient
 {
-
     WebsocketClient::WebsocketClient(QObject* parent, bool debug):
         QObject(parent),
         host(new QUrl(COMMUNICATION_HOST_URL)),
@@ -20,8 +19,16 @@ namespace ETClient
                 SIGNAL(disconnected()),
                 this,
                 SLOT(onDisconnected()));
+    }
 
-        this->ws.open(*this->host);
+    void WebsocketClient::connectClient(UserInfo *usrInfo)
+    {
+        QNetworkRequest wsRequest = this->ws.request();
+        wsRequest.setUrl(*this->host);
+        qDebug() << "request " << wsRequest.url();
+        wsRequest.setRawHeader("authorization",
+                               usrInfo->getAuthToken().prepend("token ").toLocal8Bit().data());
+        this->ws.open(wsRequest);
     }
 
     void WebsocketClient::onConnected()
@@ -30,6 +37,7 @@ namespace ETClient
         {
             qDebug() << "Connected to the server: " << this->host;
         }
+        emit this->connected();
     }
 
     void WebsocketClient::onDisconnected()
@@ -42,7 +50,7 @@ namespace ETClient
 
     void WebsocketClient::onMessageReceived(const QString& message)
     {
-        auto a = message;
+        qDebug() << "Received message: " << message;
     }
 
     WebsocketClient::~WebsocketClient()

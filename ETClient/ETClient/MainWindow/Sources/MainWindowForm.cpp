@@ -47,6 +47,11 @@ namespace ETClient
         this->hide();
     }
 
+    QWindow *MainWindowForm::getWindowObj()
+    {
+        return this->windowHandle();
+    }
+
     void MainWindowForm::onLogoutClick()
     {
         emit this->logout();

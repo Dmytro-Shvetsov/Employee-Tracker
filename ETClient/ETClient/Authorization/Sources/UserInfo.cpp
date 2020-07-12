@@ -21,6 +21,11 @@ namespace ETClient
     {
         return this->username;
     }
+
+    QString UserInfo::getAuthToken() const
+    {
+        return this->token;
+    }
     void UserInfo::setActive(bool value)
     {
         this->online = value;

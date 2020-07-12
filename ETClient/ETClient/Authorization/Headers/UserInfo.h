@@ -23,6 +23,7 @@ namespace ETClient
                           QObject* parent = nullptr);
         ~UserInfo();
         QString getUsername()const;
+        QString getAuthToken()const;
         void setActive(bool value);
         QByteArray& serialize();
         void deserialize(const QByteArray& qba);

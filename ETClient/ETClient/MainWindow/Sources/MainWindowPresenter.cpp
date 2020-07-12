@@ -6,13 +6,16 @@ namespace ETClient
     MainWindowPresenter::MainWindowPresenter(UserInfo* usrInfo, QObject* parent):
         QObject(parent),
         mwForm(new MainWindowForm),
-        mwModel(new MainWindowModel),
-        usrInfo(usrInfo)
+        mwModel(new MainWindowModel(usrInfo, this, this->mwForm->getWindowObj()))
     {
-        qDebug() << usrInfo->getUsername();
+        connect(this->mwModel,
+                SIGNAL(websocketConnected()),
+                this,
+                SLOT(onWebsocketConnected()));
 
         this->initUiComponents();
         this->mwForm->showView();
+        this->mwModel->connectClient();
     }
 
     MainWindowPresenter::~MainWindowPresenter()
@@ -20,7 +23,6 @@ namespace ETClient
         qDebug() << "Deleted MainWindowPresenter";
         delete this->mwForm;
         delete this->mwModel;
-        delete this->usrInfo;
     }
 
     void MainWindowPresenter::initUiComponents()
@@ -42,5 +44,10 @@ namespace ETClient
     void MainWindowPresenter::onLogout()
     {
         emit this->logout();
+    }
+
+    void MainWindowPresenter::onWebsocketConnected()
+    {
+        this->mwModel->startMakingScreenshots();
     }
 }
