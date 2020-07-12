@@ -4,7 +4,7 @@ import channels.exceptions
 
 
 class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
-    groups = ["clients"]
+    groups = ["broadcast",  "clients"]
 
     async def connect(self):
         print(self.scope["user"])
@@ -14,7 +14,7 @@ class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
         # Accepting the connection call:
         await self.accept()
 
-        self.channel_layer.group_add("clients", self.channel_name)
+        # self.channel_layer.group_add("clients", self.channel_name)
         print(self.scope.keys())
         # print(self.scope['headers'])
         print(self.scope['type'])
@@ -40,6 +40,7 @@ class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
             # await self.close(code=4123)
 
     async def disconnect(self, close_code):
-        # Called when the socket closes
-        self.channel_layer.group_discard("clients", self.channel_name)
+        pass
+    #     # Called when the socket closes
+    #     self.channel_layer.group_discard("clients", self.channel_name)
 

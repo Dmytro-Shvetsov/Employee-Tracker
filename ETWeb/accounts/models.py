@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -25,10 +25,10 @@ class UserManager(BaseUserManager):
         return user_obj
 
     def create_superuser(self, username, password):
-        return self.create_user(username, password, is_superuser=True, is_active=True)
+        return self.create_user(username, password, is_superuser=True, is_staff=True, is_active=True)
 
 
-class User(AbstractBaseUser):
+class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=255, unique=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
@@ -43,6 +43,9 @@ class User(AbstractBaseUser):
     @property
     def profile(self):
         return UserProfile.objects.get_or_create(user=self).first()
+
+    class Meta:
+        db_table = "accounts_users"
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
@@ -69,4 +72,7 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+    class Meta:
+        db_table = "accounts_userprofiles"
 
