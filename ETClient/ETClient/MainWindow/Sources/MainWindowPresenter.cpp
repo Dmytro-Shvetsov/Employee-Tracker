@@ -12,6 +12,11 @@ namespace ETClient
                 SIGNAL(websocketConnected()),
                 this,
                 SLOT(onWebsocketConnected()));
+        connect(this->mwModel,
+                SIGNAL(websocketDisconnected()),
+                this,
+                SLOT(onWebsocketDisconnected()));
+
 
         this->initUiComponents();
         this->mwForm->showView();
@@ -43,11 +48,18 @@ namespace ETClient
 
     void MainWindowPresenter::onLogout()
     {
+        this->mwModel->stopDataCollection();
         emit this->logout();
     }
 
     void MainWindowPresenter::onWebsocketConnected()
     {
-        this->mwModel->startMakingScreenshots();
+        qDebug() << "Ws connected (presenter slot)";
+        this->mwModel->startDataCollection();
+    }
+
+    void MainWindowPresenter::onWebsocketDisconnected()
+    {
+        this->mwModel->stopDataCollection();
     }
 }

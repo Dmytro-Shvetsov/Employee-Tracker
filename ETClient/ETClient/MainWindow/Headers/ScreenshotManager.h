@@ -5,8 +5,12 @@
 #include <QDebug>
 #include <QScreen>
 #include <QThread>
+#include <QBuffer>
 #include <QApplication>
+#include <QMutex>
+#include <QWaitCondition>
 #include <QPixmap>
+#include <QLabel>
 
 
 namespace ETClient
@@ -15,18 +19,24 @@ namespace ETClient
     {
         Q_OBJECT
     private:
-        QPixmap originalPixmap;
-        quint32 screenshotTimedeltaSeconds;
+        QByteArray screenshotBytes;
+//        std::string screenshotBytes;
         QWindow* windowObj;
-        bool executingScreenshotCreationLoop;
         QSize defaultScreenshotSize;
+        qint32 screenshotTimedeltaSeconds;
+        bool running;
+        QMutex mutex;
+        QWaitCondition* waitCond;
     public:
-        explicit ScreenshotManager(QObject* parent = nullptr, QWindow* windowObj = nullptr,
-                                   quint32 screenshotTimedeltaSeconds=5, QSize defaultScreenshotSize=QSize(600, 800));
+        explicit ScreenshotManager(QWaitCondition* waitCond, QObject* parent = nullptr,
+                                   QWindow* windowObj = nullptr,
+                                   QSize defaultScreenshotSize=QSize(1324, 720),
+                                   qint32 screenshotTimedeltaSeconds=600, // 10 mins
+                                   bool running = false);
         ~ScreenshotManager();
         void newScreenshot();
-        QPixmap& getScreenshot();
-        void setExecutingScreenshotCreationLoop(bool value);
+        QByteArray getScreenshot()const;
+        void setRunning(bool value);
         void run();
     signals:
         void noScreenDetected();

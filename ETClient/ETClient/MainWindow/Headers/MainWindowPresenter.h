@@ -13,10 +13,12 @@ namespace ETClient
     private:
         IMainWindowForm* mwForm;
         MainWindowModel* mwModel;
+
         void initUiComponents();
     private slots:
         void onLogout();
         void onWebsocketConnected();
+        void onWebsocketDisconnected();
     public:
         explicit MainWindowPresenter(UserInfo* usrInfo, QObject* parent = nullptr);
         ~MainWindowPresenter();

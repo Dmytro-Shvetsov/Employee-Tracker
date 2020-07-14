@@ -5,6 +5,8 @@
 #include <QDebug>
 #include <QWebSocket>
 #include <QNetworkAccessManager>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include "Authorization/Headers/UserInfo.h"
 #include "definitions.h"
 
@@ -25,11 +27,11 @@ namespace ETClient
         void connected();
         void disconnected();
         void messageReceived(const QString&);
-
     public:
         WebsocketClient(QObject* parent = nullptr, bool debug = false);
-        void connectClient(UserInfo* usrInfo);
         ~WebsocketClient();
-
+        void connectClient(UserInfo* usrInfo);
+        void sendMessage(const QJsonObject& message);
+        void sendMessage(const QByteArray& message);
     };
 }

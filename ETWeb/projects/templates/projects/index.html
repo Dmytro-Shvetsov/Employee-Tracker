@@ -8,7 +8,6 @@
     var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
     var chat_socket = new WebSocket(ws_scheme + '://' + window.location.host + "/client/");
 
-    console.log(chat_socket)
     chat_socket.onopen = function(e) {
         console.log(e)
         console.log('opened')
@@ -18,12 +17,13 @@
         }
         chat_socket.send(JSON.stringify(msg))
     };
-
+    if (chat_socket.readyState == WebSocket.OPEN) chat_socket.onopen();
     chat_socket.onmessage = function(message) {
         var data = JSON.parse(message.data);
         console.log(data)
         var msg =
             {
+                'type': 'websocket.message',
                 'message': 'a'
             }
         chat_socket.send(JSON.stringify(msg))

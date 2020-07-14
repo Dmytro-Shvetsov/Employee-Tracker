@@ -2,6 +2,9 @@ import os
 from django.urls import path
 from channels.routing import ProtocolTypeRouter, URLRouter
 from accounts.token_auth import TokenAuthMiddlewareStack
+
+from channels.auth import AuthMiddlewareStack
+
 from .consumers import AsyncClientConnectionsConsumer
 
 
@@ -14,19 +17,3 @@ channel_routing = ProtocolTypeRouter({
         ])
     )
 })
-
-# application = ProtocolTypeRouter({
-#     # Empty for now (http->django views is added by default)
-#
-#     "websocket": ([
-#             url(r"^client/connect$", AsyncClientConnectionsConsumer),
-#         ])
-#
-#
-#     # "websocket": AuthMiddlewareStack(
-#     #     URLRouter([
-#     #         url(r"^chat/admin/$", AdminChatConsumer),
-#     #         url(r"^chat/$", PublicChatConsumer),
-#     #     ])
-#     # ),
-# })

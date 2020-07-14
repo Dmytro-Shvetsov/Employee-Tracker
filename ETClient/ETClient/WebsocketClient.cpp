@@ -31,6 +31,23 @@ namespace ETClient
         this->ws.open(wsRequest);
     }
 
+    void WebsocketClient::sendMessage(const QJsonObject& message)
+    {
+        if (this->ws.isValid())
+        {
+            QJsonDocument jsonDoc(message);
+            this->ws.sendTextMessage(jsonDoc.toJson(QJsonDocument::Compact));
+        }
+    }
+
+    void WebsocketClient::sendMessage(const QByteArray &message)
+    {
+        if (this->ws.isValid())
+        {
+            this->ws.sendBinaryMessage(message);
+        }
+    }
+
     void WebsocketClient::onConnected()
     {
         if (debug)
@@ -46,6 +63,7 @@ namespace ETClient
         {
             qDebug() << "Disconnected from the server: " << this->host;
         }
+        emit this->disconnected();
     }
 
     void WebsocketClient::onMessageReceived(const QString& message)

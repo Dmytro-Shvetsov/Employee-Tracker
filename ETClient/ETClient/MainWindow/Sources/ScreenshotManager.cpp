@@ -2,21 +2,22 @@
 
 namespace ETClient
 {
-    ScreenshotManager::ScreenshotManager(QObject* parent, QWindow* windowObj,
-                                         quint32 screenshotTimedeltaSeconds,
-                                         QSize defaultScreenshotSize):
-
+    ScreenshotManager::ScreenshotManager(QWaitCondition* waitCond, QObject* parent, QWindow* windowObj,
+                                         QSize defaultScreenshotSize, qint32 screenshotTimedeltaSeconds,
+                                         bool running):
         QObject(parent),
+        waitCond(waitCond),
         windowObj(windowObj),
+        defaultScreenshotSize(defaultScreenshotSize),
         screenshotTimedeltaSeconds(screenshotTimedeltaSeconds),
-        defaultScreenshotSize(defaultScreenshotSize)
+        running(running)
     {
 
     }
 
     ScreenshotManager::~ScreenshotManager()
     {
-
+        delete this->windowObj;
     }
 
     void ScreenshotManager::newScreenshot()
@@ -34,30 +35,45 @@ namespace ETClient
         }
 
         // Grabbing screenshot from windod with windowId 0.
-        originalPixmap = screen->grabWindow(0).scaled(this->defaultScreenshotSize);
+        QPixmap originalPixmap = screen->grabWindow(0).scaled(this->defaultScreenshotSize,
+                                                              Qt::KeepAspectRatio,
+                                                              Qt::SmoothTransformation);
+//        this->screenshotBytes.clear();
+        QByteArray byteArray;
+//        QBuffer buffer(&this->screenshotBytes);
+        QBuffer buffer(&byteArray);
+        buffer.open(QIODevice::WriteOnly);
+        originalPixmap.save(&buffer, "JPG", 80);
+
+        this->screenshotBytes = byteArray.toBase64();
+
         emit this->screenshotReady();
     }
 
-    QPixmap& ScreenshotManager::getScreenshot()
+    QByteArray ScreenshotManager::getScreenshot()const
     {
-        qDebug() << QThread::currentThread();
-        return this->originalPixmap;
+        return this->screenshotBytes;
     }
 
-    void ScreenshotManager::setExecutingScreenshotCreationLoop(bool value)
+    void ScreenshotManager::setRunning(bool value)
     {
-        this->executingScreenshotCreationLoop = value;
+        this->running = value;
     }
 
     void ScreenshotManager::run()
     {
-        while (this->executingScreenshotCreationLoop)
+        qDebug() << "Starting execution";
+        while(this->running)
         {
-            qDebug() << "Started creating screenshot on thread "
-                     << QThread::currentThread();
+            this->mutex.lock();
+
+            qDebug() << "Started creating screenshot on thread " << QThread::currentThread();
+
             this->newScreenshot();
-            QThread::currentThread()->sleep(this->screenshotTimedeltaSeconds);
+            this->waitCond->wait(&this->mutex, this->screenshotTimedeltaSeconds * 1000);
+            mutex.unlock();
         }
     }
+
 }
 

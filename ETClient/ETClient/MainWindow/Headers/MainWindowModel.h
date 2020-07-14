@@ -5,6 +5,7 @@
 #include <QFutureWatcher>
 #include <QtConcurrent>
 #include <QTimer>
+#include <QFuture>
 #include "WebsocketClient.h"
 #include "ScreenshotManager.h"
 
@@ -18,16 +19,20 @@ namespace ETClient
         UserInfo* usrInfo;
         WebsocketClient* socket;
         ScreenshotManager* screenshotManager;
+        QWaitCondition waitCond;
     private slots:
         void onScreenshotReady();
         void onWebsocketConnected();
+        void onWebsocketDisconnect();
     public:
         explicit MainWindowModel(UserInfo* usrInfo, QObject* parent = nullptr, QWindow* windowObj = nullptr);
         ~MainWindowModel();
-        void startMakingScreenshots();
+        void startDataCollection();
+        void stopDataCollection();
         void connectClient();
     signals:
         void websocketConnected();
+        void websocketDisconnected();
     };
 }
 
