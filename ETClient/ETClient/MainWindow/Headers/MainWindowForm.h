@@ -3,6 +3,9 @@
 #include <QMainWindow>
 #include <QObject>
 #include <QDebug>
+#include <QDate>
+#include <QMovie>
+#include <QLocale>
 #include "definitions.h"
 #include "ui_MainWindowForm.h"
 
@@ -16,11 +19,18 @@ namespace ETClient
     class IMainWindowForm
     {
     public:
+        virtual ~IMainWindowForm() {};
         virtual void initUiComponents() = 0;
         virtual void showView() = 0;
         virtual void hideView() = 0;
         virtual QWindow* getWindowObj() = 0;
-        virtual ~IMainWindowForm() {};
+        virtual void setUsernameText(const QString& username) = 0;
+        virtual void setDateJoined(const QDate& date) = 0;
+        virtual void setOnlineStatus(bool online) = 0;
+        virtual void setUserImage(const QPixmap& img) = 0;
+        virtual void setLoadingState(bool value) = 0;
+    public: // signals
+        virtual void logout() = 0;
     };
 
     class MainWindowForm : public QMainWindow, public IMainWindowForm
@@ -28,6 +38,9 @@ namespace ETClient
         Q_OBJECT
     private:
         Ui::MainWindowForm* ui;
+        QLabel* loadingView;
+        QMovie* loadingMovie;
+        QLocale locale = QLocale::English;
     private slots:
         void onLogoutClick();
     public:
@@ -36,9 +49,14 @@ namespace ETClient
         void initUiComponents()override;
         void showView()override;
         void hideView()override;
-        QWindow* getWindowObj() override;
+        QWindow* getWindowObj()override;
+        void setUsernameText(const QString& username)override;
+        void setDateJoined(const QDate& date)override;
+        void setOnlineStatus(bool online)override;
+        void setUserImage(const QPixmap& img)override;
+        void setLoadingState(bool value)override;
     signals:
-        void logout();
+        void logout()override;
     };
 }
 

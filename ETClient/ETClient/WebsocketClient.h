@@ -7,7 +7,6 @@
 #include <QNetworkAccessManager>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include "Authorization/Headers/UserInfo.h"
 #include "definitions.h"
 
 namespace ETClient
@@ -22,15 +21,16 @@ namespace ETClient
     private slots:
         void onConnected();
         void onDisconnected();
-        void onMessageReceived(const QString& message);
+        void onTextMessageReceived(const QString& message);
     signals:
         void connected();
         void disconnected();
-        void messageReceived(const QString&);
+        void textMessageReceived(const QString& message);
     public:
         WebsocketClient(QObject* parent = nullptr, bool debug = false);
         ~WebsocketClient();
-        void connectClient(UserInfo* usrInfo);
+        void connectClient(const QString& token);
+        void disconnectClient();
         void sendMessage(const QJsonObject& message);
         void sendMessage(const QByteArray& message);
     };

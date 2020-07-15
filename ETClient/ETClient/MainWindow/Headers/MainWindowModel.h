@@ -16,7 +16,6 @@ namespace ETClient
     {
         Q_OBJECT
     private:
-        UserInfo* usrInfo;
         WebsocketClient* socket;
         ScreenshotManager* screenshotManager;
         QWaitCondition waitCond;
@@ -24,15 +23,18 @@ namespace ETClient
         void onScreenshotReady();
         void onWebsocketConnected();
         void onWebsocketDisconnect();
+        void onTextMessageReceived(const QString& message);
     public:
-        explicit MainWindowModel(UserInfo* usrInfo, QObject* parent = nullptr, QWindow* windowObj = nullptr);
+        explicit MainWindowModel(QObject* parent = nullptr, QWindow* windowObj = nullptr);
         ~MainWindowModel();
         void startDataCollection();
         void stopDataCollection();
-        void connectClient();
+        void connectClient(const QString& token);
+        void disconnectClient();
     signals:
         void websocketConnected();
         void websocketDisconnected();
+        void textMessageReceived(const QString&);
     };
 }
 

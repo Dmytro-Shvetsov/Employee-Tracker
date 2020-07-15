@@ -7,15 +7,20 @@ namespace ETClient
         :QObject(parent),
          appSettings(new QSettings(COMPANY_NAME, APPLICATION_TITLE)),
          authForm(new AuthForm),
-         authModel(new AuthModel),
-         mvp(nullptr)
+         authModel(new AuthModel(this)),
+         mvp(new MainWindowPresenter(this))
     {
         // Check if user has already signed in.
         if (this->appSettings->contains("user"))
         {
-            auto* usrInfo = new UserInfo();
-            usrInfo->deserialize(this->appSettings->value("user").toByteArray());
-            this->mvp = new MainWindowPresenter(usrInfo, this);
+            if (!this->mvp)
+            {
+                this->mvp = new MainWindowPresenter(this);
+            }
+
+            qDebug() << this->appSettings->value("user");
+            this->authForm->hideView();
+            this->mvp->init(this->appSettings->value("user").toString());
             return;
         }
 
@@ -66,10 +71,10 @@ namespace ETClient
     AuthPresenter::~AuthPresenter()
     {
         qDebug() << "Deleted AuthPresenter";
+        delete this->mvp;
         delete this->appSettings;
         delete this->authForm;
         delete this->authModel;
-        delete this->mvp;
     }
 
     void AuthPresenter::onFormSubmit()
@@ -92,25 +97,18 @@ namespace ETClient
 
     void AuthPresenter::onAuthorizationSuccessful()
     {
-        UserInfo* usrInfo = nullptr;
-        if (!this->appSettings->contains("user"))
+        if (!this->appSettings->contains("user") && this->authForm->rememberMeChecked())
         {
-            usrInfo = new UserInfo(this->authForm->getInputUsername(),
-                                   this->authModel->getToken());
-            if (this->authForm->rememberMeChecked())
-            {
-                this->appSettings->setValue("user", usrInfo->serialize());
-                this->appSettings->sync();
-            }
-        }
-        else
-        {
-            usrInfo = new UserInfo;
-            usrInfo->deserialize(this->appSettings->value("user").toByteArray());
+            this->appSettings->setValue("user", this->authModel->getToken());
+            this->appSettings->sync();
         }
 
         this->authForm->hideView();
-        this->mvp = new MainWindowPresenter(usrInfo, this);
+        if (!this->mvp)
+        {
+            this->mvp = new MainWindowPresenter(this);
+        }
+        this->mvp->init(this->authModel->getToken());
     }
 
     void AuthPresenter::onInvalidCredentials()
@@ -125,11 +123,11 @@ namespace ETClient
 
     void AuthPresenter::onLogout()
     {
-        this->appSettings->remove("user");
+        qDebug() << "Logout(auth presenter slot)";
         delete this->mvp;
+        this->mvp = nullptr;
+        this->appSettings->remove("user");
         this->resetFormInfo();
         this->authForm->showView();
     }
 }
-
-

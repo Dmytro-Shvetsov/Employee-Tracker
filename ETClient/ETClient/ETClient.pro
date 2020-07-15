@@ -9,7 +9,6 @@ HEADERS += \
     Authorization/Headers/AuthForm.h \
     Authorization/Headers/AuthModel.h \
     Authorization/Headers/AuthPresenter.h \
-    Authorization/Headers/UserInfo.h \
     MainWindow/Headers/MainWindowForm.h \
     MainWindow/Headers/MainWindowModel.h \
     MainWindow/Headers/MainWindowPresenter.h \
@@ -18,11 +17,9 @@ HEADERS += \
     definitions.h
 
 SOURCES += \
-    Authorization/Sources/UserInfo.cpp \
     Authorization/Sources/AuthForm.cpp \
     Authorization/Sources/AuthModel.cpp \
     Authorization/Sources/AuthPresenter.cpp \
-    Authorization/Sources/UserInfo.cpp \
     Main.cpp \
     MainWindow/Sources/MainWindowForm.cpp \
     MainWindow/Sources/MainWindowModel.cpp \

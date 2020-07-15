@@ -63,7 +63,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QFrame" name="userImage">
+        <widget class="QFrame" name="topFrame">
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
          </property>
@@ -81,7 +81,7 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QLabel" name="label">
+           <widget class="QLabel" name="userImageLabel">
             <property name="minimumSize">
              <size>
               <width>0</width>
@@ -100,7 +100,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QFrame" name="userImageLabel">
+           <widget class="QFrame" name="rightCol">
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
             </property>
@@ -153,7 +153,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QFrame" name="statusFrame">
+        <widget class="QFrame" name="bottomFrame">
          <property name="maximumSize">
           <size>
            <width>16777215</width>

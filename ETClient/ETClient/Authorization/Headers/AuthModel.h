@@ -31,7 +31,6 @@ namespace ETClient
 
         void authorize(QString username, QString password);
         QString getToken()const;
-
     signals:
         void authorizationSuccessful();
         void invalidCredentials();

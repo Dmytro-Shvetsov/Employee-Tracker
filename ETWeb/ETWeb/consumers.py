@@ -1,10 +1,8 @@
 import asyncio
 import base64
-import channels.exceptions
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
 from io import BytesIO
-# from PIL import Image
 from django.core.files.base import ContentFile
 from employees.models import Screenshot
 from string import ascii_letters
@@ -19,33 +17,28 @@ class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
         self.user = await self.scope['user']
 
         if not self.user.is_authenticated:
-            raise channels.exceptions.DenyConnection
+            await self.close(401)
+            return
 
+        await self.accept()
         print('Connection accepted')
 
-        # Accepting the connection call:
-        await self.accept()
-
         # self.channel_layer.group_add("clients", self.channel_name)
-        # print(self.scope['headers'])
 
+        user_info = await database_sync_to_async(self.user.json)()
         await self.send_json({
             "type": "websocket.accept",
-            "text": "sup bruv"
+            **user_info
         })
-    #     await self.close()
-
-    # async def receive(self, text_data=None, bytes_data=None, **kwargs):
-    #     print('received default msg');
-    #     print(text_data)
-    #     print(len(bytes_data))
-    #     im = Image.open(io.BytesIO(bytes_data))
-    #     im.save(os.path.join(BASE_DIR, 'shotty.jpg'))
 
     async def receive_json(self, content, **kwargs):
         print('New message')
         print(content.keys())
-        # You can call:
+
+        if not self.user.is_authenticated:
+            await self.close(401)
+            return
+
         if content['type'] == 'data.screenshot':
             await self.save_screenshot(content['screenshot'].encode())
 
@@ -53,12 +46,6 @@ class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
             'type': 'websocket.message',
             'text': 'message received'
         })
-        # Want to force-close the connection? Call:
-        error = False
-        if error:
-            await self.close()
-            # Or add a custom WebSocket error code!
-            # await self.close(code=4123)
 
     async def disconnect(self, close_code):
         # Called when the socket closes

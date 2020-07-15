@@ -4,7 +4,9 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
-
+import base64
+from datetime import date
+from io import BytesIO
 
 class UserManager(BaseUserManager):
     def create_user(self, username, password, *,
@@ -44,6 +46,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     def profile(self):
         return UserProfile.objects.get_or_create(user=self).first()
 
+    def json(self):
+        return {
+            'username': self.username,
+            'date_joined': str(self.date_joined.date()),
+            'profile_image': base64.encodebytes(self.userprofile.image.read()).decode()
+        }
+
     class Meta:
         db_table = "accounts_users"
 
@@ -52,6 +61,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
+        UserProfile.objects.create(user=instance)
 
 
 class UserProfile(models.Model):
@@ -61,7 +71,7 @@ class UserProfile(models.Model):
     company = models.CharField(max_length=100, null=True, blank=True)
     current_position = models.CharField(max_length=100, null=True, blank=True)
     image = models.ImageField(upload_to='profile_images',
-                              default='profile_images/default_user_image.png',
+                              default='profile_images/default_user_image.jpg',
                               blank=True)
 
     @property

@@ -15,13 +15,16 @@ namespace ETClient
         MainWindowModel* mwModel;
 
         void initUiComponents();
+        void handleWebsocketAcceptResponse(const QJsonDocument& msg);
     private slots:
         void onLogout();
         void onWebsocketConnected();
         void onWebsocketDisconnected();
+        void onTextMessageReceived(const QString& message);
     public:
-        explicit MainWindowPresenter(UserInfo* usrInfo, QObject* parent = nullptr);
+        explicit MainWindowPresenter(QObject* parent = nullptr);
         ~MainWindowPresenter();
+        void init(const QString& userAuthToken);
     signals:
         void logout();
     };

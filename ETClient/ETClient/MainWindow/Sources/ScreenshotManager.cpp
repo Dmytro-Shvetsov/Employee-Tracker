@@ -73,6 +73,7 @@ namespace ETClient
             this->waitCond->wait(&this->mutex, this->screenshotTimedeltaSeconds * 1000);
             mutex.unlock();
         }
+        QThread::currentThread()->exit();
     }
 
 }

@@ -63,7 +63,10 @@ venv
 db.sqlite3
 /static
 .DS_Store
+
 settings.py
+ETWeb/media/employee_screenshots
+
 
 # Redis
 *.rdb

@@ -9,7 +9,7 @@ namespace ETClient
     {
         if (debug)
         {
-            qDebug() << "WebSocket server: " << this->host;
+            qDebug() << "WebSocket server: " << *this->host;
         }
         connect(&this->ws,
                 SIGNAL(connected()),
@@ -19,16 +19,25 @@ namespace ETClient
                 SIGNAL(disconnected()),
                 this,
                 SLOT(onDisconnected()));
+        connect(&this->ws,
+                SIGNAL(textMessageReceived(const QString&)),
+                this,
+                SLOT(onTextMessageReceived(const QString&)));
     }
 
-    void WebsocketClient::connectClient(UserInfo *usrInfo)
+    void WebsocketClient::connectClient(const QString& token)
     {
         QNetworkRequest wsRequest = this->ws.request();
         wsRequest.setUrl(*this->host);
-        qDebug() << "request " << wsRequest.url();
-        wsRequest.setRawHeader("authorization",
-                               usrInfo->getAuthToken().prepend("token ").toLocal8Bit().data());
+        qDebug() << "request " << wsRequest.url() << "with token " << token;
+
+        wsRequest.setRawHeader("authorization", ("token " + token).toLocal8Bit().data());
         this->ws.open(wsRequest);
+    }
+
+    void WebsocketClient::disconnectClient()
+    {
+        this->ws.close();
     }
 
     void WebsocketClient::sendMessage(const QJsonObject& message)
@@ -52,7 +61,7 @@ namespace ETClient
     {
         if (debug)
         {
-            qDebug() << "Connected to the server: " << this->host;
+            qDebug() << "Connected to the server: " << *this->host;
         }
         emit this->connected();
     }
@@ -66,9 +75,10 @@ namespace ETClient
         emit this->disconnected();
     }
 
-    void WebsocketClient::onMessageReceived(const QString& message)
+    void WebsocketClient::onTextMessageReceived(const QString& message)
     {
-        qDebug() << "Received message: " << message;
+        qDebug() << "Received message: ";
+        emit this->textMessageReceived(message);
     }
 
     WebsocketClient::~WebsocketClient()

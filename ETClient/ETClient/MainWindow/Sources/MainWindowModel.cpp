@@ -3,9 +3,8 @@
 
 namespace ETClient
 {
-    MainWindowModel::MainWindowModel(UserInfo* usrInfo, QObject* parent, QWindow* windowObj):
+    MainWindowModel::MainWindowModel(QObject* parent, QWindow* windowObj):
         QObject(parent),
-        usrInfo(usrInfo),
         socket(new WebsocketClient(this, true)),
         screenshotManager(new ScreenshotManager(&this->waitCond, this, windowObj))
     {
@@ -17,6 +16,10 @@ namespace ETClient
                 SIGNAL(disconnected()),
                 this,
                 SLOT(onWebsocketDisconnect()));
+        connect(this->socket,
+                SIGNAL(textMessageReceived(const QString&)),
+                this,
+                SLOT(onTextMessageReceived(const QString&)));
 
         connect(this->screenshotManager,
                 SIGNAL(screenshotReady()),
@@ -27,8 +30,10 @@ namespace ETClient
     MainWindowModel::~MainWindowModel()
     {
         qDebug() << "Deleted MainWindowModel";
-        delete this->usrInfo;
+        this->stopDataCollection();
+        delete this->socket;
         delete this->screenshotManager;
+//        delete this->usrInfo;
     }
 
     void MainWindowModel::startDataCollection()
@@ -65,8 +70,18 @@ namespace ETClient
         emit this->websocketDisconnected();
     }
 
-    void MainWindowModel::connectClient()
+    void MainWindowModel::onTextMessageReceived(const QString &message)
     {
-        this->socket->connectClient(this->usrInfo);
+        emit this->textMessageReceived(message);
+    }
+
+    void MainWindowModel::connectClient(const QString& token)
+    {
+        this->socket->connectClient(token);
+    }
+
+    void MainWindowModel::disconnectClient()
+    {
+        this->socket->disconnectClient();
     }
 }

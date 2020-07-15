@@ -6,7 +6,6 @@
 #include <QSettings>
 #include "AuthForm.h"
 #include "AuthModel.h"
-#include "UserInfo.h"
 #include "MainWindow/Headers/MainWindowPresenter.h"
 
 namespace ETClient
