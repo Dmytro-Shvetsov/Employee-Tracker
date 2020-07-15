@@ -10,22 +10,22 @@ namespace ETClient
          authModel(new AuthModel(this)),
          mvp(new MainWindowPresenter(this))
     {
+        this->initUiComponents();
+
         // Check if user has already signed in.
         if (this->appSettings->contains("user"))
         {
-            if (!this->mvp)
-            {
-                this->mvp = new MainWindowPresenter(this);
-            }
+            this->mvp = new MainWindowPresenter(this);
 
             qDebug() << this->appSettings->value("user");
             this->authForm->hideView();
             this->mvp->init(this->appSettings->value("user").toString());
-            return;
+        }
+        else
+        {
+            this->authForm->showView();
         }
 
-        this->initUiComponents();
-        this->authForm->showView();
     }
 
     void AuthPresenter::resetFormInfo()

@@ -17,10 +17,13 @@ namespace ETClient
         void initUiComponents();
         void handleWebsocketAcceptResponse(const QJsonDocument& msg);
     private slots:
+        void onWindowClosed(QCloseEvent* event);
         void onLogout();
         void onWebsocketConnected();
         void onWebsocketDisconnected();
         void onTextMessageReceived(const QString& message);
+    public slots:
+        void destroy();
     public:
         explicit MainWindowPresenter(QObject* parent = nullptr);
         ~MainWindowPresenter();

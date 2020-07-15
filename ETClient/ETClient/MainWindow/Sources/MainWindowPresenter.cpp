@@ -50,6 +50,10 @@ namespace ETClient
                 SIGNAL(logout()),
                 this,
                 SLOT(onLogout()));
+        connect(viewObj,
+                SIGNAL(windowClosed(QCloseEvent*)),
+                this,
+                SLOT(onWindowClosed(QCloseEvent*)));
     }
 
     void MainWindowPresenter::handleWebsocketAcceptResponse(const QJsonDocument& message)
@@ -78,6 +82,16 @@ namespace ETClient
         this->mwModel->startDataCollection();
     }
 
+    void MainWindowPresenter::onWindowClosed(QCloseEvent* event)
+    {
+        qDebug() << "EXIT BBBBBBBBBB";
+        this->mwModel->disconnectClient();
+        connect(this->mwModel,
+                SIGNAL(websocketDisconnected()),
+                this,
+                SLOT(destroy()));
+    }
+
     void MainWindowPresenter::onLogout()
     {
         this->mwModel->disconnectClient();
@@ -95,6 +109,7 @@ namespace ETClient
     {
         this->mwModel->stopDataCollection();
         this->mwForm->setOnlineStatus(false);
+
         qDebug() << "Ws disconnected (presenter slot)";
     }
 
@@ -106,5 +121,10 @@ namespace ETClient
         {
             this->handleWebsocketAcceptResponse(msg);
         }
+    }
+
+    void MainWindowPresenter::destroy()
+    {
+        delete this;
     }
 }

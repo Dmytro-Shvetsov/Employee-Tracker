@@ -6,6 +6,7 @@
 #include <QDate>
 #include <QMovie>
 #include <QLocale>
+#include <QCloseEvent>
 #include "definitions.h"
 #include "ui_MainWindowForm.h"
 
@@ -31,6 +32,7 @@ namespace ETClient
         virtual void setLoadingState(bool value) = 0;
     public: // signals
         virtual void logout() = 0;
+        virtual void windowClosed(QCloseEvent* event) = 0;
     };
 
     class MainWindowForm : public QMainWindow, public IMainWindowForm
@@ -41,8 +43,11 @@ namespace ETClient
         QLabel* loadingView;
         QMovie* loadingMovie;
         QLocale locale = QLocale::English;
+
+        void closeEvent(QCloseEvent* event)override;
     private slots:
         void onLogoutClick();
+//        void onWindowClosed();
     public:
         explicit MainWindowForm(QWidget* parent = nullptr);
         virtual ~MainWindowForm();
@@ -57,6 +62,7 @@ namespace ETClient
         void setLoadingState(bool value)override;
     signals:
         void logout()override;
+        void windowClosed(QCloseEvent* event)override;
     };
 }
 

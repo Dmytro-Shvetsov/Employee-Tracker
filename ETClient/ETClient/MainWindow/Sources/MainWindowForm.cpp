@@ -107,6 +107,12 @@ namespace ETClient
         qDebug() << "Loading: " << value;
     }
 
+    void MainWindowForm::closeEvent(QCloseEvent* event)
+    {
+        qDebug() << "EXIT AAAAAAA";
+        emit this->windowClosed(event);
+    }
+
     void MainWindowForm::onLogoutClick()
     {
         emit this->logout();
