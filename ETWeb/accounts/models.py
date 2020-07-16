@@ -5,12 +5,11 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 import base64
-from datetime import date
-from io import BytesIO
+
 
 class UserManager(BaseUserManager):
     def create_user(self, username, password, *,
-                    is_staff=False, is_superuser=False,
+                    email=None, is_staff=False, is_superuser=False,
                     is_active=False, date_joined=None):
         if not username:
             raise ValueError("Username field must have a username.")
@@ -18,20 +17,22 @@ class UserManager(BaseUserManager):
             raise ValueError("Username field must have a password.")
 
         user_obj = self.model(username=username)
+        user_obj.set_password(password)  # change password
+        user_obj.email = self.normalize_email(email)
         user_obj.is_staff = is_staff
         user_obj.is_superuser = is_superuser
         user_obj.is_active = is_active
         user_obj.date_joined = date_joined
-        user_obj.set_password(password)  # change password
         user_obj.save(using=self._db)
         return user_obj
 
-    def create_superuser(self, username, password):
-        return self.create_user(username, password, is_superuser=True, is_staff=True, is_active=True)
+    def create_superuser(self, username, password, **kwargs):
+        return self.create_user(username, password, is_superuser=True, is_staff=True, is_active=True, **kwargs)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=255, unique=True)
+    email = models.CharField(max_length=60, blank=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)  # cannot login by default
@@ -46,6 +47,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     def profile(self):
         return UserProfile.objects.get_or_create(user=self).first()
 
+    def has_perm(self, perm, obj=None):
+        return self.is_superuser
+
+    def has_module_perms(self, app_label):
+        return True
+
     def json(self):
         return {
             'username': self.username,
@@ -58,7 +65,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def create_auth_token(sender, instance=None, created=False, **kwargs):
+def wrap_user_creation(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
         UserProfile.objects.create(user=instance)

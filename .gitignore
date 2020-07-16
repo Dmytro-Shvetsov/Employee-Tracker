@@ -71,3 +71,4 @@ ETWeb/media/employee_screenshots
 # Redis
 *.rdb
 
+ETWeb/node_modules
