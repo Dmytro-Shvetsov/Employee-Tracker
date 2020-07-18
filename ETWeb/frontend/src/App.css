@@ -1,0 +1,26 @@
+.navbar {
+    font-size: 20px;
+    margin: 0;
+}
+#jumbo * {
+    display: inline-block;
+}
+#jumbo {
+    text-align: center;
+}
+#navbar, #footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#auth-items {
+    padding-left: 40px;
+}
+.auth-btn {
+    width: 105px;
+    font-weight: bold;
+    margin-right: 10px;
+}
+.auth-btn a {
+    display: inline;
+}
