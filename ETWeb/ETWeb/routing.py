@@ -2,9 +2,6 @@ import os
 from django.urls import path
 from channels.routing import ProtocolTypeRouter, URLRouter
 from accounts.token_auth import TokenAuthMiddlewareStack
-
-from channels.auth import AuthMiddlewareStack
-
 from .consumers import AsyncClientConnectionsConsumer
 
 

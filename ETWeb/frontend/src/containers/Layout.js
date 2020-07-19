@@ -6,10 +6,10 @@ export default props => {
     return (
         <React.Fragment>
             <NavBar user={props.user}/>
-            <Container className="container" style={{minHeight:500}}>
+            <Container className="container" id="main">
                 {props.children}
             </Container>
-            <Container className="" container id="footer">
+            <Container className="" id="footer">
                 All rights reserved &copy;2020
             </Container>
         </React.Fragment>

@@ -4,7 +4,6 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
-import base64
 
 
 class UserManager(BaseUserManager):
@@ -32,33 +31,27 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=255, unique=True)
-    email = models.CharField(max_length=60, blank=True)
+    email = models.CharField(max_length=60)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)  # cannot login by default
     date_joined = models.DateTimeField(auto_now_add=True)
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['password']
+    REQUIRED_FIELDS = ['email', 'password']
 
     objects = UserManager()
 
     @property
     def profile(self):
-        return UserProfile.objects.get_or_create(user=self).first()
+        obj, created = UserProfile.objects.get_or_create(user=self)
+        return obj
 
     def has_perm(self, perm, obj=None):
         return self.is_superuser
 
     def has_module_perms(self, app_label):
         return True
-
-    def json(self):
-        return {
-            'username': self.username,
-            'date_joined': str(self.date_joined.date()),
-            'profile_image': base64.encodebytes(self.userprofile.image.read()).decode()
-        }
 
     class Meta:
         db_table = "accounts_users"

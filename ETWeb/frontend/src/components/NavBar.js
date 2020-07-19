@@ -3,22 +3,15 @@ import {
   Collapse,
   Button,
   Navbar,
-  NavbarToggler,
-  NavbarBrand,
   Nav,
-  NavItem,
-  UncontrolledDropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-  NavbarText
+  NavItem
 } from 'reactstrap';
 import { Link } from 'react-router-dom';
 
 
 const AuthItems = props => {
     const { user, ...rest } = props;
-    console.log(props);
+    console.log('User', props);
     if (user) {
         console.log('User is authenticated: ', user);
         return (
@@ -55,7 +48,7 @@ class NavBar extends React.Component {
         return (
             <Navbar color="dark" expand="md">
                 <Collapse navbar>
-                    <Nav className="m-auto"  id="navbar" navbar>
+                    <Nav className="m-auto" id="navbar" navbar>
                         {/*<NavbarBrand href="/">Employee Tracker</NavbarBrand>*/}
                         <NavItem active key="features">
                             <Link to="/features" className="nav-link text-light">Features</Link>

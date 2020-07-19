@@ -7,9 +7,10 @@ from django.conf.urls.static import static
 urlpatterns = [
     # API
     path('api/projects/', include('projects.api.urls')),
+    path('api/auth/', include('accounts.api.urls')),
 
     path('admin/', admin.site.urls),
-    path('auth/', include('accounts.urls'), name='auth'),
+    # path('auth/', include('accounts.urls'), name='auth'),
 
     # Pages
     re_path(r'.*', include('frontend.urls')),

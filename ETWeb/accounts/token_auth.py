@@ -36,14 +36,3 @@ class TokenAuthMiddlewareStack:
         except Token.DoesNotExist:
             return AnonymousUser()
 
-
-# # AuthMiddlewareStack = lambda inner: \
-# #     CookieMiddleware(
-# #         SessionMiddleware(
-# #             AuthMiddleware(inner)
-# #         )
-# #     )
-#
-# TokenAuthMiddlewareStack = lambda inner: CookieMiddleware(
-#     SessionMiddleware(TokenAuthMiddleware(inner))
-# )

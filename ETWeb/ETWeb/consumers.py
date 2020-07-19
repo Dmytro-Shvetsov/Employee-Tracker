@@ -4,6 +4,7 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
 from io import BytesIO
 from django.core.files.base import ContentFile
+from accounts.api.serializers import WebsocketUserSerializer
 from employees.models import Screenshot
 from string import ascii_letters
 from random import choice
@@ -11,12 +12,13 @@ from random import choice
 
 class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
     groups = ["broadcast",  "clients"]
+    user = None
 
     async def connect(self):
         print('New connection')
         self.user = await self.scope['user']
 
-        if not self.user.is_authenticated:
+        if not self.user or not self.user.is_authenticated:
             await self.close(401)
             return
 
@@ -24,8 +26,8 @@ class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
         print('Connection accepted')
 
         # self.channel_layer.group_add("clients", self.channel_name)
-
-        user_info = await database_sync_to_async(self.user.json)()
+        serializer = WebsocketUserSerializer(self.user)
+        user_info = await database_sync_to_async(serializer.json)()
         await self.send_json({
             "type": "websocket.accept",
             **user_info

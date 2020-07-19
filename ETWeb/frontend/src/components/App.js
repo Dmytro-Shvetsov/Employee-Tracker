@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import BaseRouter from '../routes';
 import Layout from '../containers/Layout'
 import NavBar from "../components/NavBar";
-import Dashboard from './Dashboard'
 import 'bootstrap/dist/css/bootstrap.css';
 import '../App.css';
 

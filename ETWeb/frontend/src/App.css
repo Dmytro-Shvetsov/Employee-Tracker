@@ -1,26 +1,52 @@
 .navbar {
     font-size: 20px;
     margin: 0;
+    padding: 12px 0;
 }
+
 #jumbo * {
     display: inline-block;
 }
 #jumbo {
     text-align: center;
 }
+
 #navbar, #footer {
     display: flex;
     justify-content: center;
     align-items: center;
+    height: 5vh;
 }
-#auth-items {
-    padding-left: 40px;
+
+#footer {
+    margin-top: 100px;
+    padding-bottom: 30px;
 }
+
+#main {
+    min-height: 90vh;
+    padding-top: 50px;
+}
+
 .auth-btn {
     width: 105px;
     font-weight: bold;
-    margin-right: 10px;
+    margin-left: 20px;
 }
 .auth-btn a {
     display: inline;
+}
+.auth-form {
+    width: 500px;
+    margin: auto;
+    padding-top: 40px;
+}
+
+.auth-other {
+    text-align: center;
+    margin-top: 20px;
+}
+.auth-other button {
+    width: 100px;
+    height: 40px;
 }
