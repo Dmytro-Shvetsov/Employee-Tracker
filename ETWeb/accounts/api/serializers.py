@@ -38,21 +38,22 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    confirm_password = serializers.CharField(
+    password2 = serializers.CharField(
         style={'input_type': 'password'},
         write_only=True
     )
 
     def validate(self, attrs):
         try:
+            print(attrs)
             username = attrs['username']
             email = attrs['email']
             password = attrs['password']
-            confirm_password = attrs['confirm_password']
+            password2 = attrs['password2']
 
-            if (validators.is_username_valid(username) and validators.is_email_valid(email) and
-                    validators.is_password_valid(password, confirm_password)):
-                return attrs
+            # if (validators.is_username_valid(username) and validators.is_email_valid(email) and
+            #         validators.is_password_valid(password, password2)):
+            #     return attrs
             return attrs
         except KeyError as ex:
             missing_key = str(ex)
@@ -70,7 +71,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'confirm_password', 'is_staff']
+        fields = ['username', 'email', 'password', 'password2', 'is_staff']
         extra_kwargs = {
             'password': {
                 'write_only': True

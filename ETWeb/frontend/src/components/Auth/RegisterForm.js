@@ -2,79 +2,62 @@ import { registerUser } from '../../services/authService.js'
 import React from 'react';
 import { Button, Form, FormGroup, Label, Input, FormFeedback } from 'reactstrap';
 import { Container } from "reactstrap";
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
+import TextInput from '../common/Input'
+
 
 class RegisterForm extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            username: '',
-            email: '',
-            password: '',
-            confirm_password: '',
-            is_staff: false,
-            errors: {}
+            data: {
+                username: '',
+                email: '',
+                password: '',
+                password2: '',
+                isStaff: false,
+            },
+            errors: {},
+            registrationFinished: false
         };
     }
 
-    handleUsernameChange = (event) => {
-        this.setState({
-            ...this.state,
-            errors: {...this.state.errors, username: undefined},
-            username: event.target.value
-        });
-        console.log(this.state)
-    };
+    handleInputChange = (event) => {
+        const target = event.target;
+        const name = target.name;
 
-    handleEmailChange = (event) => {
         this.setState({
-            ...this.state,
-            errors: {...this.state.errors, email: undefined},
-            email: event.target.value
+            data: { ...this.state.data, [name]: target.value},
+            errors: {...this.state.errors, [name]: undefined},
         });
     };
 
-    handlePasswordChange = (event) => {
-        this.setState({
-            ...this.state,
-            errors: {...this.state.errors, password: undefined},
-            password: event.target.value
-        });
-    };
-
-    handleConfirmPasswordChange = (event) => {
-        this.setState({
-            ...this.state,
-            errors: {...this.state.errors, confirm_password: undefined},
-            confirm_password: event.target.value
-        });
-    };
     handleIsStaffChange = (event) => {
         this.setState({
-            ...this.state,
-            is_staff: !this.state.is_staff,
-            errors: {...this.state.errors}
+            isStaff: !this.state.data.isStaff,
         });
     };
 
     handleSubmit = (event) => {
-        event.preventDefault();
+        registerUser(this.state.data).then((res) => {
+            console.log(res.data);
 
-        registerUser(this.state).then((res) => {
-            const { user } = JSON.parse(res.data);
-            console.log(user);
-            alert('successful registration')
-            // this.props.onRegister();
+            const { token } = JSON.parse(res.data);
+            this.setState({
+                registrationFinished: true
+            });
+            this.props.onLogin(token);
         }).catch((error) => {
+            console.log(error.response.data);
+
             if (error.response.status === 401) {
                 const fieldErrors = error.response.data;
 
                 Object.keys(fieldErrors).map((fieldName) => {
-                    fieldErrors[fieldName] = fieldErrors[fieldName].join(' ');
+                    fieldErrors[fieldName] = fieldErrors[fieldName].join(" ");
                 });
 
                 this.setState({
-                    ...this.state,
                     errors: fieldErrors
                 });
             } else {
@@ -84,11 +67,15 @@ class RegisterForm extends React.Component {
     };
 
     render() {
+        if (this.state.registrationFinished) {
+            return <Redirect to="/"/>
+        }
+
         const { errors } = this.state;
         return (
             <React.Fragment>
                 <Container className="col-8" style={{margin: "auto"}}>
-                    <h1>Account Sign in</h1>
+                    <h1>Account Sign Up</h1>
                     <p>
                         Use the form below to sign in to your online account.
                         Please enter your information exactly as given to you.
@@ -96,46 +83,33 @@ class RegisterForm extends React.Component {
                         link or <Link to = "/contact">contact our staff</Link> for assistance.
                     </p>
                 </Container>
-                <Form className="auth-form" autocomplete="on">
-                    <FormGroup>
-                        <Label for="username">Username</Label>
-                        <Input invalid={errors.username !== undefined}
-                               onChange={this.handleUsernameChange}
-                               type="text" name="username"
-                               id="username"
-                               placeholder="*"/>
-                        <FormFeedback>{errors.username}</FormFeedback>
-                    </FormGroup>
-                    <FormGroup>
-                        <Label for="email">Email</Label>
-                        <Input invalid={errors.email !== undefined}
-                               onChange={this.handleEmailChange}
-                               type="email"
-                               name="email"
-                               id="email"
-                               placeholder="*"/>
-                        <FormFeedback>{errors.email}</FormFeedback>
-                    </FormGroup>
-                    <FormGroup>
-                        <Label for="password">Password</Label>
-                        <Input invalid={errors.password !== undefined}
-                               onChange={this.handlePasswordChange}
-                               type="password"
-                               name="password"
-                               id="password"
-                               placeholder="*"/>
-                        <FormFeedback>{errors.password}</FormFeedback>
-                    </FormGroup>
-                    <FormGroup>
-                        <Label for="confirm_password">Confirm Password</Label>
-                        <Input invalid={errors.confirm_password !== undefined}
-                               onChange={this.handleConfirmPasswordChange}
-                               type="password"
-                               name="confirm_password"
-                               id="confirm_password"
-                               placeholder="*"/>
-                        <FormFeedback>{errors.confirm_password}</FormFeedback>
-                    </FormGroup>
+                <Form className="auth-form" autoComplete="on">
+                    <TextInput
+                        name="username"
+                        labelText="Username"
+                        error={errors.username}
+                        onInputChange={this.handleInputChange}
+                    />
+                    <TextInput
+                        name="email"
+                        labelText="Email"
+                        error={errors.email}
+                        onInputChange={this.handleInputChange}
+                    />
+                    <TextInput
+                        name="password"
+                        labelText="Password"
+                        error={errors.password}
+                        onInputChange={this.handleInputChange}
+                        type="password"
+                    />
+                    <TextInput
+                        name="password2"
+                        labelText="Confirm password"
+                        error={errors.password2}
+                        onInputChange={this.handleInputChange}
+                        type="password"
+                    />
                     <FormGroup check>
                         <Label check>
                             <Input type="checkbox" onChange={this.handleIsStaffChange}/>{' '}
@@ -143,10 +117,6 @@ class RegisterForm extends React.Component {
                         </Label>
                     </FormGroup>
                     <FormGroup className="auth-other">
-                        {/*<Label>*/}
-                        {/*    <Link to="/auth/reset">Forgot your username or password?</Link>*/}
-                        {/*</Label>*/}
-                        {/*<br />*/}
                         <Button onClick={(event) => this.handleSubmit(event)}>Submit</Button>
                     </FormGroup>
                 </Form>
