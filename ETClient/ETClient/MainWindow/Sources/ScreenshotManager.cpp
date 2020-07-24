@@ -1,4 +1,4 @@
-#include "MainWindow/Headers/ScreenshotManager.h"
+#include "ScreenshotManager.h"
 
 namespace ETClient
 {
@@ -6,17 +6,18 @@ namespace ETClient
                                          QSize defaultScreenshotSize, qint32 screenshotTimedeltaSeconds,
                                          bool running):
         QObject(parent),
-        waitCond(waitCond),
         windowObj(windowObj),
         defaultScreenshotSize(defaultScreenshotSize),
         screenshotTimedeltaSeconds(screenshotTimedeltaSeconds),
-        running(running)
+        running(running),
+        waitCond(waitCond)
     {
 
     }
 
     ScreenshotManager::~ScreenshotManager()
     {
+        qDebug() << "Deleted screenshot manager";
         delete this->windowObj;
     }
 
@@ -29,18 +30,17 @@ namespace ETClient
         }
         if (!screen)
         {
-            qDebug() << "Screenshot Created";
+            qDebug() << "Error detecting screen";
             emit this->noScreenDetected();
             return;
         }
 
-        // Grabbing screenshot from windod with windowId 0.
+        // Grabbing screenshot from window with windowId 0.
         QPixmap originalPixmap = screen->grabWindow(0).scaled(this->defaultScreenshotSize,
                                                               Qt::KeepAspectRatio,
                                                               Qt::SmoothTransformation);
-//        this->screenshotBytes.clear();
+
         QByteArray byteArray;
-//        QBuffer buffer(&this->screenshotBytes);
         QBuffer buffer(&byteArray);
         buffer.open(QIODevice::WriteOnly);
         originalPixmap.save(&buffer, "JPG", 80);

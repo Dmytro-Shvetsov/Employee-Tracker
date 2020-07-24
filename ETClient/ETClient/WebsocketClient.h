@@ -15,7 +15,7 @@ namespace ETClient
     {
         Q_OBJECT
     private:
-        const QUrl* host;
+        const QUrl* host = new QUrl(COMMUNICATION_HOST_URL);
         bool debug;
         QWebSocket ws;
     private slots:

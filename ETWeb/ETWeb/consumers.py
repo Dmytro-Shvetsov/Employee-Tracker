@@ -17,12 +17,17 @@ class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         print('New connection')
         self.user = await self.scope['user']
+        await self.accept()
 
         if not self.user or not self.user.is_authenticated:
-            await self.close(401)
+            print(f'Denied connection from {self.user}')
+            await self.send_json({
+                'type': 'websocket.close',
+                'error': 'User does not exist or account has not been activated.'
+            })
+            await self.close(3401)
             return
 
-        await self.accept()
         print('Connection accepted')
 
         # self.channel_layer.group_add("clients", self.channel_name)

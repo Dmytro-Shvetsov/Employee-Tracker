@@ -20,7 +20,6 @@ namespace ETClient
         Q_OBJECT
     private:
         QByteArray screenshotBytes;
-//        std::string screenshotBytes;
         QWindow* windowObj;
         QSize defaultScreenshotSize;
         qint32 screenshotTimedeltaSeconds;

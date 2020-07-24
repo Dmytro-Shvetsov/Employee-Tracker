@@ -1,17 +1,15 @@
-#include "MainWindow/Headers/MainWindowPresenter.h"
+#include "MainWindowPresenter.h"
 
 
 namespace ETClient
 {
     MainWindowPresenter::MainWindowPresenter(QObject* parent):
-        QObject(parent),
-        mwForm(new MainWindowForm),
-        mwModel(new MainWindowModel(this, this->mwForm->getWindowObj()))
+        QObject(parent)
     {
         connect(this,
-                SIGNAL(logout()),
+                SIGNAL(logout(const QString&)),
                 this->parent(),
-                SLOT(onLogout()));
+                SLOT(onLogout(const QString&)));
 
         connect(this->mwModel,
                 SIGNAL(websocketConnected()),
@@ -47,25 +45,31 @@ namespace ETClient
 
         QObject* viewObj = dynamic_cast<QObject*>(this->mwForm);
         connect(viewObj,
-                SIGNAL(logout()),
+                SIGNAL(logout(const QString&)),
                 this,
-                SLOT(onLogout()));
+                SLOT(onLogout(const QString&)));
+
+        connect(this,
+                SIGNAL(logout(const QString&)),
+                this->parent(),
+                SLOT(onLogout(const QString&)));
+
         connect(viewObj,
                 SIGNAL(windowClosed(QCloseEvent*)),
                 this,
                 SLOT(onWindowClosed(QCloseEvent*)));
     }
 
-    void MainWindowPresenter::handleWebsocketAcceptResponse(const QJsonDocument& message)
+    void MainWindowPresenter::handleWebsocketAcceptResponse(const QJsonDocument& response)
     {
-        this->mwForm->setUsernameText(message["username"].toString());
+        this->mwForm->setUsernameText(response["username"].toString());
 
         this->mwForm->setDateJoined(
-                    QDate::fromString(message["date_joined"].toString(), "yyyy-MM-dd")
+                    QDate::fromString(response["date_joined"].toString(), "yyyy-MM-dd")
                 );
 
         QByteArray decodedImage = QByteArray::fromBase64(
-                    message["profile_image"].toString().toLocal8Bit()
+                    response["profile_image"].toString().toLocal8Bit()
                 );
         QPixmap img;
         if (img.loadFromData(decodedImage))
@@ -78,25 +82,47 @@ namespace ETClient
         }
         qDebug() << "Loaded user data";
         this->mwForm->setLoadingState(false);
-        qDebug() << "HANDLED FIRST MESSAGE";
         this->mwModel->startDataCollection();
+    }
+
+    void MainWindowPresenter::handleWebsocketCloseResponse(const QJsonDocument& response)
+    {
+        this->mwModel->stopDataCollection();
+        this->mwForm->setLoadingState(false);
+        this->onLogout(response["error"].toString());
     }
 
     void MainWindowPresenter::onWindowClosed(QCloseEvent* event)
     {
-        qDebug() << "EXIT BBBBBBBBBB";
+        this->mwModel->stopDataCollection();
         this->mwModel->disconnectClient();
+
         connect(this->mwModel,
                 SIGNAL(websocketDisconnected()),
                 this,
                 SLOT(destroy()));
     }
 
-    void MainWindowPresenter::onLogout()
+    void MainWindowPresenter::onLogout(const QString& message)
     {
         this->mwModel->disconnectClient();
-        this->mwForm->hideView();
-        emit this->logout();
+
+        const auto wsDisconnectCallback = [this, &message]() {
+            this->mwForm->hideView();
+            emit this->logout(message);
+        };
+
+        if (this->mwModel->clientIsConnected())
+        {
+            connect(this->mwModel,
+                    &MainWindowModel::websocketDisconnected,
+                    this,
+                    wsDisconnectCallback);
+        }
+        else
+        {
+            wsDisconnectCallback();
+        }
     }
 
     void MainWindowPresenter::onWebsocketConnected()
@@ -107,7 +133,6 @@ namespace ETClient
 
     void MainWindowPresenter::onWebsocketDisconnected()
     {
-        this->mwModel->stopDataCollection();
         this->mwForm->setOnlineStatus(false);
 
         qDebug() << "Ws disconnected (presenter slot)";
@@ -115,16 +140,23 @@ namespace ETClient
 
     void MainWindowPresenter::onTextMessageReceived(const QString& message)
     {
-        QJsonDocument msg = QJsonDocument::fromJson(message.toLocal8Bit());
-        qDebug() << "Message of type " << msg["type"];
-        if (msg["type"] == "websocket.accept")
+        QJsonDocument response = QJsonDocument::fromJson(message.toLocal8Bit());
+        qDebug() << "Message of type " << response["type"];
+        if (response["type"] == "websocket.accept")
         {
-            this->handleWebsocketAcceptResponse(msg);
+            this->handleWebsocketAcceptResponse(response);
+        } else if (response["type"] == "websocket.close")
+        {
+            qDebug() << "Websocket close";
+            this->handleWebsocketCloseResponse(response);
         }
     }
 
     void MainWindowPresenter::destroy()
     {
-        delete this;
+        qDebug() << "Destroy method called";
+        this->mwForm->hideView();
+        this->deleteLater();
     }
+
 }

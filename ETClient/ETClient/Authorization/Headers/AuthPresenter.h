@@ -6,7 +6,7 @@
 #include <QSettings>
 #include "AuthForm.h"
 #include "AuthModel.h"
-#include "MainWindow/Headers/MainWindowPresenter.h"
+#include "MainWindowPresenter.h"
 
 namespace ETClient
 {
@@ -14,10 +14,11 @@ namespace ETClient
     {
         Q_OBJECT
     private:
-        QSettings* appSettings;
-        IAuthForm* authForm;
-        AuthModel* authModel;
-        MainWindowPresenter* mvp;
+        QSettings* appSettings = new QSettings(COMPANY_NAME, APPLICATION_TITLE);
+        IAuthForm* authForm = new AuthForm;
+        AuthModel* authModel = new AuthModel(this);
+        MainWindowPresenter* mvp = new MainWindowPresenter(this);
+
         void initUiComponents();
     public:
         explicit AuthPresenter(QObject* parent = nullptr);
@@ -29,7 +30,7 @@ namespace ETClient
         void onAuthorizationSuccessful();
         void onInvalidCredentials();
         void onUnhandledError();
-        void onLogout();
+        void onLogout(const QString& messaage="");
     };
 }
 

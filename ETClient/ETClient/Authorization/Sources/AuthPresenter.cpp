@@ -1,24 +1,21 @@
-#include "Authorization/Headers/AuthPresenter.h"
+#include "AuthPresenter.h"
 
 
 namespace ETClient
 {
     AuthPresenter::AuthPresenter(QObject* parent)
-        :QObject(parent),
-         appSettings(new QSettings(COMPANY_NAME, APPLICATION_TITLE)),
-         authForm(new AuthForm),
-         authModel(new AuthModel(this)),
-         mvp(new MainWindowPresenter(this))
+        :QObject(parent)
+//         appSettings(new QSettings(COMPANY_NAME, APPLICATION_TITLE)),
+//         authForm(new AuthForm),
+//         authModel(new AuthModel(this)),
+//         mvp(new MainWindowPresenter(this))
     {
         this->initUiComponents();
 
         // Check if user has already signed in.
         if (this->appSettings->contains("user"))
         {
-            this->mvp = new MainWindowPresenter(this);
-
             qDebug() << this->appSettings->value("user");
-            this->authForm->hideView();
             this->mvp->init(this->appSettings->value("user").toString());
         }
         else
@@ -53,16 +50,15 @@ namespace ETClient
                          this,
                          SLOT(onTextChanged()));
 
-        QObject* modelObj = dynamic_cast<QObject*>(this->authModel);
-        QObject::connect(modelObj,
+        QObject::connect(this->authModel,
                          SIGNAL(authorizationSuccessful()),
                          this,
                          SLOT(onAuthorizationSuccessful()));
-        QObject::connect(modelObj,
+        QObject::connect(this->authModel,
                          SIGNAL(invalidCredentials()),
                          this,
                          SLOT(onInvalidCredentials()));
-        QObject::connect(modelObj,
+        QObject::connect(this->authModel,
                          SIGNAL(unhandledError()),
                          this,
                          SLOT(onUnhandledError()));
@@ -71,7 +67,10 @@ namespace ETClient
     AuthPresenter::~AuthPresenter()
     {
         qDebug() << "Deleted AuthPresenter";
-        delete this->mvp;
+        if (this->mvp != nullptr)
+        {
+            delete this->mvp;
+        }
         delete this->appSettings;
         delete this->authForm;
         delete this->authModel;
@@ -121,13 +120,17 @@ namespace ETClient
         this->authForm->setAlertMessage("Couldn't authorize. Make sure you have internet connection, or retry later.");
     }
 
-    void AuthPresenter::onLogout()
+    void AuthPresenter::onLogout(const QString& message)
     {
-        qDebug() << "Logout(auth presenter slot)";
-        delete this->mvp;
+        qDebug() << "Logout(auth presenter slot) " << message;
+
+        this->mvp->deleteLater();
         this->mvp = nullptr;
+
         this->appSettings->remove("user");
+
         this->resetFormInfo();
+        this->authForm->setAlertMessage(message);
         this->authForm->showView();
     }
 }

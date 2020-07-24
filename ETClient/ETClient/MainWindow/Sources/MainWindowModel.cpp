@@ -1,11 +1,10 @@
-#include "MainWindow/Headers/MainWindowModel.h"
+#include "MainWindowModel.h"
 
 
 namespace ETClient
 {
     MainWindowModel::MainWindowModel(QObject* parent, QWindow* windowObj):
         QObject(parent),
-        socket(new WebsocketClient(this, true)),
         screenshotManager(new ScreenshotManager(&this->waitCond, this, windowObj))
     {
         connect(this->socket,
@@ -31,9 +30,9 @@ namespace ETClient
     {
         qDebug() << "Deleted MainWindowModel";
         this->stopDataCollection();
+
         delete this->socket;
         delete this->screenshotManager;
-//        delete this->usrInfo;
     }
 
     void MainWindowModel::startDataCollection()
@@ -62,11 +61,14 @@ namespace ETClient
 
     void MainWindowModel::onWebsocketConnected()
     {
+        this->websocketIsConnected = true;
         emit this->websocketConnected();
     }
 
     void MainWindowModel::onWebsocketDisconnect()
     {
+        qDebug() << "PAPAAAA";
+        this->websocketIsConnected = false;
         emit this->websocketDisconnected();
     }
 
@@ -83,5 +85,10 @@ namespace ETClient
     void MainWindowModel::disconnectClient()
     {
         this->socket->disconnectClient();
+    }
+
+    bool MainWindowModel::clientIsConnected() const
+    {
+        return this->websocketIsConnected;
     }
 }

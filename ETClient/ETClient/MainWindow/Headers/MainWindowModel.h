@@ -16,9 +16,10 @@ namespace ETClient
     {
         Q_OBJECT
     private:
-        WebsocketClient* socket;
+        WebsocketClient* socket = new WebsocketClient(this, true);
         ScreenshotManager* screenshotManager;
         QWaitCondition waitCond;
+        bool websocketIsConnected = false;
     private slots:
         void onScreenshotReady();
         void onWebsocketConnected();
@@ -31,6 +32,7 @@ namespace ETClient
         void stopDataCollection();
         void connectClient(const QString& token);
         void disconnectClient();
+        bool clientIsConnected()const;
     signals:
         void websocketConnected();
         void websocketDisconnected();

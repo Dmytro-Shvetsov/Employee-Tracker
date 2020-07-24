@@ -31,7 +31,7 @@ namespace ETClient
         virtual void setUserImage(const QPixmap& img) = 0;
         virtual void setLoadingState(bool value) = 0;
     public: // signals
-        virtual void logout() = 0;
+        virtual void logout(const QString& message = "") = 0;
         virtual void windowClosed(QCloseEvent* event) = 0;
     };
 
@@ -61,7 +61,7 @@ namespace ETClient
         void setUserImage(const QPixmap& img)override;
         void setLoadingState(bool value)override;
     signals:
-        void logout()override;
+        void logout(const QString& message="")override;
         void windowClosed(QCloseEvent* event)override;
     };
 }

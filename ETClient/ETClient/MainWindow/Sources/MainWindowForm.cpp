@@ -1,4 +1,4 @@
-#include "MainWindow/Headers/MainWindowForm.h"
+#include "MainWindowForm.h"
 
 namespace ETClient
 {
@@ -109,7 +109,6 @@ namespace ETClient
 
     void MainWindowForm::closeEvent(QCloseEvent* event)
     {
-        qDebug() << "EXIT AAAAAAA";
         emit this->windowClosed(event);
     }
 

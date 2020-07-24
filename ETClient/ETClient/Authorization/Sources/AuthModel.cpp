@@ -1,15 +1,12 @@
-#include "Authorization/Headers/AuthModel.h"
+#include "AuthModel.h"
 
 
 namespace ETClient
 {
 
     AuthModel::AuthModel(QObject* parent):
-        QObject(parent),
-        reqManager(new QNetworkAccessManager(this))
+        QObject(parent)
     {
-        this->host = new QUrl(AUTH_URL);
-
         connect(this->reqManager,
                 SIGNAL(finished(QNetworkReply*)),
                 this,

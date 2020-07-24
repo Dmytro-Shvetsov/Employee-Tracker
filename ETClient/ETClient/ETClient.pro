@@ -5,6 +5,21 @@ greaterThan(QT_MAJOR_VERSION, 4) : QT += widgets websockets concurrent
 TARGET = ETClient
 TEMPLATE = app
 
+INCLUDEPATH += Dependencies/include \
+               Authorization/Headers/ \
+               MainWindow/Headers/ \
+               Network
+
+BUILD_VERSION = x86
+BUILD_MODE = Debug
+
+LIBS += -L"Dependencies/lib/$${BUILD_VERSION}/" \
+        -L"Dependencies/lib/$${BUILD_VERSION}/$${BUILD_MODE}"
+
+DESTDIR = bin
+
+message($$LIBS)
+
 HEADERS += \
     Authorization/Headers/AuthForm.h \
     Authorization/Headers/AuthModel.h \
@@ -13,6 +28,9 @@ HEADERS += \
     MainWindow/Headers/MainWindowModel.h \
     MainWindow/Headers/MainWindowPresenter.h \
     MainWindow/Headers/ScreenshotManager.h \
+    MainWindow/Headers/ScreenshotManager.h \
+    Network/HttpStatsCollector.h \
+    Network/SSLStatsCollector.h \
     WebsocketClient.h \
     definitions.h
 
@@ -36,5 +54,7 @@ RESOURCES += \
 
 DISTFILES += \
     Resources/auth_lock.jpg
+
+
 
 

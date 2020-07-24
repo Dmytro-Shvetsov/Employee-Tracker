@@ -4,7 +4,6 @@ namespace ETClient
 {
     WebsocketClient::WebsocketClient(QObject* parent, bool debug):
         QObject(parent),
-        host(new QUrl(COMMUNICATION_HOST_URL)),
         debug(debug)
     {
         if (debug)
@@ -70,7 +69,7 @@ namespace ETClient
     {
         if (debug)
         {
-            qDebug() << "Disconnected from the server: " << this->host;
+            qDebug() << "Disconnected from the server: " << *this->host;
         }
         emit this->disconnected();
     }
@@ -83,6 +82,7 @@ namespace ETClient
 
     WebsocketClient::~WebsocketClient()
     {
+        qDebug() << "Deleted websocket client ";
         delete this->host;
     }
 

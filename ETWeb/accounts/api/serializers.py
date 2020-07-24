@@ -21,7 +21,7 @@ class WebsocketUserSerializer:
         return {
             'username': str(self.user_obj.username),
             'date_joined': str(self.user_obj.date_joined.date()),
-            'profile_image': self.encode_image_field(self.user_obj.userprofile.image)
+            'profile_image': self.encode_image_field(self.user_obj.profile.image)
         }
 
 

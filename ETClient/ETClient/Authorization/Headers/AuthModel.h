@@ -17,8 +17,8 @@ namespace ETClient
     {
         Q_OBJECT
     private:
-        QUrl* host;
-        QNetworkAccessManager* reqManager;
+        QUrl* host = new QUrl(AUTH_URL);
+        QNetworkAccessManager* reqManager = new QNetworkAccessManager(this);
         QString authToken;
 
         void setToken(const QString& value);
