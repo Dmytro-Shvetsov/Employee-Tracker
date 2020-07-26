@@ -12,5 +12,8 @@
 
 // Windows configuration
 #define WPCAP
+#define WIN32
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-//#define WIN32
+
+
+#define MAX_UKNOWN_HOSTS_RESOLVE 30

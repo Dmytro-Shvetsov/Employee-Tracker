@@ -92,7 +92,7 @@ namespace ETClient
         this->onLogout(response["error"].toString());
     }
 
-    void MainWindowPresenter::onWindowClosed(QCloseEvent* event)
+      void MainWindowPresenter::onWindowClosed(QCloseEvent* event)
     {
         this->mwModel->stopDataCollection();
         this->mwModel->disconnectClient();

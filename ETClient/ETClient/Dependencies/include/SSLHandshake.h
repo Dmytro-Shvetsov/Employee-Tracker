@@ -154,7 +154,7 @@ protected:
 		/** Extension length */
 		uint16_t extensionDataLength;
 		/** Extension data as raw (byte array) */
-		uint8_t	 extensionData[];
+                uint8_t	 extensionData[];
 	};
 
 	uint8_t* m_RawData;

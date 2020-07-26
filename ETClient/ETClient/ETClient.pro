@@ -8,17 +8,19 @@ TEMPLATE = app
 INCLUDEPATH += Dependencies/include \
                Authorization/Headers/ \
                MainWindow/Headers/ \
-               Network
+               Network/Headers
 
+DEPENDENCY_DIR = ../ETClient/Dependencies/
 BUILD_VERSION = x86
 BUILD_MODE = Debug
 
-LIBS += -L"Dependencies/lib/$${BUILD_VERSION}/" \
-        -L"Dependencies/lib/$${BUILD_VERSION}/$${BUILD_MODE}"
 
-DESTDIR = bin
+LIBS += -lWs2_32 -lIPHLPAPI
+LIBS += -L"$${DEPENDENCY_DIR}/lib/$${BUILD_VERSION}/" -lwpcap -lPacket -lpthreadVC2 \
+        -L"$${DEPENDENCY_DIR}/lib/$${BUILD_VERSION}/$${BUILD_MODE}" -lCommon++ -lPacket++ -lPcap++
 
-message($$LIBS)
+#DESTDIR = bin
+
 
 HEADERS += \
     Authorization/Headers/AuthForm.h \
@@ -27,10 +29,12 @@ HEADERS += \
     MainWindow/Headers/MainWindowForm.h \
     MainWindow/Headers/MainWindowModel.h \
     MainWindow/Headers/MainWindowPresenter.h \
+    MainWindow/Headers/NetworkManager.h \
     MainWindow/Headers/ScreenshotManager.h \
     MainWindow/Headers/ScreenshotManager.h \
-    Network/HttpStatsCollector.h \
-    Network/SSLStatsCollector.h \
+    Network/Headers/BaseStatsCollector.h \
+    Network/Headers/HttpStatsCollector.h \
+    Network/Headers/SSLStatsCollector.h \
     WebsocketClient.h \
     definitions.h
 
@@ -42,7 +46,11 @@ SOURCES += \
     MainWindow/Sources/MainWindowForm.cpp \
     MainWindow/Sources/MainWindowModel.cpp \
     MainWindow/Sources/MainWindowPresenter.cpp \
+    MainWindow/Sources/NetworkManager.cpp \
     MainWindow/Sources/ScreenshotManager.cpp \
+    Network/Sources/BaseStatsCollector.cpp \
+    Network/Sources/HttpStatsCollector.cpp \
+    Network/Sources/SSLStatsCollector.cpp \
     WebsocketClient.cpp
 
 FORMS += \
