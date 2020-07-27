@@ -84,6 +84,7 @@ namespace ETClient
     {
         qDebug() << "Deleted websocket client ";
         delete this->host;
+        this->ws.deleteLater();
     }
 
 }

@@ -15,9 +15,9 @@ namespace ETClient
 
     AuthModel::~AuthModel()
     {
-        qDebug() << "Deleted AuthModel";
         delete this->host;
-        delete this->reqManager;
+        this->reqManager->deleteLater();
+        qDebug() << "Deleted AuthModel";
     }
 
     void AuthModel::authorize(QString username, QString password)

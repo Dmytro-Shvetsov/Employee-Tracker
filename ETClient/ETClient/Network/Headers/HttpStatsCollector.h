@@ -12,7 +12,6 @@ namespace pcpp
     struct HttpMessageStats
     {
         size_t numOfMessages; // total number of HTTP messages of that type (request/response)
-        Rate messageRate; // rate of HTTP messages of that type
         size_t totalMessageHeaderSize; // total size (in bytes) of data in headers
         double averageMessageHeaderSize; // average header size
 
@@ -20,10 +19,9 @@ namespace pcpp
 
         virtual void clear()
         {
-            numOfMessages = 0;
-            messageRate.clear();
-            totalMessageHeaderSize = 0;
-            averageMessageHeaderSize = 0;
+            this->numOfMessages = 0;
+            this->totalMessageHeaderSize = 0;
+            this->averageMessageHeaderSize = 0;
         }
     };
 
@@ -38,8 +36,8 @@ namespace pcpp
         void clear()
         {
             HttpMessageStats::clear();
-            methodCount.clear();
-            hostnameCount.clear();
+            this->methodCount.clear();
+            this->hostnameCount.clear();
         }
     };
 
@@ -57,11 +55,11 @@ namespace pcpp
         void clear()
         {
             HttpMessageStats::clear();
-            numOfMessagesWithContentLength = 0;
-            totalConentLengthSize = 0;
-            averageContentLengthSize = 0;
-            statusCodeCount.clear();
-            contentTypeCount.clear();
+            this->contentTypeCount.clear();
+            this->statusCodeCount.clear();
+            this->numOfMessagesWithContentLength = 0;
+            this->totalConentLengthSize = 0;
+            this->averageContentLengthSize = 0;
         }
     };
 
@@ -85,20 +83,18 @@ namespace pcpp
 
             void clear()
             {
-                numOfOpenTransactions = 0;
-                lastSeenMessage = pcpp::UnknownProtocol;
-                httpPipeliningFlow = false;
+                this->numOfOpenTransactions = 0;
+                this->lastSeenMessage = pcpp::UnknownProtocol;
+                this->httpPipeliningFlow = false;
             }
         };
 
-        HttpRequestStats m_RequestStats;
-        HttpRequestStats m_PrevRequestStats;
-        HttpResponseStats m_ResponseStats;
-        HttpResponseStats m_PrevResponseStats;
+        HttpRequestStats requestStats;
+        HttpResponseStats responseStats;
 
-        std::map<uint32_t, HttpFlowData> m_FlowTable;
+        std::map<uint32_t, HttpFlowData> flowTable;
 
-        uint16_t m_DstPort;
+        uint16_t dstPort;
 
         /**
          * Collect stats relevant for every HTTP packet (request, response or any other)
@@ -127,7 +123,6 @@ namespace pcpp
         HttpStatsCollector(uint16_t dstPort);
         virtual ~HttpStatsCollector();
         bool tryCollectStats(pcpp::Packet* httpPacket)override;
-        void calcRates()override;
         void clear()override;
 
         /**

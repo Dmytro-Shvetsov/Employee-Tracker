@@ -12,26 +12,6 @@
 namespace pcpp
 {
     /**
-     * An auxiliary struct for encapsulating rate stats
-     */
-    struct Rate;
-
-    #ifndef s_Rate
-    #define s_Rate
-    struct Rate
-    {
-        double currentRate; // periodic rate
-        double totalRate;	 // overall rate
-
-        void clear()
-        {
-            currentRate = 0;
-            totalRate = 0;
-        }
-    };
-    #endif
-
-    /**
      * The abstract stats collector class. Should be called for every packet arriving and also periodically to calculate rates
      */
     class BaseStatsCollector
@@ -47,15 +27,8 @@ namespace pcpp
         virtual bool tryCollectStats(pcpp::Packet* parsedPacket) = 0;
 
         /**
-         * Calculate rates. Should be called periodically
-         */
-        virtual void calcRates() = 0;
-
-        /**
          * Clear all stats collected so far
          */
         virtual void clear() = 0;
-
-        double getCurTime(void);
     };
 }

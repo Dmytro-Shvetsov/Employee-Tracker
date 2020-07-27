@@ -15,15 +15,14 @@ namespace pcpp
     {
     }
 
-    uint32_t SSLStatsCollector::collectSSLTrafficStats(Packet *sslpPacket)
+    uint32_t SSLStatsCollector::collectSSLTrafficStats(Packet* sslpPacket)
     {
-    //		pcpp::TcpLayer* tcpLayer = sslpPacket->getLayerOfType<pcpp::TcpLayer>();
         // calculate a hash key for this flow to be used in the flow table
         uint32_t hashVal = hash5Tuple(sslpPacket);
         // if flow is a new flow (meaning it's not already in the flow table)
-        if (m_FlowTable.find(hashVal) == m_FlowTable.end())
+        if (this->flowTable.find(hashVal) == this->flowTable.end())
         {
-            m_FlowTable[hashVal].clear();
+            this->flowTable[hashVal].clear();
         }
         return hashVal;
     }
@@ -39,10 +38,9 @@ namespace pcpp
             if (recType == pcpp::SSL_ALERT)
             {
                 // if it's the first alert seen in this flow
-                if (m_FlowTable[flowKey].seenAlertPacket == false)
+                if (this->flowTable[flowKey].seenAlertPacket == false)
                 {
-                    //m_GeneralStats.numOfFlowsWithAlerts++;
-                    m_FlowTable[flowKey].seenAlertPacket = true;
+                    this->flowTable[flowKey].seenAlertPacket = true;
                 }
             }
 
@@ -50,10 +48,9 @@ namespace pcpp
             else if (recType == pcpp::SSL_APPLICATION_DATA)
             {
                 // if it's the first app data message seen on this flow it means handshake was completed
-                if (m_FlowTable[flowKey].seenAppDataPacket == false)
+                if (this->flowTable[flowKey].seenAppDataPacket == false)
                 {
-                    //m_GeneralStats.numOfHandshakeCompleteFlows++;
-                    m_FlowTable[flowKey].seenAppDataPacket = true;
+                    this->flowTable[flowKey].seenAppDataPacket = true;
                 }
             }
 
@@ -70,7 +67,7 @@ namespace pcpp
                 // collect client-hello stats
                 if (clientHelloMessage != NULL)
                 {
-                    collecClientHelloStats(clientHelloMessage);
+                    this->collecClientHelloStats(clientHelloMessage);
                 }
             }
             sslLayer = sslPacket->getNextLayerOfType<pcpp::SSLLayer>(sslLayer);
@@ -79,11 +76,11 @@ namespace pcpp
 
     void SSLStatsCollector::collecClientHelloStats(SSLClientHelloMessage *clientHelloMessage)
     {
-        m_ClientHelloStats.numOfMessages++;
+        this->clientHelloStats.numOfMessages++;
 
         pcpp::SSLServerNameIndicationExtension* sniExt = clientHelloMessage->getExtensionOfType<pcpp::SSLServerNameIndicationExtension>();
         if (sniExt != NULL)
-            m_ClientHelloStats.serverNameCount[sniExt->getHostName()]++;
+            this->clientHelloStats.serverNameCount[sniExt->getHostName()]++;
     }
 
     bool SSLStatsCollector::tryCollectStats(Packet* parsedPacket)
@@ -93,68 +90,29 @@ namespace pcpp
             return false;
 
         // collect general SSL traffic stats on this packet
-        uint32_t hashVal = collectSSLTrafficStats(parsedPacket);
+        uint32_t hashVal = this->collectSSLTrafficStats(parsedPacket);
 
         // if packet contains one or more SSL messages, collect stats on them
         if (parsedPacket->isPacketOfType(pcpp::SSL))
         {
-            collectSSLStats(parsedPacket, hashVal);
+            this->collectSSLStats(parsedPacket, hashVal);
         }
         return true;
     }
 
-    void SSLStatsCollector::calcRates()
-    {
-        // getting current machine time
-        double curTime = getCurTime();
-
-        // getting time from last rate calculation until now
-        double diffSec = curTime - m_LastCalcRateTime;
-
-        // calculating current rates which are the changes from last rate calculation until now divided by the time passed from
-        // last rate calculation until now
-        if (diffSec != 0)
-        {
-            m_ClientHelloStats.messageRate.currentRate = (m_ClientHelloStats.numOfMessages - m_PrevClientHelloStats.numOfMessages) / diffSec;
-            m_ServerHelloStats.messageRate.currentRate = (m_ServerHelloStats.numOfMessages - m_PrevServerHelloStats.numOfMessages) / diffSec;
-        }
-
-        // getting the time from the beginning of stats collection until now
-        double diffSecTotal = curTime - m_StartTime;
-
-        // calculating total rate which is the change from beginning of stats collection until now divided by time passed from
-        // beginning of stats collection until now
-        if (diffSecTotal != 0)
-        {
-            m_ClientHelloStats.messageRate.totalRate = m_ClientHelloStats.numOfMessages / diffSecTotal;
-            m_ServerHelloStats.messageRate.totalRate = m_ServerHelloStats.numOfMessages / diffSecTotal;
-        }
-
-        // saving current numbers for using them in the next rate calculation
-        m_PrevClientHelloStats = m_ClientHelloStats;
-        m_PrevServerHelloStats = m_ServerHelloStats;
-
-        // saving the current time for using in the next rate calculation
-        m_LastCalcRateTime = curTime;
-    }
-
     void SSLStatsCollector::clear()
     {
-        m_ClientHelloStats.clear();
-        m_PrevClientHelloStats.clear();
-        m_ServerHelloStats.clear();
-        m_PrevServerHelloStats.clear();
-        m_LastCalcRateTime = getCurTime();
-        m_StartTime = m_LastCalcRateTime;
+        this->clientHelloStats.clear();
+        this->serverHelloStats.clear();
     }
 
     ClientHelloStats &SSLStatsCollector::getClientHelloStats()
     {
-        return m_ClientHelloStats;
+        return this->clientHelloStats;
     }
 
     ServerHelloStats &SSLStatsCollector::getServerHelloStats()
     {
-        return m_ServerHelloStats;
+        return this->serverHelloStats;
     }
 }

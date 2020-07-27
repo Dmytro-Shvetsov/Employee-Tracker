@@ -35,14 +35,13 @@ HEADERS += \
     Network/Headers/BaseStatsCollector.h \
     Network/Headers/HttpStatsCollector.h \
     Network/Headers/SSLStatsCollector.h \
-    WebsocketClient.h \
+    Network/Headers/WebsocketClient.h \
     definitions.h
 
 SOURCES += \
     Authorization/Sources/AuthForm.cpp \
     Authorization/Sources/AuthModel.cpp \
     Authorization/Sources/AuthPresenter.cpp \
-    Main.cpp \
     MainWindow/Sources/MainWindowForm.cpp \
     MainWindow/Sources/MainWindowModel.cpp \
     MainWindow/Sources/MainWindowPresenter.cpp \
@@ -51,7 +50,8 @@ SOURCES += \
     Network/Sources/BaseStatsCollector.cpp \
     Network/Sources/HttpStatsCollector.cpp \
     Network/Sources/SSLStatsCollector.cpp \
-    WebsocketClient.cpp
+    Network/Sources/WebsocketClient.cpp \
+    Main.cpp \
 
 FORMS += \
     Authorization/AuthForm.ui \
@@ -62,7 +62,3 @@ RESOURCES += \
 
 DISTFILES += \
     Resources/auth_lock.jpg
-
-
-
-

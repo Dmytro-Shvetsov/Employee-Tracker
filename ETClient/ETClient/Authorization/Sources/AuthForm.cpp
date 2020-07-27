@@ -10,8 +10,8 @@ namespace ETClient
     }
     AuthForm::~AuthForm()
     {
-        qDebug() << "Deleted AuthForm";
         delete this->ui;
+        qDebug() << "Deleted AuthForm";
     }
 
     void AuthForm::initUiComponents()

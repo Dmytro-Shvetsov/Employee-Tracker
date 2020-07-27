@@ -12,7 +12,6 @@ namespace ETClient
 
     MainWindowForm::~MainWindowForm()
     {
-        qDebug() << "Deleted MainWindowForm";
         if (this->loadingView != nullptr)
         {
             delete this->loadingView;
@@ -20,6 +19,7 @@ namespace ETClient
 
         delete this->loadingMovie;
         delete this->ui;
+        qDebug() << "Deleted MainWindowForm";
     }
 
     void MainWindowForm::initUiComponents()

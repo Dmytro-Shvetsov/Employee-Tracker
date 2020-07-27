@@ -20,7 +20,10 @@ namespace ETClient
                 this,
                 SLOT(onTextMessageReceived(const QString&)));
 
-        connect(this->screenshotManager,
+
+        this->networkManager = new NetworkManager(&this->waitCond, this);
+
+        connect(screenshotManager,
                 SIGNAL(screenshotReady()),
                 this,
                 SLOT(onScreenshotReady()));
@@ -28,24 +31,40 @@ namespace ETClient
 
     MainWindowModel::~MainWindowModel()
     {
-        qDebug() << "Deleted MainWindowModel";
         this->stopDataCollection();
-
         delete this->socket;
         delete this->screenshotManager;
+        delete this->networkManager;
+        qDebug() << "Deleted MainWindowModel";
     }
 
     void MainWindowModel::startDataCollection()
     {
         this->screenshotManager->setRunning(true);
+        this->networkManager->setupDevice("192.168.0.104"); // for now it's explicit
+        this->networkManager->setRunning(true);
+
         this->waitCond.wakeAll();
-        QtConcurrent::run(this->screenshotManager, &ScreenshotManager::run);
+        if (this->workerStates.size() == 0)
+        {
+            QFuture<void> smFutureObj = QtConcurrent::run(this->screenshotManager, &ScreenshotManager::run);
+            this->workerStates.append(smFutureObj);
+
+            QFuture<void> nmFutureObj = QtConcurrent::run(this->networkManager, &NetworkManager::run);
+            this->workerStates.append(nmFutureObj);
+        }
     }
 
     void MainWindowModel::stopDataCollection()
     {
         this->screenshotManager->setRunning(false);
+        this->networkManager->setRunning(false);
         this->waitCond.wakeAll();
+
+        for(auto& item: this->workerStates)
+        {
+            item.waitForFinished();
+        }
         qDebug() << "Finished data collection work, good to go";
     }
 
@@ -67,7 +86,6 @@ namespace ETClient
 
     void MainWindowModel::onWebsocketDisconnect()
     {
-        qDebug() << "PAPAAAA";
         this->websocketIsConnected = false;
         emit this->websocketDisconnected();
     }

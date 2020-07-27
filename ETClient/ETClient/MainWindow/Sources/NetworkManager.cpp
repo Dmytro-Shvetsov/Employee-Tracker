@@ -2,101 +2,109 @@
 
 namespace ETClient
 {
-    NetworkManager::NetworkManager(std::string interfaceNameOrIP)
+    NetworkManager::NetworkManager(QWaitCondition* waitCond, QObject* parent):
+        QObject(parent),
+        waitCond(waitCond)
     {
-    //        std::string interfaceNameOrIP = "192.168.0.106";
-    //        std::string port = "80";
-        // extract pcap live device by interface name or IP address
+        this->listInterfaces();
+    }
 
-        IPv4Address interfaceIP(interfaceNameOrIP);
-        if (interfaceIP.isValid())
+    NetworkManager::~NetworkManager()
+    {
+        // waitCond should be deleted in parent class
+        this->waitCond = nullptr;
+        for(GeneralFilter* item: this->portFilterRules)
         {
-            this->dev = PcapLiveDeviceList::getInstance().getPcapLiveDeviceByIp(interfaceIP);
-            if (this->dev == NULL)
-            {
-                qDebug() << "Couldn't find interface by provided IP";
-            }
+            delete item;
         }
-        else
+        delete this->orFilter;
+        qDebug() << "Deleted network manager";
+    }
+
+    void NetworkManager::setupDevice(const std::string& interfaceNameOrIP)
+    {
+        if (this->dev == nullptr)
         {
-            this->dev = PcapLiveDeviceList::getInstance().getPcapLiveDeviceByName(interfaceNameOrIP);
-            if (this->dev == NULL)
-            {
-                qDebug() << "Couldn't find interface by provided name";
-            }
-        }
+           // extract pcap live device by interface name or IP address
+           IPv4Address interfaceIP(interfaceNameOrIP);
+           if (interfaceIP.isValid())
+           {
+               this->dev = PcapLiveDeviceList::getInstance().getPcapLiveDeviceByIp(interfaceIP);
+               if (this->dev == nullptr)
+               {
+                   qDebug() << "Couldn't find interface by provided IP";
+               }
+           }
+           else
+           {
+               this->dev = PcapLiveDeviceList::getInstance().getPcapLiveDeviceByName(interfaceNameOrIP);
+               if (this->dev == nullptr)
+               {
+                   qDebug() << "Couldn't find interface by provided name";
+               }
+           }
+
+           std::transform(this->allowedPorts.begin(),
+                          this->allowedPorts.end(),
+                          std::back_inserter(this->portFilterRules), this->portToPortFilter);
+
+           this->orFilter = new OrFilter(this->portFilterRules);
+
+           //set the filter for the device
+           if (!this->dev->setFilter(*this->orFilter))
+           {
+                std::string filterAsString;
+                this->orFilter->parseToString(filterAsString);
+                qDebug("Couldn't set the filter '%s' for the device", filterAsString.c_str());
+           }
+       }
+    }
+
+    void NetworkManager::setRunning(bool value)
+    {
+        this->running = value;
     }
 
     void NetworkManager::run()
     {
         if (!this->dev->open())
         {
-            EXIT_WITH_ERROR("Could not open the device");
+            qDebug("Could not open the device");
             throw std::exception("Network device was not initialized properly.");
         }
 
-        std::vector<GeneralFilter*> portFilterVec;
-        std::transform(this->sslPorts.begin(),
-                       this->sslPorts.end(),
-                       std::back_inserter(portFilterVec), portToPortFilter);
-
-        OrFilter orFilter(portFilterVec);
-        std::string f;
-        orFilter.parseToString(f);
-        std::cout << f;
-         //set the filter for the device
-        if (!dev->setFilter(orFilter))
-        {
-            std::string filterAsString;
-            orFilter.parseToString(filterAsString);
-            EXIT_WITH_ERROR("Couldn't set the filter '%s' for the device", filterAsString.c_str());
-        }
-
-        // start capturing packets and collecting stats
-        PacketArrivedData data;
-        data.httpStatsCollector = new HttpStatsCollector(80);
-        data.sslStatsCollector = new SSLStatsCollector;
+        qDebug() << "RUN ON THREAD " << QThread::currentThread();
 
         // start capturing and analyzing traffic
-        dev->startCapture(this->packetArrive, &data);
-
-
-        for(int i = 0; i < 30; i++)
+        this->dev->startCapture(this->packetArrive, &data);
+        while (this->running)
         {
-            PCAP_SLEEP(DEFAULT_CALC_RATES_PERIOD_SEC);
-            data.calcRates();
-        }
-        // stop capturing and close the live device
-        dev->stopCapture();
-        dev->close();
+            this->mutex.lock();
 
-        // calculate final rates
-        data.calcRates();
-        system("cls");
+            this->waitCond->wait(&this->mutex, 5);
+
+            this->mutex.unlock();
+        }
+
+        // stop capturing and close the live device
+        this->dev->stopCapture();
+        this->dev->close();
+
         qDebug("\n\nSTATS SUMMARY\n");
         qDebug("=============\n");
-        printStatsSummary(*data.httpStatsCollector);
-        printStatsSummary(*data.sslStatsCollector);
+        this->printStatsSummary(*this->data.httpStatsCollector);
+        this->printStatsSummary(*this->data.sslStatsCollector);
+        this->printUnknownHostNames(this->data.unknownHostCount);
 
-        size_t nUnknownHosts = data.unknownHostCount.size();
-        qDebug("Unknown host size: %d", nUnknownHosts);
+        QThread::currentThread()->exit();
+    }
 
-
-        std::vector<std::pair<std::string, int>> map2vec(data.unknownHostCount.begin(), data.unknownHostCount.end());
-        std::sort(map2vec.begin(), map2vec.end(), &hostnameComparer);
-
-        std::vector<std::pair<std::string, int>>::iterator itBegin, itEnd;
-        itBegin = itEnd = map2vec.begin();
-
-        itEnd += MAX_UKNOWN_HOSTS_RESOLVE > nUnknownHosts ? nUnknownHosts : MAX_UKNOWN_HOSTS_RESOLVE;
-        std::cout << "################ Unknown host names: ###################" << std::endl;
-        for (; itBegin != itEnd; itBegin++)
+    void NetworkManager::listInterfaces()
+    {
+        printf("\nNetwork interfaces:\n");
+        for (std::vector<PcapLiveDevice*>::const_iterator iter = devList.begin(); iter != devList.end(); iter++)
         {
-            auto pair = *itBegin;
-            const char* resolvedIP = PacketArrivedData::resolveIPv4(pair.first.c_str());
-            qDebug("%s -> %d",
-                   (resolvedIP == nullptr ? pair.first.c_str() : resolvedIP),
-                   pair.second);
+            qDebug("    -> Name: '%s'   IP address: %s\n", (*iter)->getName(), (*iter)->getIPv4Address().toString().c_str());
         }
     }
 
@@ -160,7 +168,6 @@ namespace ETClient
             default:
                 break;
             }
-
         }
     }
 
@@ -198,7 +205,7 @@ namespace ETClient
         // sort the hostname count map so the most popular hostnames will be first
         // since it's not possible to sort a std::map you must copy it to a std::vector and sort it then
         std::vector<std::pair<std::string, int> > map2vec(reqStatscollector.hostnameCount.begin(), reqStatscollector.hostnameCount.end());
-        std::sort(map2vec.begin(), map2vec.end(), &this->hostnameComparer);
+        std::sort(map2vec.begin(), map2vec.end(), &NetworkManager::hostnameComparer);
 
         // go over all items (hostname + count) in the sorted vector and print them
         for (std::vector<std::pair<std::string, int> >::iterator iter = map2vec.begin();
@@ -238,6 +245,32 @@ namespace ETClient
         }
     }
 
+    void NetworkManager::printUnknownHostNames(const std::map<std::string, size_t>& hostCount)
+    {
+        size_t nUnknownHosts = hostCount.size();
+        qDebug("Unknown host size: %d", nUnknownHosts);
+
+
+        std::vector<std::pair<std::string, int>> map2vec(hostCount.begin(), hostCount.end());
+        std::sort(map2vec.begin(), map2vec.end(), &hostnameComparer);
+
+        std::vector<std::pair<std::string, int>>::iterator itBegin, itEnd;
+        itBegin = itEnd = map2vec.begin();
+
+        // pick top MAX_UKNOWN_HOSTS_RESOLVE most frequent hosts and try to resolve their names
+        itEnd += MAX_UKNOWN_HOSTS_RESOLVE > nUnknownHosts ? nUnknownHosts : MAX_UKNOWN_HOSTS_RESOLVE;
+
+        PRINT_STAT_HEADLINE("################ Unknown host names: ###################");
+        for (; itBegin != itEnd; itBegin++)
+        {
+            auto pair = *itBegin;
+            std::string resolvedIP = PacketArrivedData::resolveIPv4(pair.first.c_str());
+            qDebug("%s -> %d",
+                   (resolvedIP == "" ? pair.first.c_str() : resolvedIP.c_str()),
+                   pair.second);
+        }
+    }
+
     void NetworkManager::printVersions(std::map<SSLVersion, int> &versionMap, std::string headline)
     {
         // create the table
@@ -263,35 +296,27 @@ namespace ETClient
     void NetworkManager::printStatsSummary(HttpStatsCollector &collector)
     {
         PRINT_STAT_HEADLINE("HTTP request stats");
-        std::cout << "Number of HTTP requests " << collector.getRequestStats().numOfMessages << std::endl;
-        std::cout << "Rate of HTTP requests(Requests/sec) " << collector.getRequestStats().messageRate.totalRate;
-        std::cout << "Total data in headers(Bytes) " << collector.getRequestStats().totalMessageHeaderSize;
-        std::cout << "Average header size(Bytes) " << collector.getRequestStats().averageMessageHeaderSize;
+        qDebug("Number of HTTP requests %d",                collector.getRequestStats().numOfMessages);
+        qDebug("Total data in headers(Bytes) %d",           collector.getRequestStats().totalMessageHeaderSize);
+        qDebug("Average header size(Bytes) %d",             collector.getRequestStats().averageMessageHeaderSize);
 
         PRINT_STAT_HEADLINE("HTTP response stats");
-        std::cout << "Number of HTTP responses" << collector.getResponseStats().numOfMessages << std::endl;
-        std::cout << "Rate of HTTP responses (Requests/sec)" << collector.getResponseStats().messageRate.totalRate << std::endl;
-        std::cout << "Total data in headers(Bytes) " << collector.getResponseStats().totalMessageHeaderSize << std::endl;
-        std::cout << "Total body size (may be compressed)(Bytes) " << collector.getResponseStats().totalConentLengthSize << std::endl;
-        std::cout << "Average body size(Bytes) " << collector.getResponseStats().averageContentLengthSize << std::endl;
+        qDebug("Number of HTTP responses %d",                   collector.getResponseStats().numOfMessages);
+        qDebug("Total data in headers(Bytes) %d",               collector.getResponseStats().totalMessageHeaderSize);
+        qDebug("Total body size (may be compressed)(Bytes) %d", collector.getResponseStats().totalConentLengthSize);
+        qDebug("Average body size(Bytes) %d",                   collector.getResponseStats().averageContentLengthSize);
 
         PRINT_STAT_HEADLINE("HTTP request methods");
         printMethods(collector.getRequestStats());
 
         PRINT_STAT_HEADLINE("Hostnames count");
         printHostnames(collector.getRequestStats());
-
-        /*PRINT_STAT_HEADLINE("Status code count");
-        printStatusCodes(collector.getResponseStats());
-
-        PRINT_STAT_HEADLINE("Content-type count");
-        printContentTypes(collector.getResponseStats());*/
     }
 
     void NetworkManager::printStatsSummary(SSLStatsCollector &collector)
     {
-        std::cout << "Client-hello message" << collector.getClientHelloStats().numOfMessages << std::endl;
-        std::cout << "Server-hello message" << collector.getServerHelloStats().numOfMessages << std::endl;
+        qDebug("Number of client-hello messages %d", collector.getClientHelloStats().numOfMessages);
+        qDebug("Number of server-hello messages %d", collector.getServerHelloStats().numOfMessages);
 
         PRINT_STAT_HEADLINE("Server-name count");
         printServerNames(collector.getClientHelloStats());
@@ -306,20 +331,6 @@ namespace ETClient
 
         // give the packet to the collectors
         data->tryCollectStats(&parsedPacket);
-    }
-
-    void NetworkManager::printCurrentRates(HttpStatsCollector &collector)
-    {
-        PRINT_STAT_HEADLINE("Current HTTP rates");
-        std::cout << "Rate of HTTP requests(Requests/sec) "  << collector.getRequestStats().messageRate.currentRate << std::endl;
-        std::cout << "Rate of HTTP responses(Requests/sec) " << collector.getResponseStats().messageRate.currentRate << std::endl;
-    }
-
-    void NetworkManager::printCurrentRates(SSLStatsCollector &collector)
-    {
-        PRINT_STAT_HEADLINE("Current SSL rates");
-        std::cout << "Rate of SSL requests(Requests/sec) " << collector.getClientHelloStats().messageRate.currentRate << std::endl;
-        std::cout << "Rate of SSL responses(Requests/sec) " << collector.getServerHelloStats().messageRate.currentRate << std::endl;
     }
 }
 

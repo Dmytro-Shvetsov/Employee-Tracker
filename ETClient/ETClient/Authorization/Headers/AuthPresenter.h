@@ -22,8 +22,8 @@ namespace ETClient
         void initUiComponents();
     public:
         explicit AuthPresenter(QObject* parent = nullptr);
-        void resetFormInfo();
         ~AuthPresenter();
+        void resetFormInfo();
     private slots:
         void onFormSubmit();
         void onTextChanged();

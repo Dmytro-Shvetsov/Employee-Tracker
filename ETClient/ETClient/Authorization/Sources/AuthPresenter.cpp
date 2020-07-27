@@ -66,14 +66,14 @@ namespace ETClient
 
     AuthPresenter::~AuthPresenter()
     {
-        qDebug() << "Deleted AuthPresenter";
         if (this->mvp != nullptr)
         {
             delete this->mvp;
         }
         delete this->appSettings;
         delete this->authForm;
-        delete this->authModel;
+        this->authModel->deleteLater();
+        qDebug() << "Deleted AuthPresenter";
     }
 
     void AuthPresenter::onFormSubmit()

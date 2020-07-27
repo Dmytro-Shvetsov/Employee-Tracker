@@ -17,8 +17,9 @@ namespace ETClient
 
     ScreenshotManager::~ScreenshotManager()
     {
+        this->windowObj = nullptr;
+        this->waitCond = nullptr;
         qDebug() << "Deleted screenshot manager";
-        delete this->windowObj;
     }
 
     void ScreenshotManager::newScreenshot()
@@ -63,6 +64,12 @@ namespace ETClient
     void ScreenshotManager::run()
     {
         qDebug() << "Starting execution";
+
+        // initial pause not to make screenshot at once
+        this->mutex.lock();
+        this->waitCond->wait(&this->mutex, this->screenshotTimedeltaSeconds * 1000);
+        this->mutex.unlock();
+
         while(this->running)
         {
             this->mutex.lock();

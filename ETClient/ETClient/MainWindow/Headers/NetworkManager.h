@@ -1,3 +1,5 @@
+#pragma once
+
 #include "definitions.h"
 #include <iostream>
 #include <stdlib.h>
@@ -16,17 +18,15 @@
 #include <NetworkUtils.h>
 #include <PcapPlusPlusVersion.h>
 
+#include <QThread>
+#include <QWaitCondition>
+#include <QMutex>
 #include "HttpStatsCollector.h"
 #include "SSLStatsCollector.h"
 
 
-#define EXIT_WITH_ERROR(reason, ...) do { \
-    printf("\nError: " reason "\n\n", ## __VA_ARGS__); \
-    system("pause"); \
-    } while(0)
-
 #define PRINT_STAT_HEADLINE(description) \
-        printf("\n" description "\n--------------------\n\n")
+        qDebug("\n %s \n--------------------\n", description)
 
 #define DEFAULT_CALC_RATES_PERIOD_SEC 2
 
@@ -35,14 +35,10 @@ using namespace pcpp;
 
 namespace ETClient
 {
-    class NetworkManager
+    class NetworkManager : public QObject
     {
+        Q_OBJECT
     private:
-        pcpp::PcapLiveDevice* dev = NULL;
-        // set HTTP and SSL/TLS ports filter on the live device to capture only HTTP and SSL/TLS packets
-        // currently SSLLayer support only listed ones.
-        std::vector<uint16_t> sslPorts = { 0, 80, 261, 443, 448, 465, 563, 614, 636, 989, 990, 992, 993, 994, 995 };
-
         /**
          * The struct that is passed as a cookie into packetArrive() callback when capturing packets.
          */
@@ -53,16 +49,15 @@ namespace ETClient
             std::string interfaceInUseIP;
             std::map<std::string, size_t> unknownHostCount; // a map for counting the hostnames seen in traffic
 
+            PacketArrivedData()
+            {
+                this->httpStatsCollector = new HttpStatsCollector(80);
+                this->sslStatsCollector = new SSLStatsCollector;
+            }
             ~PacketArrivedData()
             {
                 delete this->sslStatsCollector;
                 delete this->httpStatsCollector;
-            }
-
-            void calcRates()
-            {
-                this->sslStatsCollector->calcRates();
-                this->httpStatsCollector->calcRates();
             }
 
             void tryCollectStats(Packet* parsedPacket)
@@ -84,13 +79,13 @@ namespace ETClient
                         this->unknownHostCount[dstIP]++;
                     }
 
-                    qDebug("Source ip is '%s'; Dest ip is '%s'", srcIP.c_str(), dstIP.c_str());
+//                    qDebug("Source ip is '%s'; Dest ip is '%s'", srcIP.c_str(), dstIP.c_str());
                 }
             }
             /**
              * Function to get host name by its IPv4 address
              */
-            static const char* resolveIPv4(const char* ipStr)
+            static const std::string resolveIPv4(const char* ipStr)
             {
                 struct in_addr ip;
                 struct hostent* hp;
@@ -98,7 +93,7 @@ namespace ETClient
                 if (!inet_pton(AF_INET, ipStr, &ip))
                 {
                     // can't parse IP address
-                    return nullptr;
+                    return "";
                 }
 
                 if ((hp = gethostbyaddr(
@@ -106,20 +101,31 @@ namespace ETClient
                     sizeof ip, AF_INET)) == NULL)
                 {
                     // no name associated with
-                    return nullptr;
+                    return "";
                 }
+//                std::string name = hp->h_name;
+//                delete hp;
                 return hp->h_name;
             }
         };
 
-        ///**
-        // * Print the method count table
-        // */
-        void printMethods(HttpRequestStats& reqStatscollector);
+        QMutex mutex;
+        QWaitCondition* waitCond;
+        bool running = false;
 
+        const std::vector<PcapLiveDevice*>& devList = PcapLiveDeviceList::getInstance().getPcapLiveDevicesList();
+        pcpp::PcapLiveDevice* dev = nullptr;
+        // set HTTP and SSL/TLS ports filter on the live device to capture only HTTP and SSL/TLS packets
+        // currently SSLLayer support only listed ones.
+        std::vector<uint16_t> allowedPorts = { 0, 80, 261, 443, 448, 465, 563, 614, 636, 989, 990, 992, 993, 994, 995 };
+        std::vector<GeneralFilter*> portFilterRules;
+        OrFilter* orFilter = nullptr;
 
-        // * An auxiliary method for sorting the hostname count map. Used only in printHostnames()
-        // */
+        PacketArrivedData data;
+
+        /**
+         * An auxiliary method for sorting the hostname count map. Used only in printHostnames()
+         */
         static bool hostnameComparer(std::pair<std::string, int> first, std::pair<std::string, int> second);
 
         /**
@@ -137,79 +143,58 @@ namespace ETClient
          */
         static GeneralFilter* portToPortFilter(uint16_t p);
 
-        /**
-         * Print the hostname count map to a table sorted by popularity (most popular hostnames will be first)
-         */
-        void printHostnames(HttpRequestStats& reqStatscollector);
-
-        /**
-         * Print the server-name count map to a table sorted by popularity (most popular names will be first)
-         */
-        void printServerNames(ClientHelloStats& clientHelloStatsCollector);
-
-        /**
-         * Print SSL record version map
-         */
-        void printVersions(std::map<SSLVersion, int>& versionMap, std::string headline);
-
-        /**
-         * Print a summary of all statistics collected by the HttpStatsCollector. Should be called when traffic capture was finished
-         */
-        void printStatsSummary(HttpStatsCollector& collector);
-
-        /**
-         * Print a summary of all statistics collected by the SSLStatsCollector. Should be called when traffic capture was finished
-         */
-        void printStatsSummary(SSLStatsCollector& collector);
 
         /**
          * packet capture callback - called whenever a packet arrives
          */
         static void packetArrive(RawPacket* packet, PcapLiveDevice* dev, void* cookie);
-
-        //void printPorts(SSLGeneralStats& stats)
-        //{
-        //	// create the table
-        //	std::vector<std::string> columnNames;
-        //	columnNames.push_back("SSL/TLS ports");
-        //	columnNames.push_back("Count");
-        //	std::vector<int> columnsWidths;
-        //	columnsWidths.push_back(13);
-        //	columnsWidths.push_back(5);
-        //	TablePrinter printer(columnNames, columnsWidths);
-        //
-        //	// sort the port count map so the most popular names will be first
-        //	// since it's not possible to sort a std::map you must copy it to a std::vector and sort it then
-        //	std::vector<std::pair<uint16_t, int> > map2vec(stats.sslPortCount.begin(), stats.sslPortCount.end());
-        //	std::sort(map2vec.begin(), map2vec.end(), &uint16CountComparer);
-        //
-        //	// go over all items (names + count) in the sorted vector and print them
-        //	for (std::vector<std::pair<uint16_t, int> >::iterator iter = map2vec.begin();
-        //		iter != map2vec.end();
-        //		iter++)
-        //	{
-        //		std::stringstream values;
-        //		values << iter->first << "|" << iter->second;
-        //		printer.printRow(values.str(), '|');
-        //	}
-        //}
-
-        /**
-         * Print the current rates. Should be called periodically during traffic capture
-         */
-        void printCurrentRates(HttpStatsCollector& collector);
-
-        /**
-         * Print the current rates. Should be called periodically during traffic capture
-         */
-        void printCurrentRates(SSLStatsCollector& collector);
-
     public:
-        NetworkManager(std::string interfaceNameOrIP);
+        NetworkManager(QWaitCondition* waitCond, QObject* parent=nullptr);
+        ~NetworkManager();
+        void setupDevice(const std::string& interfaceNameOrIP);
+        void setRunning(bool value);
 
         /*
          * Start analyzing packets in live traffic mode
          */
         void run();
+
+        /**
+         * Go over all interfaces and output their names
+         */
+        void listInterfaces();
+
+        /**
+         * Print the method count table
+         */
+        static void printMethods(HttpRequestStats& reqStatscollector);
+
+        /**
+         * Print the hostname count map to a table sorted by popularity (most popular hostnames will be first)
+         */
+        static void printHostnames(HttpRequestStats& reqStatscollector);
+
+        /**
+         * Print the server-name count map to a table sorted by popularity (most popular names will be first)
+         */
+        static void printServerNames(ClientHelloStats& clientHelloStatsCollector);
+
+        static void printUnknownHostNames(const std::map<std::string, size_t>& hostCount);
+
+        /**
+         * Print SSL record version map
+         */
+        static void printVersions(std::map<SSLVersion, int>& versionMap, std::string headline);
+
+        /**
+         * Print a summary of all statistics collected by the HttpStatsCollector. Should be called when traffic capture was finished
+         */
+        static void printStatsSummary(HttpStatsCollector& collector);
+
+        /**
+         * Print a summary of all statistics collected by the SSLStatsCollector. Should be called when traffic capture was finished
+         */
+        static void printStatsSummary(SSLStatsCollector& collector);
+
     };
 }

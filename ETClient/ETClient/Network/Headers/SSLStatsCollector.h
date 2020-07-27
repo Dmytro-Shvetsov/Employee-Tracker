@@ -9,17 +9,14 @@ namespace pcpp
     struct ClientHelloStats
     {
         int numOfMessages; // total number of client-hello messages
-        pcpp::Rate messageRate; // rate of client-hello messages
         std::map<std::string, int> serverNameCount; // a map for counting the server names seen in traffic
 
         virtual ~ClientHelloStats() {}
 
         virtual void clear()
         {
-            numOfMessages = 0;
-            messageRate.currentRate = 0;
-            messageRate.totalRate = 0;
-            serverNameCount.clear();
+            this->serverNameCount.clear();
+            this->numOfMessages = 0;
         }
     };
 
@@ -29,15 +26,12 @@ namespace pcpp
     struct ServerHelloStats
     {
         int numOfMessages; // total number of server-hello messages
-        Rate messageRate; // rate of server-hello messages
 
         virtual ~ServerHelloStats() {}
 
         virtual void clear()
         {
-            numOfMessages = 0;
-            messageRate.currentRate = 0;
-            messageRate.totalRate = 0;
+            this->numOfMessages = 0;
         }
     };
 
@@ -57,17 +51,15 @@ namespace pcpp
 
             void clear()
             {
-                seenAppDataPacket = false;
-                seenAlertPacket = false;
+                this->seenAppDataPacket = false;
+                this->seenAlertPacket = false;
             }
         };
 
-        ClientHelloStats m_ClientHelloStats;
-        ClientHelloStats m_PrevClientHelloStats;
-        ServerHelloStats m_ServerHelloStats;
-        ServerHelloStats m_PrevServerHelloStats;
+        ClientHelloStats clientHelloStats;
+        ServerHelloStats serverHelloStats;
 
-        std::map<uint32_t, SSLFlowData> m_FlowTable;
+        std::map<uint32_t, SSLFlowData> flowTable;
 
         /**
          * Collect stats relevant for every SSL packet (any SSL message)
@@ -92,7 +84,6 @@ namespace pcpp
         SSLStatsCollector();
         virtual ~SSLStatsCollector();
         bool tryCollectStats(pcpp::Packet* parsedPacket)override;
-        void calcRates()override;
         void clear()override;
 
         /**

@@ -27,9 +27,9 @@ namespace ETClient
 
     MainWindowPresenter::~MainWindowPresenter()
     {
-        qDebug() << "Deleted MainWindowPresenter";
         delete this->mwForm;
-        delete this->mwModel;
+        this->mwModel->deleteLater();
+        qDebug() << "Deleted MainWindowPresenter";
     }
 
     void MainWindowPresenter::init(const QString& userAuthToken)

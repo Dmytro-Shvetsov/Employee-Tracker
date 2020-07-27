@@ -6,8 +6,10 @@
 #include <QtConcurrent>
 #include <QTimer>
 #include <QFuture>
+#include <QThread>
 #include "WebsocketClient.h"
 #include "ScreenshotManager.h"
+#include "NetworkManager.h"
 
 
 namespace ETClient
@@ -17,9 +19,13 @@ namespace ETClient
         Q_OBJECT
     private:
         WebsocketClient* socket = new WebsocketClient(this, true);
-        ScreenshotManager* screenshotManager;
-        QWaitCondition waitCond;
         bool websocketIsConnected = false;
+
+        ScreenshotManager* screenshotManager;
+        NetworkManager* networkManager;
+
+        QWaitCondition waitCond;
+        QList<QFuture<void>> workerStates;
     private slots:
         void onScreenshotReady();
         void onWebsocketConnected();
