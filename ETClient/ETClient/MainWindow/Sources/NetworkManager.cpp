@@ -34,6 +34,10 @@ namespace ETClient
                {
                    qDebug() << "Couldn't find interface by provided IP";
                }
+               else
+               {
+                   this->data.interfaceInUseIP = interfaceNameOrIP;
+               }
            }
            else
            {
@@ -65,6 +69,11 @@ namespace ETClient
         this->running = value;
     }
 
+    PacketArrivedData& NetworkManager::getData()
+    {
+        return this->data;
+    }
+
     void NetworkManager::run()
     {
         if (!this->dev->open())
@@ -81,7 +90,12 @@ namespace ETClient
         {
             this->mutex.lock();
 
-            this->waitCond->wait(&this->mutex, 5);
+            this->waitCond->wait(&this->mutex, 10000);
+            // pause packet capturing
+            this->dev->stopCapture();
+            emit this->dataReadyToExtract();
+//            this->data.clear();
+            this->dev->startCapture(this->packetArrive, &data);
 
             this->mutex.unlock();
         }
@@ -94,7 +108,7 @@ namespace ETClient
         qDebug("=============\n");
         this->printStatsSummary(*this->data.httpStatsCollector);
         this->printStatsSummary(*this->data.sslStatsCollector);
-        this->printUnknownHostNames(this->data.unknownHostCount);
+//        this->printUnknownHostNames(this->data.unknownHostCount);
 
         QThread::currentThread()->exit();
     }
@@ -121,13 +135,13 @@ namespace ETClient
 
 
         // go over the method count table and print each method and count
-        for (std::map<HttpRequestLayer::HttpMethod, int>::iterator iter = reqStatscollector.methodCount.begin();
-            iter != reqStatscollector.methodCount.end();
+        for (auto iter = reqStatscollector.methodCount.cbegin();
+            iter != reqStatscollector.methodCount.cend();
             iter++)
         {
             std::stringstream values;
 
-            switch (iter->first)
+            switch (iter.key())
             {
             case HttpRequestLayer::HttpGET:
                 values << "GET" << "|" << reqStatscollector.methodCount[HttpRequestLayer::HttpGET];
@@ -171,19 +185,17 @@ namespace ETClient
         }
     }
 
-    bool NetworkManager::hostnameComparer(std::pair<std::string, int> first, std::pair<std::string, int> second)
+    bool NetworkManager::stringCountComparer(std::pair<QString, quint32> pair1, std::pair<QString, quint32> pair2)
     {
-        return first.second > second.second;
+        return pair1.second > pair2.second;
     }
 
-    bool NetworkManager::stringCountComparer(std::pair<std::string, int> first, std::pair<std::string, int> second)
+    std::vector<std::pair<QString, quint32>>* NetworkManager::sortHostnamesByFreq(std::map<QString, quint32>& map)
     {
-        return first.second > second.second;
-    }
+        auto* map2vec = new std::vector<std::pair<QString, quint32>>(map.begin(), map.end());
 
-    bool NetworkManager::uint16CountComparer(std::pair<uint16_t, int> first, std::pair<uint16_t, int> second)
-    {
-        return first.second > second.second;
+        std::sort(map2vec->begin(), map2vec->end(), &NetworkManager::stringCountComparer);
+        return map2vec;
     }
 
     GeneralFilter* NetworkManager::portToPortFilter(uint16_t p)
@@ -191,7 +203,7 @@ namespace ETClient
         return new PortFilter(p, pcpp::SRC_OR_DST);
     };
 
-    void NetworkManager::printHostnames(HttpRequestStats &reqStatscollector)
+    void NetworkManager::printHostnames(HttpRequestStats& reqStatscollector)
     {
         // create the table
         std::vector<std::string> columnNames;
@@ -204,21 +216,20 @@ namespace ETClient
 
         // sort the hostname count map so the most popular hostnames will be first
         // since it's not possible to sort a std::map you must copy it to a std::vector and sort it then
-        std::vector<std::pair<std::string, int> > map2vec(reqStatscollector.hostnameCount.begin(), reqStatscollector.hostnameCount.end());
-        std::sort(map2vec.begin(), map2vec.end(), &NetworkManager::hostnameComparer);
+        auto* map2vec = sortHostnamesByFreq(reqStatscollector.hostnameCount);
 
         // go over all items (hostname + count) in the sorted vector and print them
-        for (std::vector<std::pair<std::string, int> >::iterator iter = map2vec.begin();
-            iter != map2vec.end();
-            iter++)
+        for (auto iter = map2vec->begin(); iter != map2vec->end(); iter++)
         {
             std::stringstream values;
-            values << iter->first << "|" << iter->second;
+            values << iter->first.toStdString() << "|" << iter->second;
             printer.printRow(values.str(), '|');
         }
+
+        delete map2vec;
     }
 
-    void NetworkManager::printServerNames(ClientHelloStats &clientHelloStatsCollector)
+    void NetworkManager::printServerNames(ClientHelloStats& clientHelloStatsCollector)
     {
         // create the table
         std::vector<std::string> columnNames;
@@ -231,31 +242,29 @@ namespace ETClient
 
         // sort the server-name count map so the most popular names will be first
         // since it's not possible to sort a std::map you must copy it to a std::vector and sort it then
-        std::vector<std::pair<std::string, int> > map2vec(clientHelloStatsCollector.serverNameCount.begin(), clientHelloStatsCollector.serverNameCount.end());
-        std::sort(map2vec.begin(), map2vec.end(), &stringCountComparer);
+        auto* map2vec = sortHostnamesByFreq(clientHelloStatsCollector.serverNameCount);
 
         // go over all items (names + count) in the sorted vector and print them
-        for (std::vector<std::pair<std::string, int> >::iterator iter = map2vec.begin();
-            iter != map2vec.end();
-            iter++)
+        for (auto iter = map2vec->begin(); iter != map2vec->end(); iter++)
         {
             std::stringstream values;
-            values << iter->first << "|" << iter->second;
+            values << iter->first.toStdString() << "|" << iter->second;
             printer.printRow(values.str(), '|');
         }
+
+        delete map2vec;
     }
 
-    void NetworkManager::printUnknownHostNames(const std::map<std::string, size_t>& hostCount)
+    void NetworkManager::printUnknownHostNames(std::map<QString, quint32>& hostCount)
     {
-        size_t nUnknownHosts = hostCount.size();
+        quint32 nUnknownHosts = hostCount.size();
         qDebug("Unknown host size: %d", nUnknownHosts);
 
 
-        std::vector<std::pair<std::string, int>> map2vec(hostCount.begin(), hostCount.end());
-        std::sort(map2vec.begin(), map2vec.end(), &hostnameComparer);
+        auto* map2vec = sortHostnamesByFreq(hostCount);
 
-        std::vector<std::pair<std::string, int>>::iterator itBegin, itEnd;
-        itBegin = itEnd = map2vec.begin();
+        auto itBegin = map2vec->begin();
+        auto itEnd = map2vec->begin();
 
         // pick top MAX_UKNOWN_HOSTS_RESOLVE most frequent hosts and try to resolve their names
         itEnd += MAX_UKNOWN_HOSTS_RESOLVE > nUnknownHosts ? nUnknownHosts : MAX_UKNOWN_HOSTS_RESOLVE;
@@ -263,37 +272,16 @@ namespace ETClient
         PRINT_STAT_HEADLINE("################ Unknown host names: ###################");
         for (; itBegin != itEnd; itBegin++)
         {
-            auto pair = *itBegin;
-            std::string resolvedIP = PacketArrivedData::resolveIPv4(pair.first.c_str());
+            std::string resolvedIP = PacketArrivedData::resolveIPv4(itBegin->first.toStdString().c_str());
             qDebug("%s -> %d",
-                   (resolvedIP == "" ? pair.first.c_str() : resolvedIP.c_str()),
-                   pair.second);
+                   (resolvedIP == "" ? itBegin->first.toStdString().c_str() : resolvedIP.c_str()),
+                    itBegin->second);
         }
+
+        delete map2vec;
     }
 
-    void NetworkManager::printVersions(std::map<SSLVersion, int> &versionMap, std::string headline)
-    {
-        // create the table
-        std::vector<std::string> columnNames;
-        columnNames.push_back(headline);
-        columnNames.push_back("Count");
-        std::vector<int> columnsWidths;
-        columnsWidths.push_back(28);
-        columnsWidths.push_back(5);
-        TablePrinter printer(columnNames, columnsWidths);
-
-        // go over the status code map and print each item
-        for (std::map<SSLVersion, int>::iterator iter = versionMap.begin();
-            iter != versionMap.end();
-            iter++)
-        {
-            std::stringstream values;
-            values << iter->first << "|" << iter->second;
-            printer.printRow(values.str(), '|');
-        }
-    }
-
-    void NetworkManager::printStatsSummary(HttpStatsCollector &collector)
+    void NetworkManager::printStatsSummary(HttpStatsCollector& collector)
     {
         PRINT_STAT_HEADLINE("HTTP request stats");
         qDebug("Number of HTTP requests %d",                collector.getRequestStats().numOfMessages);
@@ -313,7 +301,7 @@ namespace ETClient
         printHostnames(collector.getRequestStats());
     }
 
-    void NetworkManager::printStatsSummary(SSLStatsCollector &collector)
+    void NetworkManager::printStatsSummary(SSLStatsCollector& collector)
     {
         qDebug("Number of client-hello messages %d", collector.getClientHelloStats().numOfMessages);
         qDebug("Number of server-hello messages %d", collector.getServerHelloStats().numOfMessages);

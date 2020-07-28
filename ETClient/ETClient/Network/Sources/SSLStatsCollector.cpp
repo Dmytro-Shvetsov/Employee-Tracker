@@ -80,7 +80,7 @@ namespace pcpp
 
         pcpp::SSLServerNameIndicationExtension* sniExt = clientHelloMessage->getExtensionOfType<pcpp::SSLServerNameIndicationExtension>();
         if (sniExt != NULL)
-            this->clientHelloStats.serverNameCount[sniExt->getHostName()]++;
+            this->clientHelloStats.serverNameCount[QString::fromStdString(sniExt->getHostName())]++;
     }
 
     bool SSLStatsCollector::tryCollectStats(Packet* parsedPacket)

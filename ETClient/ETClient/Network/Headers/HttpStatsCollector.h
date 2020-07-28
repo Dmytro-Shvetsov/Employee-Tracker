@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <HttpLayer.h>
 #include "BaseStatsCollector.h"
 
@@ -11,8 +10,8 @@ namespace pcpp
      */
     struct HttpMessageStats
     {
-        size_t numOfMessages; // total number of HTTP messages of that type (request/response)
-        size_t totalMessageHeaderSize; // total size (in bytes) of data in headers
+        quint32 numOfMessages; // total number of HTTP messages of that type (request/response)
+        quint32 totalMessageHeaderSize; // total size (in bytes) of data in headers
         double averageMessageHeaderSize; // average header size
 
         virtual ~HttpMessageStats() {}
@@ -30,8 +29,8 @@ namespace pcpp
      */
     struct HttpRequestStats : HttpMessageStats
     {
-        std::map<pcpp::HttpRequestLayer::HttpMethod, int> methodCount; // a map for counting the different HTTP methods seen in traffic
-        std::map<std::string, int> hostnameCount; // a map for counting the hostnames seen in traffic
+        QMap<pcpp::HttpRequestLayer::HttpMethod, quint32> methodCount; // a map for counting the different HTTP methods seen in traffic
+        std::map<QString, quint32> hostnameCount; // a map for counting the hostnames seen in traffic
 
         void clear()
         {
@@ -48,8 +47,8 @@ namespace pcpp
     {
         std::map<std::string, int> statusCodeCount; // a map for counting the different status codes seen in traffic
         std::map<std::string, int> contentTypeCount; // a map for counting the content-types seen in traffic
-        size_t numOfMessagesWithContentLength; // total number of responses containing the "content-length" field
-        size_t totalConentLengthSize; // total body size extracted by responses containing "content-length" field
+        quint32 numOfMessagesWithContentLength; // total number of responses containing the "content-length" field
+        quint32 totalConentLengthSize; // total body size extracted by responses containing "content-length" field
         double averageContentLengthSize; // average body size
 
         void clear()
@@ -75,7 +74,7 @@ namespace pcpp
          */
         struct HttpFlowData
         {
-            int numOfOpenTransactions; // number of transactions that were started (request has arrived) but weren't closed yet (response hasn't arrived yet)
+            uint32_t numOfOpenTransactions; // number of transactions that were started (request has arrived) but weren't closed yet (response hasn't arrived yet)
             pcpp::ProtocolType lastSeenMessage; // the last HTTP message seen on this flow (request, response or neither). Used to identify HTTP pipelining
             bool httpPipeliningFlow; // was HTTP pipelining identified on this flow
             uint32_t curSeqNumberRequests; // the current TCP sequence number from client to server. Used to identify TCP re-transmission
@@ -92,7 +91,7 @@ namespace pcpp
         HttpRequestStats requestStats;
         HttpResponseStats responseStats;
 
-        std::map<uint32_t, HttpFlowData> flowTable;
+        QMap<uint32_t, HttpFlowData> flowTable;
 
         uint16_t dstPort;
 

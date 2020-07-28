@@ -1,6 +1,6 @@
 #pragma once
 
-#include <map>
+#include <QMap>
 #include <sstream>
 #include <TcpLayer.h>
 #include <IPv4Layer.h>

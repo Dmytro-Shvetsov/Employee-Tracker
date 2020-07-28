@@ -92,7 +92,7 @@ namespace pcpp
         // extract hostname and add to hostname count map
         pcpp::HeaderField* hostField = req->getFieldByName(PCPP_HTTP_HOST_FIELD);
         if (hostField != NULL)
-            this->requestStats.hostnameCount[hostField->getFieldValue()]++;
+            this->requestStats.hostnameCount[QString::fromStdString(hostField->getFieldValue())]++;
 
         this->requestStats.methodCount[req->getFirstLine()->getMethod()]++;
     }

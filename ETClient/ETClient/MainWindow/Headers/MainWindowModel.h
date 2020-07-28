@@ -28,6 +28,7 @@ namespace ETClient
         QList<QFuture<void>> workerStates;
     private slots:
         void onScreenshotReady();
+        void onNetworkDataReady();
         void onWebsocketConnected();
         void onWebsocketDisconnect();
         void onTextMessageReceived(const QString& message);

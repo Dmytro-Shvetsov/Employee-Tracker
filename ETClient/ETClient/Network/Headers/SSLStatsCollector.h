@@ -9,7 +9,7 @@ namespace pcpp
     struct ClientHelloStats
     {
         int numOfMessages; // total number of client-hello messages
-        std::map<std::string, int> serverNameCount; // a map for counting the server names seen in traffic
+        std::map<QString, quint32> serverNameCount; // a map for counting the server names seen in traffic
 
         virtual ~ClientHelloStats() {}
 

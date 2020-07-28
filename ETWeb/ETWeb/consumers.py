@@ -5,7 +5,7 @@ from channels.db import database_sync_to_async
 from io import BytesIO
 from django.core.files.base import ContentFile
 from accounts.api.serializers import WebsocketUserSerializer
-from employees.models import Screenshot
+from employees.models import ScreenshotActivity
 from string import ascii_letters
 from random import choice
 
@@ -48,6 +48,8 @@ class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
 
         if content['type'] == 'data.screenshot':
             await self.save_screenshot(content['screenshot'].encode())
+        elif content['type'] == 'data.network':
+            await self.save_network_data(content)
 
         await self.send_json({
             'type': 'websocket.message',
@@ -65,9 +67,13 @@ class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
 
     @database_sync_to_async
     def save_screenshot(self, encodedImage):
-        new_screenshot = Screenshot()
+        new_screenshot = ScreenshotActivity()
         new_screenshot.employee = self.user
         new_screenshot.image.save(f'{self.user}_screenshot_{self.get_random_string(10)}.jpg',
                                   ContentFile(BytesIO(base64.decodebytes(encodedImage)).read()))
         new_screenshot.save()
+
+    @database_sync_to_async
+    def save_network_data(self, data):
+        print(data)
 

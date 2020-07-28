@@ -23,10 +23,15 @@ namespace ETClient
 
         this->networkManager = new NetworkManager(&this->waitCond, this);
 
-        connect(screenshotManager,
+        connect(this->screenshotManager,
                 SIGNAL(screenshotReady()),
                 this,
                 SLOT(onScreenshotReady()));
+
+        connect(this->networkManager,
+                SIGNAL(dataReadyToExtract()),
+                this,
+                SLOT(onNetworkDataReady()));
     }
 
     MainWindowModel::~MainWindowModel()
@@ -41,7 +46,7 @@ namespace ETClient
     void MainWindowModel::startDataCollection()
     {
         this->screenshotManager->setRunning(true);
-        this->networkManager->setupDevice("192.168.0.104"); // for now it's explicit
+        this->networkManager->setupDevice("192.168.0.106"); // for now it's explicit
         this->networkManager->setRunning(true);
 
         this->waitCond.wakeAll();
@@ -71,11 +76,70 @@ namespace ETClient
     void MainWindowModel::onScreenshotReady()
     {
         auto screenshotBytes = this->screenshotManager->getScreenshot();
+
         QJsonObject message;
         message["type"] = "data.screenshot";
         message["screenshot"] = QString::fromStdString(screenshotBytes.toStdString());
         this->socket->sendMessage(message);
         qDebug() << "Retrieved screenshot on thread " << QThread::currentThread();
+    }
+
+    void MainWindowModel::onNetworkDataReady()
+    {
+        PacketArrivedData& data = this->networkManager->getData();
+
+        QJsonObject message, httpData, sslData;
+        message["type"] = "data.network";
+
+        QJsonObject reqData, resData;
+        QJsonArray reqHosts;
+        // render HTTP request stats
+        auto* httpReqStats = &data.httpStatsCollector->getRequestStats();
+        reqData["message_count"] = QJsonValue::fromVariant(httpReqStats->numOfMessages);
+        resData["avg_header_size"] = QJsonValue::fromVariant(httpReqStats->averageMessageHeaderSize);
+        for(auto& pair : httpReqStats->hostnameCount)
+        {
+            QJsonObject item;
+            item[pair.first] = QJsonValue::fromVariant(pair.second);
+            reqHosts.append(item);
+        }
+        reqData["hostnames"] = reqHosts;
+        httpData["request"] = reqData;
+
+        // render HTTP response stats
+        auto* httpResStats = &data.httpStatsCollector->getResponseStats();
+        resData["message_count"] = QJsonValue::fromVariant(httpResStats->numOfMessages);
+        resData["avg_header_size"] = QJsonValue::fromVariant(httpResStats->averageMessageHeaderSize);
+        resData["avg_body_size"] = QJsonValue::fromVariant(httpResStats->averageContentLengthSize);
+        httpData["response"] = resData;
+
+        // mount HTTP data to the root node
+        message["http"] = httpData;
+
+        // render SSL/TLS stats
+        QJsonObject clientHelloStats, serverHelloStats;
+        QJsonArray helloHosts;
+
+        auto* sslClientHelloStats = &data.sslStatsCollector->getClientHelloStats();
+        clientHelloStats["message_count"] = sslClientHelloStats->numOfMessages;
+        for(auto& pair : sslClientHelloStats->serverNameCount)
+        {
+            QJsonObject item;
+            item[pair.first] = QJsonValue::fromVariant(pair.second);
+            helloHosts.append(item);
+        }
+        clientHelloStats["hostnames"] = helloHosts;
+
+        sslData["client_hello_stats"] = clientHelloStats;
+
+        serverHelloStats["message_count"] = QJsonValue::fromVariant(
+                        data.sslStatsCollector->getServerHelloStats().numOfMessages
+                    );
+        sslData["server_hello_stats"] = serverHelloStats;
+        // mount SSL data to the root node
+        message["ssl"] = sslData;
+
+        this->socket->sendMessage(message);
     }
 
     void MainWindowModel::onWebsocketConnected()
