@@ -5,7 +5,7 @@ from channels.db import database_sync_to_async
 from io import BytesIO
 from django.core.files.base import ContentFile
 from accounts.api.serializers import WebsocketUserSerializer
-from employees.models import ScreenshotActivity
+from employees.models import ScreenshotActivity, NetworkActivity, ActivityInfo
 from string import ascii_letters
 from random import choice
 
@@ -49,7 +49,7 @@ class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
         if content['type'] == 'data.screenshot':
             await self.save_screenshot(content['screenshot'].encode())
         elif content['type'] == 'data.network':
-            await self.save_network_data(content)
+            await self.save_network_activities(content)
 
         await self.send_json({
             'type': 'websocket.message',
@@ -66,14 +66,41 @@ class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
         return ''.join(choice(ascii_letters) for _ in range(length))
 
     @database_sync_to_async
-    def save_screenshot(self, encodedImage):
+    def save_screenshot(self, encoded_image):
         new_screenshot = ScreenshotActivity()
         new_screenshot.employee = self.user
         new_screenshot.image.save(f'{self.user}_screenshot_{self.get_random_string(10)}.jpg',
-                                  ContentFile(BytesIO(base64.decodebytes(encodedImage)).read()))
+                                  ContentFile(BytesIO(base64.decodebytes(encoded_image)).read()))
         new_screenshot.save()
 
+    async def save_network_activities(self, data):
+        unknown_hosts = data['other']['hostnames']
+        resolved_hosts = []
+        for host_count_dict in unknown_hosts:
+            host, count = next(iter(host_count_dict.items()))
+            resolved_hostname = await NetworkActivity.resolve_ipv4_host(host)
+            if not resolved_hostname:
+                continue
+            resolved_hosts.append({resolved_hostname: count})
+
+        print('Resolved unknown hosts')
+        data['other']['hostnames'] = resolved_hosts
+        await self._save_network_data(data)
+
     @database_sync_to_async
-    def save_network_data(self, data):
-        print(data)
+    def _save_network_data(self, data):
+        def create_network_objs(employee, stats, protocol, res):
+            for host_count_dict in stats['hostnames']:
+                host, count = next(iter(host_count_dict.items()))
+                res.append(
+                    NetworkActivity(host_name=host, message_count=count, protocol_type=protocol,
+                                    employee=employee)
+                )
+        network_objs = []
+        create_network_objs(self.user, data['http']['request_stats'], NetworkActivity.HTTP, network_objs)
+        create_network_objs(self.user, data['ssl']['client_hello_stats'], NetworkActivity.SSL, network_objs)
+        create_network_objs(self.user, data['http']['request_stats'], None, network_objs)
+        print("LEN {}".format(len(network_objs)))
+        NetworkActivity.objects.bulk_create(network_objs)
+        print('Saved network objects')
 

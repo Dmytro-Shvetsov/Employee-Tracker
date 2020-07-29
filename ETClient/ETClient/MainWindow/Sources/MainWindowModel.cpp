@@ -88,30 +88,28 @@ namespace ETClient
     {
         PacketArrivedData& data = this->networkManager->getData();
 
-        QJsonObject message, httpData, sslData;
+        QJsonObject message, httpData, sslData, otherData;
         message["type"] = "data.network";
 
         QJsonObject reqData, resData;
         QJsonArray reqHosts;
         // render HTTP request stats
-        auto* httpReqStats = &data.httpStatsCollector->getRequestStats();
-        reqData["message_count"] = QJsonValue::fromVariant(httpReqStats->numOfMessages);
-        resData["avg_header_size"] = QJsonValue::fromVariant(httpReqStats->averageMessageHeaderSize);
-        for(auto& pair : httpReqStats->hostnameCount)
+        auto httpReqStats = data.httpStatsCollector->getRequestStats();
+        reqData["message_count"] = QJsonValue::fromVariant(httpReqStats.numOfMessages);
+
+        for(auto& pair : httpReqStats.hostnameCount)
         {
             QJsonObject item;
             item[pair.first] = QJsonValue::fromVariant(pair.second);
             reqHosts.append(item);
         }
         reqData["hostnames"] = reqHosts;
-        httpData["request"] = reqData;
+        httpData["request_stats"] = reqData;
 
         // render HTTP response stats
         auto* httpResStats = &data.httpStatsCollector->getResponseStats();
         resData["message_count"] = QJsonValue::fromVariant(httpResStats->numOfMessages);
-        resData["avg_header_size"] = QJsonValue::fromVariant(httpResStats->averageMessageHeaderSize);
-        resData["avg_body_size"] = QJsonValue::fromVariant(httpResStats->averageContentLengthSize);
-        httpData["response"] = resData;
+        httpData["response_stats"] = resData;
 
         // mount HTTP data to the root node
         message["http"] = httpData;
@@ -138,8 +136,30 @@ namespace ETClient
         sslData["server_hello_stats"] = serverHelloStats;
         // mount SSL data to the root node
         message["ssl"] = sslData;
+        sslClientHelloStats = nullptr;
+
+        // render stats about other most frequent hosts
+        QJsonArray unknownHosts;
+        auto map2vec = NetworkManager::sortHostnamesByFreq(data.unknownHostCount);
+        auto itBegin = map2vec.begin();
+        auto itEnd = map2vec.begin();
+        // pick top MAX_UKNOWN_HOSTS_RESOLVE most frequent hosts and try to resolve their names
+        itEnd += MAX_UKNOWN_HOSTS_RESOLVE > map2vec.size() ? map2vec.size() : MAX_UKNOWN_HOSTS_RESOLVE;
+        for (; itBegin != itEnd; itBegin++)
+        {
+            QJsonObject item;
+            item[itBegin->first] = QJsonValue::fromVariant(itBegin->second);
+            unknownHosts.append(item);
+        }
+        otherData["hostnames"] = unknownHosts;
+        // mount other data to the root node
+        message["other"] = otherData;
+//        delete map2vec;
+//        map2vec->clear();
 
         this->socket->sendMessage(message);
+        data.clear();
+
     }
 
     void MainWindowModel::onWebsocketConnected()

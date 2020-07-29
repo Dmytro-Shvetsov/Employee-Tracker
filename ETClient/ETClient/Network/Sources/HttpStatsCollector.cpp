@@ -32,15 +32,17 @@ namespace pcpp
     {
         // if num of current opened transaction is negative it means something went completely wrong
         if (this->flowTable[flowKey].numOfOpenTransactions < 0)
+        {
             return;
-
+        }
         if (message->getProtocol() == pcpp::HTTPRequest)
         {
             // if new packet seq number is smaller than previous seen seq number current it means this packet is
             // a re-transmitted packet and should be ignored
             if (this->flowTable[flowKey].curSeqNumberRequests >= ntohl(tcpLayer->getTcpHeader()->sequenceNumber))
+            {
                 return;
-
+            }
             // a new request - increase num of open transactions
             this->flowTable[flowKey].numOfOpenTransactions++;
 
@@ -62,8 +64,9 @@ namespace pcpp
             // if new packet seq number is smaller than previous seen seq number current it means this packet is
             // a re-transmitted packet and should be ignored
             if (this->flowTable[flowKey].curSeqNumberResponses >= ntohl(tcpLayer->getTcpHeader()->sequenceNumber))
+            {
                 return;
-
+            }
             // a response - decrease num of open transactions
             this->flowTable[flowKey].numOfOpenTransactions--;
 
@@ -85,34 +88,18 @@ namespace pcpp
     void HttpStatsCollector::collectRequestStats(HttpRequestLayer* req)
     {
         this->requestStats.numOfMessages++;
-        this->requestStats.totalMessageHeaderSize += req->getHeaderLen();
-        if (this->requestStats.numOfMessages != 0)
-            this->requestStats.averageMessageHeaderSize = (double)this->requestStats.totalMessageHeaderSize / (double)this->requestStats.numOfMessages;
-
         // extract hostname and add to hostname count map
         pcpp::HeaderField* hostField = req->getFieldByName(PCPP_HTTP_HOST_FIELD);
         if (hostField != NULL)
+        {
             this->requestStats.hostnameCount[QString::fromStdString(hostField->getFieldValue())]++;
-
+        }
         this->requestStats.methodCount[req->getFirstLine()->getMethod()]++;
     }
 
     void HttpStatsCollector::collectResponseStats(HttpResponseLayer* res)
     {
         this->responseStats.numOfMessages++;
-        this->responseStats.totalMessageHeaderSize += res->getHeaderLen();
-        if (this->responseStats.numOfMessages != 0)
-            this->responseStats.averageMessageHeaderSize = (double)this->responseStats.totalMessageHeaderSize / (double)this->responseStats.numOfMessages;
-
-        // extract content-length (if exists)
-        pcpp::HeaderField* contentLengthField = res->getFieldByName(PCPP_HTTP_CONTENT_LENGTH_FIELD);
-        if (contentLengthField != NULL)
-        {
-            this->responseStats.numOfMessagesWithContentLength++;
-            this->responseStats.totalConentLengthSize += atoi(contentLengthField->getFieldValue().c_str());
-            if (this->responseStats.numOfMessagesWithContentLength != 0)
-                this->responseStats.averageContentLengthSize = (double)this->responseStats.totalConentLengthSize / (double)this->responseStats.numOfMessagesWithContentLength;
-        }
 
         // extract content-type and add to content-type map
         pcpp::HeaderField* contentTypeField = res->getFieldByName(PCPP_HTTP_CONTENT_TYPE_FIELD);
@@ -141,13 +128,15 @@ namespace pcpp
     {
         // verify packet is TCP
         if (!httpPacket->isPacketOfType(pcpp::TCP))
+        {
             return false;
-
+        }
         // verify packet is port 80
         pcpp::TcpLayer* tcpLayer = httpPacket->getLayerOfType<pcpp::TcpLayer>();
         if (!(tcpLayer->getTcpHeader()->portDst == htons(this->dstPort) || tcpLayer->getTcpHeader()->portSrc == htons(this->dstPort)))
+        {
             return false;
-
+        }
         // collect general HTTP traffic stats on this packet
         uint32_t hashVal = collectHttpTrafficStats(httpPacket);
 

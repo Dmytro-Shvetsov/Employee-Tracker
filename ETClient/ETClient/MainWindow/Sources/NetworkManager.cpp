@@ -115,7 +115,7 @@ namespace ETClient
 
     void NetworkManager::listInterfaces()
     {
-        printf("\nNetwork interfaces:\n");
+        qDebug("Network interfaces:");
         for (std::vector<PcapLiveDevice*>::const_iterator iter = devList.begin(); iter != devList.end(); iter++)
         {
             qDebug("    -> Name: '%s'   IP address: %s\n", (*iter)->getName(), (*iter)->getIPv4Address().toString().c_str());
@@ -190,11 +190,11 @@ namespace ETClient
         return pair1.second > pair2.second;
     }
 
-    std::vector<std::pair<QString, quint32>>* NetworkManager::sortHostnamesByFreq(std::map<QString, quint32>& map)
+    std::vector<std::pair<QString, quint32>> NetworkManager::sortHostnamesByFreq(std::map<QString, quint32>& map)
     {
-        auto* map2vec = new std::vector<std::pair<QString, quint32>>(map.begin(), map.end());
+        std::vector<std::pair<QString, quint32>> map2vec(map.begin(), map.end());
 
-        std::sort(map2vec->begin(), map2vec->end(), &NetworkManager::stringCountComparer);
+        std::sort(map2vec.begin(), map2vec.end(), &NetworkManager::stringCountComparer);
         return map2vec;
     }
 
@@ -216,17 +216,15 @@ namespace ETClient
 
         // sort the hostname count map so the most popular hostnames will be first
         // since it's not possible to sort a std::map you must copy it to a std::vector and sort it then
-        auto* map2vec = sortHostnamesByFreq(reqStatscollector.hostnameCount);
+        auto map2vec = sortHostnamesByFreq(reqStatscollector.hostnameCount);
 
         // go over all items (hostname + count) in the sorted vector and print them
-        for (auto iter = map2vec->begin(); iter != map2vec->end(); iter++)
+        for (auto iter = map2vec.begin(); iter != map2vec.end(); iter++)
         {
             std::stringstream values;
             values << iter->first.toStdString() << "|" << iter->second;
             printer.printRow(values.str(), '|');
         }
-
-        delete map2vec;
     }
 
     void NetworkManager::printServerNames(ClientHelloStats& clientHelloStatsCollector)
@@ -242,17 +240,15 @@ namespace ETClient
 
         // sort the server-name count map so the most popular names will be first
         // since it's not possible to sort a std::map you must copy it to a std::vector and sort it then
-        auto* map2vec = sortHostnamesByFreq(clientHelloStatsCollector.serverNameCount);
+        auto map2vec = sortHostnamesByFreq(clientHelloStatsCollector.serverNameCount);
 
         // go over all items (names + count) in the sorted vector and print them
-        for (auto iter = map2vec->begin(); iter != map2vec->end(); iter++)
+        for (auto iter = map2vec.begin(); iter != map2vec.end(); iter++)
         {
             std::stringstream values;
             values << iter->first.toStdString() << "|" << iter->second;
             printer.printRow(values.str(), '|');
         }
-
-        delete map2vec;
     }
 
     void NetworkManager::printUnknownHostNames(std::map<QString, quint32>& hostCount)
@@ -261,10 +257,10 @@ namespace ETClient
         qDebug("Unknown host size: %d", nUnknownHosts);
 
 
-        auto* map2vec = sortHostnamesByFreq(hostCount);
+        auto map2vec = sortHostnamesByFreq(hostCount);
 
-        auto itBegin = map2vec->begin();
-        auto itEnd = map2vec->begin();
+        auto itBegin = map2vec.begin();
+        auto itEnd = map2vec.begin();
 
         // pick top MAX_UKNOWN_HOSTS_RESOLVE most frequent hosts and try to resolve their names
         itEnd += MAX_UKNOWN_HOSTS_RESOLVE > nUnknownHosts ? nUnknownHosts : MAX_UKNOWN_HOSTS_RESOLVE;
@@ -277,22 +273,15 @@ namespace ETClient
                    (resolvedIP == "" ? itBegin->first.toStdString().c_str() : resolvedIP.c_str()),
                     itBegin->second);
         }
-
-        delete map2vec;
     }
 
     void NetworkManager::printStatsSummary(HttpStatsCollector& collector)
     {
         PRINT_STAT_HEADLINE("HTTP request stats");
         qDebug("Number of HTTP requests %d",                collector.getRequestStats().numOfMessages);
-        qDebug("Total data in headers(Bytes) %d",           collector.getRequestStats().totalMessageHeaderSize);
-        qDebug("Average header size(Bytes) %d",             collector.getRequestStats().averageMessageHeaderSize);
 
         PRINT_STAT_HEADLINE("HTTP response stats");
         qDebug("Number of HTTP responses %d",                   collector.getResponseStats().numOfMessages);
-        qDebug("Total data in headers(Bytes) %d",               collector.getResponseStats().totalMessageHeaderSize);
-        qDebug("Total body size (may be compressed)(Bytes) %d", collector.getResponseStats().totalConentLengthSize);
-        qDebug("Average body size(Bytes) %d",                   collector.getResponseStats().averageContentLengthSize);
 
         PRINT_STAT_HEADLINE("HTTP request methods");
         printMethods(collector.getRequestStats());

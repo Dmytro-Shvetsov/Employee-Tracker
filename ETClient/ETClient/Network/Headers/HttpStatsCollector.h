@@ -11,16 +11,12 @@ namespace pcpp
     struct HttpMessageStats
     {
         quint32 numOfMessages; // total number of HTTP messages of that type (request/response)
-        quint32 totalMessageHeaderSize; // total size (in bytes) of data in headers
-        double averageMessageHeaderSize; // average header size
 
         virtual ~HttpMessageStats() {}
 
         virtual void clear()
         {
             this->numOfMessages = 0;
-            this->totalMessageHeaderSize = 0;
-            this->averageMessageHeaderSize = 0;
         }
     };
 
@@ -47,18 +43,12 @@ namespace pcpp
     {
         std::map<std::string, int> statusCodeCount; // a map for counting the different status codes seen in traffic
         std::map<std::string, int> contentTypeCount; // a map for counting the content-types seen in traffic
-        quint32 numOfMessagesWithContentLength; // total number of responses containing the "content-length" field
-        quint32 totalConentLengthSize; // total body size extracted by responses containing "content-length" field
-        double averageContentLengthSize; // average body size
 
         void clear()
         {
             HttpMessageStats::clear();
             this->contentTypeCount.clear();
             this->statusCodeCount.clear();
-            this->numOfMessagesWithContentLength = 0;
-            this->totalConentLengthSize = 0;
-            this->averageContentLengthSize = 0;
         }
     };
 

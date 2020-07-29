@@ -137,10 +137,6 @@ namespace ETClient
          */
         static bool stringCountComparer(std::pair<QString, quint32> pair1, std::pair<QString, quint32> pair2);
 
-        /**
-         * An auxiliary method for sorting the pairs of a map. Used in printxxx() methods
-         */
-        static std::vector<std::pair<QString, quint32>>* sortHostnamesByFreq(std::map<QString, quint32>& map);
 
         /**
          * An auxiliary method for GeneralFilter object from numeric port. Used in run()
@@ -155,6 +151,11 @@ namespace ETClient
     public:
         NetworkManager(QWaitCondition* waitCond, QObject* parent=nullptr);
         ~NetworkManager();
+        /**
+         * An auxiliary method for sorting the pairs of a map. Used in printxxx() methods
+         */
+        static std::vector<std::pair<QString, quint32>> sortHostnamesByFreq(std::map<QString, quint32>& map);
+
         void setupDevice(const std::string& interfaceNameOrIP);
         void setRunning(bool value);
         PacketArrivedData& getData();
