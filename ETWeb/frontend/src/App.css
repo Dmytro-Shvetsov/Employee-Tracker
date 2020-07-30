@@ -1,7 +1,11 @@
-.navbar {
-    font-size: 20px;
+a:hover {
+    text-decoration: none;
+}
+#navbar {
+    font-size: 1.35rem;
     margin: 0;
-    padding: 12px 0;
+    padding: 1.1rem 0.4rem;
+
 }
 
 #jumbo * {
@@ -13,7 +17,7 @@
 
 #navbar, #footer {
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
     height: 5vh;
 }
@@ -47,6 +51,35 @@
     margin-top: 20px;
 }
 .auth-other button {
-    width: 100px;
     height: 40px;
+}
+
+#logo {
+    padding-right: 1.7rem;
+    font-size: 1.55rem;
+}
+#dashboard-navbar li{
+    padding: 0;
+}
+
+#dashboard-navbar a{
+    display: flex;
+    align-items: center;
+    height: 4rem;
+    font-size: 1.25rem;
+    padding-left: 1.2rem;
+}
+
+#dashboard-content {
+    min-height: 900px;
+}
+
+@media(max-width: 1000px) {
+    #navbar {
+        font-size: 1.2rem;
+    }
+    #dashboard-navbar a{
+        height: 3rem;
+        font-size: 1rem;
+    }
 }

@@ -12,7 +12,7 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
-export const registerUser = ({username,
+const registerUser = ({username,
                               email,
                               password, password2,
                               isStaff=false}) => {
@@ -28,7 +28,7 @@ export const registerUser = ({username,
     );
 };
 
-export const loginUser = ({username, password}) => {
+const loginUser = ({username, password}) => {
      return axios.post(
         loginEndpoint,
         {
@@ -37,20 +37,19 @@ export const loginUser = ({username, password}) => {
         }, {
             headers: {
              ...headers,
-             // 'Authorization': `token ${token}`
             }
          }
     );
 };
 
-export const logoutUser = () => {
+const logoutUser = () => {
     localStorage.removeItem(location.origin);
 };
 
-export const saveAuthToken = (token, remember=false) => {
+const saveAuthToken = (token, remember=false) => {
     let expiryTime = Date.now() + (remember ? extendedTokenExpiryMs : defaultTokenExpiryMs);
     console.log(remember);
-    console.log(expiryTime)
+    console.log(expiryTime);
     localStorage.setItem(
         location.origin,
         JSON.stringify({
@@ -59,7 +58,7 @@ export const saveAuthToken = (token, remember=false) => {
         }));
 };
 
-export const getAuthToken = () => {
+const getAuthToken = () => {
     const tokenInfo = JSON.parse(localStorage.getItem(location.origin));
 
     if (tokenInfo && Date.now() <= Number.parseInt(tokenInfo[expiryKey])) {
@@ -68,11 +67,11 @@ export const getAuthToken = () => {
     return null;
 };
 
-export const userLoggedIn = (user) => {
-    return user.token !== null && user.token !== undefined;
+const userLoggedIn = user => {
+    return user && user.token !== null && user.token !== undefined;
 };
 
-export default {
+export {
     registerUser,
     loginUser,
     logoutUser,

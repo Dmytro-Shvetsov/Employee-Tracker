@@ -6,7 +6,7 @@ import TextInput from '../common/Input'
 import { loginUser } from "../../services/authService";
 
 
-class LoginForm extends React.Component {
+export default class LoginForm extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -113,5 +113,3 @@ class LoginForm extends React.Component {
         );
     }
 }
-
-export default LoginForm;

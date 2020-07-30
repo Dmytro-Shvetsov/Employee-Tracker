@@ -6,7 +6,7 @@ import { Link, Redirect } from 'react-router-dom';
 import TextInput from '../common/Input'
 
 
-class RegisterForm extends React.Component {
+export default class RegisterForm extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -22,7 +22,7 @@ class RegisterForm extends React.Component {
         };
     }
 
-    handleInputChange = (event) => {
+    handleInputChange = event => {
         const target = event.target;
         const name = target.name;
 
@@ -32,13 +32,13 @@ class RegisterForm extends React.Component {
         });
     };
 
-    handleIsStaffChange = (event) => {
+    handleIsStaffChange = event => {
         this.setState({
             isStaff: !this.state.data.isStaff,
         });
     };
 
-    handleSubmit = (event) => {
+    handleSubmit = event => {
         registerUser(this.state.data).then((res) => {
             console.log(res.data);
 
@@ -124,5 +124,3 @@ class RegisterForm extends React.Component {
         );
     }
 }
-
-export default RegisterForm;
