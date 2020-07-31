@@ -13,7 +13,7 @@ urlpatterns = [
     # path('auth/', include('accounts.urls'), name='auth'),
 
     # Pages
-    re_path(r'.*', include('frontend.urls')),
+    # re_path(r'.*', include('frontend.urls')),
 ]
 
 if settings.DEBUG:

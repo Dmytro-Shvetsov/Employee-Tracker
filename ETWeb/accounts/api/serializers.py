@@ -60,14 +60,12 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({missing_key: 'This field is required'})
 
     def save(self):
-        user = User(
+        return User.objects.create_user(
             username=self.validated_data['username'],
             email=self.validated_data['email'],
             password=self.validated_data['password'],
             is_staff=self.validated_data['is_staff']
         )
-        user.save()
-        return user
 
     class Meta:
         model = User

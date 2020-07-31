@@ -1,8 +1,11 @@
-from rest_framework.routers import DefaultRouter
-from .views import ProjectViewSet
+from django.urls import path, re_path
+from .views import ProjectListView, ProjectDetail
+from rest_framework.urlpatterns import format_suffix_patterns
 
+urlpatterns = [
+    path('', ProjectListView.as_view()),
+    # path('<int:pk>/', ProjectDetail.as_view())
+    re_path(r'(?P<pk>\d+)/', ProjectDetail.as_view())
+]
 
-router = DefaultRouter()
-router.register('', ProjectViewSet)
-
-urlpatterns = router.urls
+urlpatterns = format_suffix_patterns(urlpatterns)
