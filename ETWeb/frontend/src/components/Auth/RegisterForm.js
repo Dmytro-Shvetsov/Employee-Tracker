@@ -1,6 +1,6 @@
 import { registerUser } from '../../services/authService.js'
 import React from 'react';
-import { Button, Form, FormGroup, Label, Input, FormFeedback } from 'reactstrap';
+import {Button, Form, FormGroup, Label, Input, FormFeedback, Alert} from 'reactstrap';
 import { Container } from "reactstrap";
 import { Link, Redirect } from 'react-router-dom';
 import TextInput from '../common/Input'
@@ -67,11 +67,11 @@ export default class RegisterForm extends React.Component {
     };
 
     render() {
-        if (this.state.registrationFinished) {
+        const { errors, registrationFinished } = this.state;
+
+        if (registrationFinished) {
             return <Redirect to="/"/>
         }
-
-        const { errors } = this.state;
         return (
             <React.Fragment>
                 <Container className="col-8" style={{margin: "auto"}}>
@@ -115,6 +115,11 @@ export default class RegisterForm extends React.Component {
                             <Input type="checkbox" onChange={this.handleIsStaffChange}/>{' '}
                             I'd like to create a manager account
                         </Label>
+                    </FormGroup>
+                    <FormGroup>
+                        <Alert color="danger" isOpen={errors.non_field_errors !== undefined}>
+                            {errors.non_field_errors}
+                        </Alert>
                     </FormGroup>
                     <FormGroup className="auth-other">
                         <Button onClick={(event) => this.handleSubmit(event)}>Submit</Button>

@@ -75,15 +75,18 @@ class MainNavBar extends React.Component {
 
 const DashboardNavBar = props => {
     const routeMatch = useRouteMatch();
-    console.log(routeMatch.url);
+    const { user } = props;
+
     return (
         <ListGroup>
             <ListGroupItem>
                 <Link to={`${routeMatch.url}/profile`} className="nav-link text-dark">Account</Link>
             </ListGroupItem>
-            <ListGroupItem>
-                <Link to={`${routeMatch.url}/projects`} className="nav-link text-dark">My Projects</Link>
-            </ListGroupItem>
+            {user.is_staff && (
+                <ListGroupItem>
+                    <Link to={`${routeMatch.url}/projects`} className="nav-link text-dark">My Projects</Link>
+                </ListGroupItem>
+            )}
             <ListGroupItem>
                 <Link to={`${routeMatch.url}/ads`} className="nav-link text-dark">Item3</Link>
             </ListGroupItem>
@@ -100,18 +103,23 @@ const DashboardNavBar = props => {
 const BreadCrumb = props => {
     const { breadcrumbItemsList } = props;
     const lastItemIdx = breadcrumbItemsList.length - 1;
-    // {/*{idx === lastItemIdx && "active"}*/}
+
     return (
         <div>
           <Breadcrumb tag="nav" listTag="div">
               {breadcrumbItemsList.map(
                   (item, idx) => (
                       <BreadcrumbItem
-                                tag={props => <Link to={props.href} className="breadcrumb-item ">{props.children}</Link>}
-                                href={item.href}
-                                key={idx}
-                                >
-                                {item.text}
+                          tag={props => (
+                                    <Link to={props.href}
+                                          className={`breadcrumb-item${idx === lastItemIdx ? " active" : ""}`}
+                                    >
+                                        {props.children}
+                                    </Link>)}
+                          href={item.href}
+                          key={idx}
+                      >
+                          {item.text}
                       </BreadcrumbItem>
                   )
               )}

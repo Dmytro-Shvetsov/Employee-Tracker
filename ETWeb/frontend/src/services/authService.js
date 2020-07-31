@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const registerEndpoint = `/api/auth/register/`;
 const loginEndpoint = `/api/auth/login/`;
+const accountEndpoint = `/api/auth/account/`;
 
 const tokenKey = 'token';
 const expiryKey = 'expiryTime';
@@ -34,6 +35,7 @@ const loginUser = ({username, password}) => {
         {
             'username': username,
             'password': password,
+            'include_acc_info': true
         }, {
             headers: {
              ...headers,
@@ -48,14 +50,14 @@ const logoutUser = () => {
 
 const saveAuthToken = (token, remember=false) => {
     let expiryTime = Date.now() + (remember ? extendedTokenExpiryMs : defaultTokenExpiryMs);
-    console.log(remember);
-    console.log(expiryTime);
+
     localStorage.setItem(
         location.origin,
         JSON.stringify({
             [tokenKey]: token,
             [expiryKey]: expiryTime
-        }));
+        })
+    );
 };
 
 const getAuthToken = () => {
@@ -71,11 +73,26 @@ const userLoggedIn = user => {
     return user && user.token !== null && user.token !== undefined;
 };
 
+const getUserAccount = (authToken) => {
+    return axios.post(
+        accountEndpoint,
+        {},
+        {
+            headers: {
+                ...headers,
+                "Authorization": `${tokenKey} ${authToken}`
+            }
+        }
+    );
+};
+
 export {
+    tokenKey,
     registerUser,
     loginUser,
     logoutUser,
     saveAuthToken,
     getAuthToken,
+    getUserAccount,
     userLoggedIn
 }

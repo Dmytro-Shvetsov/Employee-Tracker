@@ -1,26 +1,45 @@
-import React, { Component } from 'react';
+import React, { Component, Suspense } from 'react';
 import BaseRouter from '../routes';
 import Layout from '../containers/Layout'
+import {saveAuthToken, getUserAccount, logoutUser, getAuthToken} from "../services/authService";
 import 'bootstrap/dist/css/bootstrap.css';
-import { saveAuthToken, getAuthToken, logoutUser } from "../services/authService";
 import '../App.css';
+
 
 class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            user: {
-                token: getAuthToken()
-            }
+            loadingUser: true,
+            user: undefined
         };
+        this.tryRestoreSession();
     }
 
-    handleLogin = (token, remember=false) => {
-        saveAuthToken(token, remember);
-        this.setState({
-            user: {
-                token: token
+    tryRestoreSession = () => {
+        const authToken = getAuthToken();
+        getUserAccount(authToken)
+        .then(res => {
+            const user = JSON.parse(res.data);
+            this.setState({
+                user: user
+            });
+        })
+        .catch(error => {
+            console.log(error.response.data);
+            if (error.response.status !== 401) {
+                console.error("Unexpected server response when retrieving user account.");
+            } else {
+                console.error("Couldn't restore session.", error.response.statusText);
             }
+        })
+        .finally(() => { this.setState({loadingUser: false}) });
+    };
+
+    handleLogin = (user, remember) => {
+        saveAuthToken(user.token, remember);
+        this.setState({
+            user: user
         });
     };
 
@@ -34,17 +53,23 @@ class App extends Component {
     };
 
     render() {
-        console.log(this.state.user, 'user from app');
+        if (this.state.loadingUser) {
+            return <div>Loading...</div>
+        }
         const { user } = this.state;
+        console.log(user, 'user from app');
         return (
             <React.Fragment>
-                <Layout user={user}>
-                    <BaseRouter
-                        user={user}
-                        onLogin={this.handleLogin}
-                        onLogout={this.handleLogout}
-                    />
-                </Layout>
+                <Suspense>
+                    <Layout user={user}>
+                        <BaseRouter
+                            user={user}
+                            onLogin={this.handleLogin}
+                            onLogout={this.handleLogout}
+                        />
+                    </Layout>
+
+                </Suspense>
             </React.Fragment>
         );
     }

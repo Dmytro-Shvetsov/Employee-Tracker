@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Form, FormGroup, Label, Input, FormFeedback } from 'reactstrap';
+import { Button, Form, FormGroup, Label, Input, Alert } from 'reactstrap';
 import { Container } from "reactstrap";
 import { Link, Redirect } from 'react-router-dom';
 import TextInput from '../common/Input'
@@ -36,17 +36,18 @@ export default class LoginForm extends React.Component {
     };
 
     handleSubmit = event => {
-        loginUser(this.state.data).then((res) => {
-            const { token } = res.data;
+        loginUser(this.state.data).then(res => {
+            const data = res.data;
             const { rememberMe } = this.state;
-
             this.setState({
+                errors: [],
                 loginFinished: true
             });
 
-            this.props.onLogin(token, rememberMe);
-        }).catch((error) => {
-            console.log(error.response.data);
+            this.props.onLogin(data, rememberMe);
+        }).catch(error => {
+            console.error(error);
+            console.error(error.response.data);
 
             if (error.response.status === 401) {
                 const fieldErrors = error.response.data;
@@ -65,11 +66,11 @@ export default class LoginForm extends React.Component {
     };
 
     render() {
-        if (this.state.loginFinished) {
+        const { errors, loginFinished } = this.state;
+
+        if (loginFinished) {
             return <Redirect to="/"/>
         }
-
-        const { errors } = this.state;
 
         return (
             <React.Fragment>
@@ -100,6 +101,11 @@ export default class LoginForm extends React.Component {
                             <Input type="checkbox" onChange={this.handleRememberMeChange}/>{' '}
                             Remember me
                         </Label>
+                    </FormGroup>
+                    <FormGroup>
+                        <Alert color="danger" isOpen={errors.non_field_errors !== undefined}>
+                            {errors.non_field_errors}
+                        </Alert>
                     </FormGroup>
                     <FormGroup className="auth-other">
                         <Label>

@@ -21,9 +21,14 @@ class LoginView(ObtainAuthToken):
             return Response(serializer.errors, status.HTTP_401_UNAUTHORIZED)
 
         user = serializer.validated_data['user']
-        return Response({
-            'token': _get_auth_token(user)
-        }, status.HTTP_202_ACCEPTED)
+        response = {
+            'token': _get_auth_token(user),
+        }
+        if 'include_acc_info' in request.data and request.data['include_acc_info']:
+            response.update(
+                HttpUserSerializer(user, context={'request': request}).data
+            )
+        return Response(response, status.HTTP_202_ACCEPTED)
 
 
 class RegisterView(APIView):
@@ -52,3 +57,14 @@ class RegisterView(APIView):
 
         return Response(JSONRenderer().render(response), status=status.HTTP_201_CREATED)
 
+
+class AccountView(APIView):
+    def post(self, request):
+        if not request.data:
+            serializer = HttpUserSerializer(request.user,
+                                            context={'request': request})
+            response = serializer.data
+            response['token'] = _get_auth_token(request.user)
+            return Response(JSONRenderer().render(response), status=status.HTTP_200_OK)
+
+        # otherwise try updating user info

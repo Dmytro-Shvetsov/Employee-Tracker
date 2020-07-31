@@ -4,6 +4,7 @@ import { userLoggedIn } from '../../services/authService'
 import { Redirect } from 'react-router-dom';
 import { DashboardRouter, BreadCrumb } from '../../routes';
 import { DashboardNavBar } from '../NavBar';
+import { NotFound } from '../Pages/index';
 
 
 export default class Dashboard extends React.Component{
@@ -16,16 +17,15 @@ export default class Dashboard extends React.Component{
     render() {
         const { user } = this.state;
         if (!userLoggedIn(user)) {
-            console.log("Not logged in user accesses dashboard page. Redirectin")
-            return <Redirect to="/"/>
+            console.warn("Not logged in user accesses dashboard page. Redirectin");
+            return <NotFound/>
         }
 
         return (
             <React.Fragment>
-                {/*<BreadCrumb/>*/}
                 <div className="row" id="dashboard">
                     <div className="col-3" id="dashboard-navbar">
-                        <DashboardNavBar />
+                        <DashboardNavBar user={user} />
                     </div>
                     <div className="col-9" id="dashboard-content">
                         <DashboardRouter user={user}/>
