@@ -7,6 +7,7 @@ class Project(models.Model):
     members = models.ManyToManyField(User, db_table='project_user')
     budget_usd = models.FloatField(default=0.0,
                                    verbose_name='Money currently spent on a project.')
+    description = models.CharField(max_length=2048, blank=False, default="No project description")
 
     def __str__(self):
         return self.name

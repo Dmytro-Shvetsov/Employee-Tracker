@@ -8,9 +8,9 @@ const headers = {
 };
 
 const loadProjectList = ({token}) => {
+    console.log(token)
     return axios.get(
         apiEndpoint,
-        {},
         {
             headers: {
                 ...headers,

@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from projects.models import Project
 from accounts.api.serializers import HttpUserSerializer
+from rest_framework.exceptions import ValidationError
+from rest_framework import status
 
 
 class GeneralProjectSerializer(serializers.ModelSerializer):
@@ -12,7 +14,7 @@ class GeneralProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ['id', 'name', 'budget_usd', 'members_count']
+        fields = ['id', 'name', 'budget_usd', 'description', 'members_count']
 
 
 class DetailProjectSerializer(serializers.ModelSerializer):
@@ -20,11 +22,22 @@ class DetailProjectSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_member_list(project):
-        # print("\n".join(dir(project)))
         serializer = HttpUserSerializer(project.members.all(), many=True)
         return serializer.data
 
+    def save(self):
+        try:
+            _ = Project.objects.get(name=self.validated_data['name'])
+            raise ValidationError('Project with this name already exists.', status.HTTP_400_BAD_REQUEST)
+        except Project.DoesNotExist:
+            new_project = Project.objects.create(
+                name=self.validated_data['name'],
+                description=self.validated_data['name'],
+            )
+            new_project.members.set([self.context['request'].user])
+            return new_project
+
     class Meta:
         model = Project
-        fields = ['id', 'name', 'budget_usd', 'members']
+        fields = ['id', 'name', 'budget_usd', 'description', 'members']
 

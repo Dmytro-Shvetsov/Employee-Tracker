@@ -1,6 +1,5 @@
 from rest_framework.authtoken.views import ObtainAuthToken, APIView
-from rest_framework import status
-from rest_framework import permissions
+from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.renderers import JSONRenderer
@@ -41,7 +40,8 @@ class RegisterView(APIView):
                                            context={'request': request})
 
         serializer.is_valid(raise_exception=False)
-        if 'user' in serializer.validated_data:
+        user_instance = serializer.validated_data.get('user', None)
+        if user_instance:
             return Response({'error': 'You already have an account.'}, status.HTTP_400_BAD_REQUEST)
 
         if serializer.errors:

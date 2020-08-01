@@ -29,7 +29,7 @@ a:hover {
 
 #main {
     min-height: 90vh;
-    padding-top: 50px;
+    padding-top: 30px;
 }
 
 .auth-btn {
@@ -66,12 +66,45 @@ a:hover {
     display: flex;
     align-items: center;
     height: 4rem;
-    font-size: 1.25rem;
+    font-size: 1.05rem;
     padding-left: 1.2rem;
 }
 
 #dashboard-content {
     min-height: 900px;
+}
+
+.project-name + div {
+    font-size: 1.05rem;
+}
+
+.project-info {
+    width: 250px;
+    height: 150px;
+    word-wrap: break-word;
+}
+
+ {
+    overflow: visible;
+}
+
+.toast {
+    overflow: auto;
+}
+
+/*!* Hide scrollbar for Chrome, Safari and Opera *!*/
+/*.toast::-webkit-scrollbar {*/
+/*  display: none;*/
+/*}*/
+
+/*!* Hide scrollbar for IE, Edge and Firefox *!*/
+/*.toast {*/
+/*  -ms-overflow-style: none;  !* IE and Edge *!*/
+/*  scrollbar-width: none;  !* Firefox *!*/
+/*}*/
+
+.toast-header {
+    padding-left: 0;
 }
 
 @media(max-width: 1000px) {
