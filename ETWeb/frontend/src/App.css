@@ -74,6 +74,10 @@ a:hover {
     min-height: 900px;
 }
 
+#dashboard-content nav {
+    margin-top: 40px;
+}
+
 .project-name + div {
     font-size: 1.05rem;
 }
@@ -84,24 +88,9 @@ a:hover {
     word-wrap: break-word;
 }
 
- {
-    overflow: visible;
-}
-
 .toast {
     overflow: auto;
 }
-
-/*!* Hide scrollbar for Chrome, Safari and Opera *!*/
-/*.toast::-webkit-scrollbar {*/
-/*  display: none;*/
-/*}*/
-
-/*!* Hide scrollbar for IE, Edge and Firefox *!*/
-/*.toast {*/
-/*  -ms-overflow-style: none;  !* IE and Edge *!*/
-/*  scrollbar-width: none;  !* Firefox *!*/
-/*}*/
 
 .toast-header {
     padding-left: 0;

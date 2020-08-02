@@ -7,14 +7,16 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
-const loadProjectList = ({token}) => {
-    console.log(token)
+const loadProjectList = ({token}, page=1) => {
     return axios.get(
         apiEndpoint,
         {
             headers: {
                 ...headers,
                 "Authorization": `${tokenKey} ${token}`
+            },
+            params: {
+                page: page
             }
         }
     );

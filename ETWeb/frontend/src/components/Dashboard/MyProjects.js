@@ -1,5 +1,6 @@
 import React from 'react';
 import * as projects from '../../services/projectsService'
+import Paginator from '../common/Paginator'
 import Icon, {  UploadOutlined, UserOutlined } from '@ant-design/icons';
 import { Spinner, Toast, ToastHeader, ToastBody, Badge } from 'reactstrap'
 
@@ -8,30 +9,40 @@ export default class MyProjects extends React.Component {
         super(props);
         this.state = {
             user: props.user,
-            projects: undefined
+            projects: undefined,
+            pagesCount: 0,
+            itemsPerPage: 0,
+            currentPage: 1
         }
     }
 
-    loadProjects = () => {
+    loadProjects = (page=1) => {
         const { user } = this.state;
-        projects.loadProjectList(user)
-                .then(res => {
-                    console.log("Successful projects loading", res);
-                    const data = JSON.parse(res.data);
-                    this.setState({
-                        projects: data
-                    });
-                })
-                .catch(error => {
-                    console.log("Error projects loading");
-                    console.error(error.response);
-                    console.error(error.response.data);
-                })
+        this._asyncProjectsFetch = projects.loadProjectList(user, page).then(
+            res => {
+                            // console.log("Successful projects loading", res);
+                            const responseData = res.data;
+                            const projects = JSON.parse(responseData.results);
+                            this.setState({
+                                projects: projects,
+                                pagesCount: Math.ceil(responseData.count / projects.length),
+                                currentPage: page,
+                            });
+            }).catch(error => {
+            console.log("Error projects loading");
+            console.error(error.response);
+            console.error(error.response.data);
+        });
     };
 
     componentDidMount() {
         this.loadProjects();
     }
+
+    handlePageChange = value => {
+        console.log("changing to ", value)
+        this.loadProjects(value);
+    };
 
     renderSingleProject(project) {
         return (
@@ -66,16 +77,26 @@ export default class MyProjects extends React.Component {
     }
 
     render() {
+        const { currentPage, pagesCount } = this.state;
         const { projects } = this.state;
         if (projects === undefined) {
             return <Spinner/>
         }
         const { user } = this.state;
         return (
+            <React.Fragment>
             <div className="row d-flex flex-wrap">
                 <h3>Projects for user {user.token}</h3>
                 {this.renderProjects()}
             </div>
+            <Paginator
+                className={"row d-flex justify-content-center py-auto"}
+                page={currentPage}
+                count={pagesCount}
+                onPageChange={this.handlePageChange}
+            />
+
+            </React.Fragment>
         );
     }
 };

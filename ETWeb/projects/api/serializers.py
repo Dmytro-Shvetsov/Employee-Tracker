@@ -32,7 +32,7 @@ class DetailProjectSerializer(serializers.ModelSerializer):
         except Project.DoesNotExist:
             new_project = Project.objects.create(
                 name=self.validated_data['name'],
-                description=self.validated_data['name'],
+                description=self.validated_data.get('description', Project.DEFAULT_DESCRIPTION),
             )
             new_project.members.set([self.context['request'].user])
             return new_project
