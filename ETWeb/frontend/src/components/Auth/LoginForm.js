@@ -36,6 +36,8 @@ export default class LoginForm extends React.Component {
     };
 
     handleSubmit = event => {
+        event.preventDefault();
+
         loginUser(this.state.data).then(res => {
             const data = res.data;
             const { rememberMe } = this.state;
@@ -49,18 +51,26 @@ export default class LoginForm extends React.Component {
             console.error(error);
             console.error(error.response.data);
 
-            if (error.response.status === 401) {
-                const fieldErrors = error.response.data;
+            switch (error.response.status) {
+                case 400: {
+                    const fieldErrors = error.response.data;
+                    Object.keys(fieldErrors).map((fieldName) => {
+                        fieldErrors[fieldName] = fieldErrors[fieldName].join(" ");
+                        console.log(fieldErrors[fieldName])
+                    });
 
-                Object.keys(fieldErrors).map((fieldName) => {
-                    fieldErrors[fieldName] = fieldErrors[fieldName].join(" ");
-                });
-
-                this.setState({
-                    errors: fieldErrors
-                });
-            } else {
-                console.log("Unexpected error occurred. ", error);
+                    this.setState({
+                        errors: fieldErrors
+                    });
+                    break;
+                }
+                case 401: {
+                    window.location.replace("/login");
+                    break;
+                }
+                default: {
+                    console.log("Unexpected error occurred. ", error);
+                }
             }
         });
     };

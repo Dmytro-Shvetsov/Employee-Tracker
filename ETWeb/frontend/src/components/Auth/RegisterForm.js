@@ -39,29 +39,36 @@ export default class RegisterForm extends React.Component {
     };
 
     handleSubmit = event => {
-        registerUser(this.state.data).then((res) => {
-            console.log(res.data);
+        event.preventDefault();
 
-            const { token } = JSON.parse(res.data);
+        registerUser(this.state.data).then((res) => {
             this.setState({
                 registrationFinished: true
             });
-            this.props.onLogin(token);
+
         }).catch((error) => {
             console.log(error.response.data);
 
-            if (error.response.status === 401) {
-                const fieldErrors = error.response.data;
+            switch (error.response.status) {
+                case 400: {
+                    const fieldErrors = error.response.data;
+                    Object.keys(fieldErrors).map((fieldName) => {
+                        fieldErrors[fieldName] = fieldErrors[fieldName].join(" ");
+                        console.log(fieldErrors[fieldName])
+                    });
 
-                Object.keys(fieldErrors).map((fieldName) => {
-                    fieldErrors[fieldName] = fieldErrors[fieldName].join(" ");
-                });
-
-                this.setState({
-                    errors: fieldErrors
-                });
-            } else {
-                console.log("Unexpected error occurred. ", error);
+                    this.setState({
+                        errors: fieldErrors
+                    });
+                    break;
+                }
+                case 401: {
+                    window.location.replace("/login");
+                    break;
+                }
+                default: {
+                    console.log("Unexpected error occurred. ", error);
+                }
             }
         });
     };
@@ -70,7 +77,8 @@ export default class RegisterForm extends React.Component {
         const { errors, registrationFinished } = this.state;
 
         if (registrationFinished) {
-            return <Redirect to="/"/>
+            alert('You are almost there! Check out your email to complete registration.');
+            return <Redirect to="/login"/>
         }
         return (
             <React.Fragment>

@@ -22,6 +22,20 @@ const loadProjectList = ({token}, page=1) => {
     );
 };
 
+const createNewProject = ({token}, data) => {
+    return axios.post(
+        apiEndpoint,
+        data,
+        {
+            headers: {
+                ...headers,
+                "Authorization": `${tokenKey} ${token}`
+            },
+        }
+    );
+};
+
 export {
-    loadProjectList
+    loadProjectList,
+    createNewProject
 }

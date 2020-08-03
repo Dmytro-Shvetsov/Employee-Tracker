@@ -10,7 +10,8 @@ class GeneralProjectSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_members_count(project):
-        return project.members.count()
+        # total members count not including the user that makes the request
+        return project.members.count() - 1
 
     class Meta:
         model = Project
@@ -30,9 +31,13 @@ class DetailProjectSerializer(serializers.ModelSerializer):
             _ = Project.objects.get(name=self.validated_data['name'])
             raise ValidationError('Project with this name already exists.', status.HTTP_400_BAD_REQUEST)
         except Project.DoesNotExist:
+            # check if description is present in the serializer's data
+            desc = self.validated_data.get('description', Project.DEFAULT_DESCRIPTION)
+            # verify if description is not string
+            desc = desc if desc else Project.DEFAULT_DESCRIPTION
             new_project = Project.objects.create(
                 name=self.validated_data['name'],
-                description=self.validated_data.get('description', Project.DEFAULT_DESCRIPTION),
+                description=desc
             )
             new_project.members.set([self.context['request'].user])
             return new_project

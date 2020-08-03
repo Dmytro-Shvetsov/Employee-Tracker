@@ -15,7 +15,9 @@ class LoginView(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data,
                                            context={'request': request})
-        serializer.is_valid(raise_exception=False)
+
+        serializer.is_valid(raise_exception=True)
+
         if serializer.errors:
             return Response(serializer.errors, status.HTTP_401_UNAUTHORIZED)
 
@@ -49,13 +51,11 @@ class RegisterView(APIView):
 
         user_instance = serializer.save()
 
-        token = Token.objects.get(user=user_instance)
-        response = {
-            'token': token.key
-        }
         # response['user']['profile'] = UserProfileSerializer(user_instance.profile).data
 
-        return Response(JSONRenderer().render(response), status=status.HTTP_201_CREATED)
+        return Response(JSONRenderer().render({
+            'token': _get_auth_token(user_instance)
+        }), status=status.HTTP_201_CREATED)
 
 
 class AccountView(APIView):

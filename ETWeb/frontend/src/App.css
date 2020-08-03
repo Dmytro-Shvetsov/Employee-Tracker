@@ -96,6 +96,10 @@ a:hover {
     padding-left: 0;
 }
 
+.project-info.highlighted {
+    border: 2px solid #4cff4c;
+}
+
 @media(max-width: 1000px) {
     #navbar {
         font-size: 1.2rem;

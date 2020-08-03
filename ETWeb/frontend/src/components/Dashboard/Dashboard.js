@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { userLoggedIn } from '../../services/authService'
 // import {  UploadOutlined, UserOutlined, VideoCameraOutlined  } from '@ant-design/icons';
-import { Redirect } from 'react-router-dom';
 import { DashboardRouter, BreadCrumb } from '../../routes';
 import { DashboardNavBar } from '../NavBar';
 import { NotFound } from '../Pages/index';

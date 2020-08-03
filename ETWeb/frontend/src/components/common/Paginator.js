@@ -10,20 +10,23 @@ function joinPaths(p1, p2) {
 }
 
 export default class Paginator extends React.Component {
+    static DEFAULT_PAGE_STEP = 2;
     constructor(props) {
         super(props);
         this.state = {
             page: props.page,
             count: props.count,
-            step: props.step || 2
+            step: props.step || Paginator.DEFAULT_PAGE_STEP
         };
         this.onPageChange = props.onPageChange;
     }
 
     static getDerivedStateFromProps(props, state) {
-        if (props.page !== state.page) {
+        if (props.page !== state.page || props.count !== state.count) {
           return {
-            page: props.page
+            page: props.page,
+            step: props.step || Paginator.DEFAULT_PAGE_STEP,
+            count: props.count,
           };
         }
 
