@@ -28,7 +28,7 @@ class WebsocketUserSerializer:
 class HttpUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'is_staff', 'date_joined']
+        fields = ['id', 'username', 'email', 'is_staff', 'date_joined']
 
 
 class UserProfileSerializer(serializers.ModelSerializer):

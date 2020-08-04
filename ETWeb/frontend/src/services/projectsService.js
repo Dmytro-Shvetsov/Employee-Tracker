@@ -22,6 +22,45 @@ const loadProjectList = ({token}, page=1) => {
     );
 };
 
+const getProject = ({token}, id) => {
+    console.log(id);
+    return axios.get(
+        `${apiEndpoint}/${id}/`,
+        {
+            headers: {
+                ...headers,
+                "Authorization": `${tokenKey} ${token}`
+            },
+        }
+    );
+};
+
+
+
+const updateProject = ({token}, id, data) => {
+    return axios.put(
+        `${apiEndpoint}/${id}/`,
+        data,
+        {
+            headers: {
+                ...headers,
+                "Authorization": `${tokenKey} ${token}`
+            }
+    });
+};
+
+const deleteProject = ({token}, id) => {
+    return axios.delete(
+        `${apiEndpoint}/${id}/`,
+        {
+            headers: {
+                ...headers,
+                "Authorization": `${tokenKey} ${token}`
+            }
+    });
+};
+
+
 const createNewProject = ({token}, data) => {
     return axios.post(
         apiEndpoint,
@@ -37,5 +76,8 @@ const createNewProject = ({token}, data) => {
 
 export {
     loadProjectList,
-    createNewProject
+    createNewProject,
+    getProject,
+    updateProject,
+    deleteProject
 }

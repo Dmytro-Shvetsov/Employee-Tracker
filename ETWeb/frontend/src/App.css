@@ -1,3 +1,11 @@
+:root {
+  --staff-user-bg-color: #f4fe9b;
+}
+
+table, th, td {
+    border: 1px solid black !important;
+}
+
 a:hover {
     text-decoration: none;
 }
@@ -88,6 +96,11 @@ a:hover {
     word-wrap: break-word;
 }
 
+.project-info:hover {
+    background-color: #dbeeff;
+    cursor: pointer;
+}
+
 .toast {
     overflow: auto;
 }
@@ -98,6 +111,15 @@ a:hover {
 
 .project-info.highlighted {
     border: 2px solid #4cff4c;
+}
+
+.staff-user {
+    background-color: var(--staff-user-bg-color);
+}
+
+.username-link {
+    color: #007bff !important;
+    cursor: pointer;
 }
 
 @media(max-width: 1000px) {

@@ -1,5 +1,4 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
 import { Pagination, PaginationItem, PaginationLink } from "reactstrap";
 
 function joinPaths(p1, p2) {
@@ -37,14 +36,11 @@ export default class Paginator extends React.Component {
     generatePaginationRange() {
         let { page, count, step } = this.state;
         const range = [];
-        for (let i = page - step; i < page + step; i++) {
+        for (let i = page - step; i < page + step && i <= count; i++) {
             // console.log("iter", i);
             if (i <= 0) {
                 step += 1;
                 continue;
-            }
-            if (i > count) {
-                break;
             }
             range.push(i);
         }

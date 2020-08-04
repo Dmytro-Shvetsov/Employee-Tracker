@@ -1,6 +1,5 @@
 import React from 'react';
-import { Switch, Route, Redirect, useRouteMatch } from 'react-router-dom';
-import { userLoggedIn } from './services/authService';
+import { BrowserRouter as Router, Switch, Route, Redirect, useRouteMatch, useLocation } from 'react-router-dom';
 import * as Pages from './components/Pages/index'
 import * as Auth from './components/Auth/index'
 import * as Dashboard from './components/Dashboard/index'
@@ -17,15 +16,23 @@ const BaseRouter = props => {
                 {/*<Route exact path="/contact" component={Home}/>*/}
 
                 {/* Auth component group routes */}
-                <Route exact path="/register"
-                       component={() => <Auth.RegisterForm onLogin={props.onLogin}/>}/>
-                <Route exact path="/login" component={() => <Auth.LoginForm onLogin={props.onLogin}/>}/>
-                <Route exact path="/logout" component={() => <Auth.Logout onLogout={props.onLogout}/>}/>
+                <Route exact path="/register">
+                    <Auth.RegisterForm onLogin={props.onLogin}/>
+                </Route>
+                <Route exact path="/login">
+                    <Auth.LoginForm onLogin={props.onLogin}/>
+                </Route>
+                <Route exact path="/logout">
+                    <Auth.Logout onLogout={props.onLogout}/>
+                </Route>
+
                 {/*
                   * Dashboard component group routes.
                   * No exact keyword to handle variations with DashboardRouter
                   */}
-                <Route path="/dashboard" component={() => <Dashboard.Dashboard user={props.user} />}/>
+                <Route path="/dashboard">
+                    <Dashboard.Dashboard user={props.user} />
+                </Route>
 
                 {/* Unexpected routes */}
                 <Route component={Pages.NotFound}/>
@@ -35,21 +42,29 @@ const BaseRouter = props => {
 };
 
 const DashboardRouter = props => {
-    const routeMatch = useRouteMatch();
-    const { user } = props;
-
+    const match = useRouteMatch();
     return (
-        <React.Fragment>
-            <Switch>
-                <Route exact path={`${routeMatch.url}/`} component={() => <Dashboard.Profile user={props.user}/>}/>
-                <Route exact path={`${routeMatch.url}/profile`} component={() => <Dashboard.Profile user={props.user}/>}/>
-                {user.is_staff && (<Route
-                                        exact path={`${routeMatch.url}/projects`}
-                                        component={() => <Dashboard.MyProjects user={props.user}/>}
-                                   />)}
-                <Route component={() => <Redirect to="/not-found"/>}/>
-            </Switch>
-        </React.Fragment>
+        <Switch>
+            <Route exact path={`${match.url}`}>
+                <Dashboard.Profile user={props.user}/>
+            </Route>
+            <Route exact path={`${match.url}/profile`}>
+                <Dashboard.Profile user={props.user}/>
+            </Route>
+            {props.user.is_staff && (
+                <Switch>
+                    <Route exact path={`${match.url}/projects`}>
+                        <Dashboard.MyProjects user={props.user}/>
+                    </Route>
+                    {/*<Route exact path={`${match.url}/projects/:id`} component={(p)=>{console.log(p); return <a></a>}}>*/}
+                    <Route exact path={`${match.url}/projects/:id`}
+                           component={({match}) => <Dashboard.ProjectDetail match={match} user={props.user}/>}/>
+                </Switch>)
+            }
+            <Route>
+                <Redirect to="/not-found"/>
+            </Route>
+        </Switch>
     );
 };
 

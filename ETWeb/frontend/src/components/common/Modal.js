@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import React from 'react';
+import PropTypes from "prop-types";
+import { Button, Modal as BaseModal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 
-export default props => {
+const Modal = props => {
   const {
     modalTitle,
     triggerBtnLabel,
@@ -13,7 +14,6 @@ export default props => {
   } = props;
 
   // const [modal, setModal] = useState(false);
-
   // const toggle = () => setModal(!modal);
 
   return (
@@ -26,7 +26,7 @@ export default props => {
               {triggerBtnLabel}
             </Button>
           </div>
-      <Modal isOpen={modal} toggle={onToggle} className={className}>
+      <BaseModal isOpen={modal} toggle={onToggle} className={className}>
           <ModalHeader toggle={onToggle}>{modalTitle}</ModalHeader>
           <ModalBody>
             {props.children}
@@ -35,7 +35,25 @@ export default props => {
             <Button color="success" onClick={onAction}>{actionBtnLabel}</Button>{' '}
             <Button color="secondary" onClick={onToggle}>Cancel</Button>
           </ModalFooter>
-        </Modal>
+        </BaseModal>
       </div>
   );
 };
+
+Modal.propTypes = {
+    triggerBtnLabel: PropTypes.string.isRequired,
+    actionBtnLabel: PropTypes.string.isRequired,
+    onAction: PropTypes.func.isRequired,
+    onToggle: PropTypes.func.isRequired,
+    modalTitle: PropTypes.string,
+    className: PropTypes.string,
+    modal: PropTypes.bool,
+};
+
+Modal.defaultProps = {
+    modalTitle: '',
+    className: '',
+    modal: false,
+};
+
+export default Modal;

@@ -42,7 +42,7 @@ const AuthItems = props => {
 
 class MainNavBar extends React.Component {
     constructor(props) {
-        super(props)
+        super(props);
     }
 
     render() {

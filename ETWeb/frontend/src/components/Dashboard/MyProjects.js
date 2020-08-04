@@ -1,9 +1,9 @@
 import React from 'react';
 import * as projects from '../../services/projectsService'
-import { Paginator, Modal } from '../common/index'
+import { Paginator, CustomLink } from '../common/index'
 import ProjectCreationForm  from './ProjectCreationForm'
-import Icon, {  UploadOutlined, UserOutlined } from '@ant-design/icons';
-import { Spinner, Toast, ToastHeader, ToastBody, Badge } from 'reactstrap'
+import Icon, { UploadOutlined, UserOutlined } from '@ant-design/icons';
+import { Spinner, Toast, ToastHeader, ToastBody } from 'reactstrap'
 
 export default class MyProjects extends React.Component {
     constructor(props) {
@@ -28,7 +28,7 @@ export default class MyProjects extends React.Component {
                 const projects = JSON.parse(responseData.results);
                 this.setState({
                     projects: projects,
-                    pagesCount: Math.ceil(responseData.count / projects.length),
+                    pagesCount: Math.ceil(responseData.count / responseData.page_size),
                     currentPage: page,
                 });
             }).catch(error => {
@@ -43,12 +43,12 @@ export default class MyProjects extends React.Component {
     }
 
     handlePageChange = value => {
-        console.log("changing to ", value)
+        // console.log("changing to ", value);
         this.loadProjects(value);
     };
 
     handleProjectCreated = id => {
-        console.log("created project ", id)
+        // console.log("created project ", id);
         this.setState({
             highlightedProjectId: id,
         });
@@ -58,27 +58,32 @@ export default class MyProjects extends React.Component {
     renderSingleProject(project) {
         const { highlightedProjectId } = this.state;
         return (
-            <Toast
-                className={`m-3 rounded project-info${project.id === highlightedProjectId ? " highlighted" : ""}`}
+            <CustomLink
+                to={`projects/${project.id}`}
+                tag="div"
                 key={project.id}
             >
-                <ToastHeader tag={props => <React.Fragment>{props.children}</React.Fragment>}>
-                    <strong className="project-name col-8 text-left">{project.name}</strong>
-                    <div className="col-4 p-0 ml-auto d-flex justify-content-end">
+                <Toast
+                    className={`m-3 rounded project-info${project.id === highlightedProjectId ? " highlighted" : ""}`}
+                >
+                    <ToastHeader tag={props => <React.Fragment>{props.children}</React.Fragment>}>
+                        <strong className="project-name col-8 text-left">{project.name}</strong>
+                        <div className="col-4 p-0 ml-auto d-flex justify-content-end">
                         <span className="project-budget ml-auto d-flex align-items-center">
                             <Icon component={props => "$"} style={{marginRight: "0.1rem"}}/>
                             <span className="count">{project.budget_usd}</span>
                         </span>
-                        <span className="project-employee-count d-flex align-items-center ml-sm-2">
+                            <span className="project-employee-count d-flex align-items-center ml-sm-2">
                             <UserOutlined/>
                             <span className="count">{project.members_count}</span>
                         </span>
-                    </div>
-                </ToastHeader>
-                <ToastBody>
-                    {project.description}
-                </ToastBody>
-            </Toast>
+                        </div>
+                    </ToastHeader>
+                    <ToastBody>
+                        {project.description}
+                    </ToastBody>
+                </Toast>
+            </CustomLink>
         );
     }
 

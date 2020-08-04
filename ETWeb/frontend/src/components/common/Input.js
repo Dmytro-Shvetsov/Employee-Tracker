@@ -1,5 +1,6 @@
 import {FormFeedback, FormGroup, Input, Label} from "reactstrap";
 import React from "react";
+import PropTypes from "prop-types";
 
 
 export default class TextInput extends React.Component {
@@ -14,7 +15,7 @@ export default class TextInput extends React.Component {
     }
 
     render() {
-        const { name, labelText, type="text", required=true} = this.state;
+        const { name, labelText, type, required } = this.state;
         return (
             <FormGroup>
                 <Label for={name}>{labelText}</Label>
@@ -30,3 +31,18 @@ export default class TextInput extends React.Component {
         );
     }
 }
+
+TextInput.propTypes = {
+    name: PropTypes.string.isRequired,
+    labelText: PropTypes.string.isRequired,
+    onInputChange: PropTypes.func.isRequired,
+    type: PropTypes.string,
+    required: PropTypes.bool,
+    error: PropTypes.string
+};
+
+TextInput.defaultProps = {
+    type: "text",
+    required: true,
+    error: undefined,
+};
