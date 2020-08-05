@@ -26,21 +26,33 @@ class DetailProjectSerializer(serializers.ModelSerializer):
         serializer = HttpUserSerializer(project.members.all(), many=True)
         return serializer.data
 
+    def validate(self, attrs):
+        if not self.instance:
+            projects = self.context['projects']
+            try:
+                _ = projects.get(name__exact=attrs['name'])
+                raise ValidationError({'name': 'You already have project with provided name.'})
+            except Project.DoesNotExist:
+                pass
+
+        desc = attrs.get('description', Project.DEFAULT_DESCRIPTION)
+
+        # verify if description is not an empty string
+        attrs['description'] = desc if desc else Project.DEFAULT_DESCRIPTION
+
+        return attrs
+
     def save(self):
-        try:
-            _ = Project.objects.get(name=self.validated_data['name'])
-            raise ValidationError('Project with this name already exists.', status.HTTP_400_BAD_REQUEST)
-        except Project.DoesNotExist:
-            # check if description is present in the serializer's data
-            desc = self.validated_data.get('description', Project.DEFAULT_DESCRIPTION)
-            # verify if description is not string
-            desc = desc if desc else Project.DEFAULT_DESCRIPTION
-            new_project = Project.objects.create(
-                name=self.validated_data['name'],
-                description=desc
-            )
-            new_project.members.set([self.context['request'].user])
-            return new_project
+        instance = self.instance
+        if instance:
+            instance.name = self.validated_data['name']
+            instance.description = self.validated_data['description']
+        else:
+            instance = Project.objects.create(**self.validated_data)
+            instance.members.set([self.context['request'].user])
+
+        instance.save()
+        return instance
 
     class Meta:
         model = Project

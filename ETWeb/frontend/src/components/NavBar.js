@@ -80,7 +80,10 @@ const DashboardNavBar = props => {
     return (
         <ListGroup>
             <ListGroupItem>
-                <Link to={`${routeMatch.url}/profile`} className="nav-link text-dark">Account</Link>
+                <Link to={`${routeMatch.url}/profile`} className="nav-link text-dark">Profile</Link>
+            </ListGroupItem>
+            <ListGroupItem>
+                <Link to={`${routeMatch.url}/account`} className="nav-link text-dark">Account</Link>
             </ListGroupItem>
             {user.is_staff && (
                 <ListGroupItem>

@@ -4,6 +4,7 @@ from rest_framework.views import Response, APIView
 from rest_framework.settings import api_settings
 from rest_framework.renderers import JSONRenderer
 from .serializers import GeneralProjectSerializer, DetailProjectSerializer
+from ETWeb.api.views import JSONUpdateMixin
 from collections import OrderedDict
 
 
@@ -20,6 +21,9 @@ class ProjectListView(APIView, PageNumberPagination):
             ('results', data)
         ]))
 
+    """
+        Retrieve one page of all owned projects
+    """
     def get(self, request):
         projects = self.get_queryset()
 
@@ -30,6 +34,9 @@ class ProjectListView(APIView, PageNumberPagination):
 
         return self.get_paginated_response(JSONRenderer().render(serializer.data))
 
+    """
+        Create new project
+    """
     def post(self, request):
         projects = self.get_queryset()
         serializer = DetailProjectSerializer(data=request.data,
@@ -45,9 +52,11 @@ class ProjectListView(APIView, PageNumberPagination):
         }), status=status.HTTP_201_CREATED)
 
 
-class ProjectDetail(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = DetailProjectSerializer
+class ProjectDetail(generics.RetrieveDestroyAPIView, JSONUpdateMixin):
     renderer_classes = (JSONRenderer,)
+    serializer_class = DetailProjectSerializer
+    model_name = serializer_class.Meta.model.__name__
 
     def get_queryset(self):
         return self.request.user.project_set.prefetch_related().all()
+

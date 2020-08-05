@@ -122,6 +122,10 @@ a:hover {
     cursor: pointer;
 }
 
+.form-control:disabled {
+    background-color: #f1fef0 !important;
+}
+
 @media(max-width: 1000px) {
     #navbar {
         font-size: 1.2rem;

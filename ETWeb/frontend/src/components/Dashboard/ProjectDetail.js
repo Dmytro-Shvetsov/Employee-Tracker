@@ -1,15 +1,15 @@
 import React from 'react';
 import * as projects from '../../services/projectsService'
-import { CustomLink } from '../common/index'
+import { Link } from 'react-router-dom'
 import { Spinner } from 'reactstrap'
 import { Card, Table, CardHeader, CardFooter, CardBody,
   CardTitle, CardText } from 'reactstrap';
+import { NotFound } from '../Pages/index'
 
 
 export default class ProjectDetail extends React.Component {
     constructor(props) {
         super(props);
-        console.log(this.props);
         this.state = {
             user: props.user,
         }
@@ -28,6 +28,12 @@ export default class ProjectDetail extends React.Component {
                     window.location.replace("/login");
                     break;
                 }
+                case 404: {
+                    this.setState({
+                        id: null
+                    });
+                    break;
+                }
                 default: {
                     console.log("Unexpected error occurred. ", error);
                 }
@@ -41,7 +47,7 @@ export default class ProjectDetail extends React.Component {
     }
 
     renderMembersTable() {
-        const {members} = this.state;
+        const { user, members } = this.state;
         if (members === undefined) {
             console.error("renderMembersTable() called when information about the project was not loaded");
             return;
@@ -63,9 +69,12 @@ export default class ProjectDetail extends React.Component {
                             <tr className={m.is_staff ? "staff-user" : ""} key={`${m.id}`}>
                                 <th scope="row">{idx + 1}</th>
                                 <td>
-                                    <CustomLink to={`user/${m.id}`} tag="a" className="username-link">
+                                    <Link
+                                        to={m.id === user.id ? "/dashboard/account" : `/dashboard/user/${m.id}`}
+                                        className="username-link"
+                                    >
                                         @{m.username}
-                                    </CustomLink>
+                                    </Link>
                                 </td>
                                 <td>{m.email || <span className="text-secondary">No email provided.</span>}</td>
                                 <td>{new Date(Date.parse(m.date_joined)).toLocaleString()}</td>
@@ -86,6 +95,9 @@ export default class ProjectDetail extends React.Component {
 
         if (id === undefined) {
             return <Spinner/>
+        }
+        if (id === null) {
+            return <NotFound/>
         }
 
         return (

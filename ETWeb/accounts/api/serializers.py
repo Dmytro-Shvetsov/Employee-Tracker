@@ -75,3 +75,20 @@ class RegisterSerializer(serializers.ModelSerializer):
                 'write_only': True
              }
         }
+
+
+class UserAccountUpdateSerialize(serializers.ModelSerializer):
+    def validate(self, attrs):
+        email = attrs['email']
+        validators.is_email_valid(email)
+        return attrs
+
+    def save(self, **kwargs):
+        if self.instance:
+            self.instance.email = self.validated_data['email']
+            self.instance.save()
+        return self.instance
+
+    class Meta:
+        model = User
+        fields = ['email']

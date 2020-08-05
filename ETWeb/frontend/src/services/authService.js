@@ -3,6 +3,7 @@ import axios from 'axios';
 const registerEndpoint = `/api/auth/register/`;
 const loginEndpoint = `/api/auth/login/`;
 const accountEndpoint = `/api/auth/account/`;
+const profileEndpoint = `/api/auth/profile/`;
 
 const tokenKey = 'token';
 const expiryKey = 'expiryTime';
@@ -86,6 +87,19 @@ const getUserAccount = (authToken) => {
     );
 };
 
+const getUserProfile = ({token}) => {
+    return axios.post(
+        profileEndpoint,
+        {},
+        {
+            headers: {
+                ...headers,
+                "Authorization": `${tokenKey} ${token}`
+            }
+        }
+    );
+};
+
 export {
     tokenKey,
     registerUser,
@@ -94,5 +108,6 @@ export {
     saveAuthToken,
     getAuthToken,
     getUserAccount,
-    userLoggedIn
+    getUserProfile,
+    userLoggedIn,
 }

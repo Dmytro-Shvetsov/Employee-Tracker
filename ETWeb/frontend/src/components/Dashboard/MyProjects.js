@@ -59,7 +59,7 @@ export default class MyProjects extends React.Component {
         const { highlightedProjectId } = this.state;
         return (
             <CustomLink
-                to={`projects/${project.id}`}
+                to={`project/${project.id}`}
                 tag="div"
                 key={project.id}
             >

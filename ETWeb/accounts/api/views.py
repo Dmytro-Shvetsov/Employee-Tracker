@@ -1,9 +1,10 @@
 from rest_framework.authtoken.views import ObtainAuthToken, APIView
 from rest_framework import status, permissions
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.renderers import JSONRenderer
-from .serializers import (HttpUserSerializer, UserProfileSerializer, RegisterSerializer)
+from .serializers import (HttpUserSerializer, UserProfileSerializer, RegisterSerializer, UserAccountUpdateSerialize)
 
 
 def _get_auth_token(user):
@@ -12,6 +13,9 @@ def _get_auth_token(user):
 
 
 class LoginView(ObtainAuthToken):
+    """
+        Try authorize with given credentials
+    """
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data,
                                            context={'request': request})
@@ -37,6 +41,9 @@ class RegisterView(APIView):
     authentication_classes = ()
     permission_classes = (permissions.AllowAny, )
 
+    """
+        Create new user
+    """
     def post(self, request):
         serializer = self.serializer_class(data=request.data,
                                            context={'request': request})
@@ -49,9 +56,7 @@ class RegisterView(APIView):
         if serializer.errors:
             return Response(serializer.errors, status.HTTP_401_UNAUTHORIZED)
 
-        user_instance = serializer.save()
-
-        # response['user']['profile'] = UserProfileSerializer(user_instance.profile).data
+        serializer.save()
 
         return Response(JSONRenderer().render({
             'token': _get_auth_token(user_instance)
@@ -59,12 +64,47 @@ class RegisterView(APIView):
 
 
 class AccountView(APIView):
-    def post(self, request):
-        if not request.data:
-            serializer = HttpUserSerializer(request.user,
-                                            context={'request': request})
-            response = serializer.data
-            response['token'] = _get_auth_token(request.user)
-            return Response(JSONRenderer().render(response), status=status.HTTP_200_OK)
+    permission_classes = (permissions.IsAuthenticated,)
 
-        # otherwise try updating user info
+    """
+        Retrieve account information
+    """
+    def post(self, request):
+        serializer = HttpUserSerializer(request.user)
+        response = serializer.data
+        response['token'] = _get_auth_token(request.user)
+        return Response(JSONRenderer().render(response),
+                        status=status.HTTP_200_OK)
+
+    """
+        Update account information
+    """
+    def put(self, request):
+        serializer = UserAccountUpdateSerialize(instance=request.user, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_202_ACCEPTED)
+
+
+class ProfileView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = UserProfileSerializer
+
+    """
+        Retrieve account information
+    """
+    def post(self, request):
+        serializer = self.serializer_class(request.user.profile)
+        return Response(JSONRenderer().render(serializer.data),
+                        status=status.HTTP_200_OK)
+
+    """
+        Update user profile information
+    """
+    def put(self, request):
+        if not request.data:
+            serializer = self.serializer_class(request.user.profile)
+            return Response(JSONRenderer().render(serializer.data),
+                            status=status.HTTP_200_OK)
+
+        return Response(status=status.HTTP_400_BAD_REQUEST)

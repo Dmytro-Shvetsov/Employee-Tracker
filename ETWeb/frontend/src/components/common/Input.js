@@ -1,48 +1,57 @@
-import {FormFeedback, FormGroup, Input, Label} from "reactstrap";
+import { FormFeedback, FormGroup, Input as BaseInput, Label } from "reactstrap";
 import React from "react";
 import PropTypes from "prop-types";
 
 
-export default class TextInput extends React.Component {
+export default class Input extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             name: props.name,
             labelText: props.labelText,
             type: props.type,
-            required: props.required
+            required: props.required,
+            placeholder: props.placeholder,
+            value: props.value
         }
     }
 
     render() {
-        const { name, labelText, type, required } = this.state;
+        const { name, labelText, type, required, placeholder, value } = this.state;
         return (
             <FormGroup>
                 <Label for={name}>{labelText}</Label>
-                <Input invalid={this.props.error !== undefined}
-                       autoComplete={type === 'password' ? "new-password" : ''}
-                       onChange={this.props.onInputChange}
-                       type={type}
-                       name={name}
-                       id={`#${name}`}
-                       placeholder={required ? "*" : ""}/>
+                <BaseInput
+                    type={type}
+                    value={value}
+                    disabled={this.props.disabled !== undefined}
+                    invalid={this.props.error !== undefined}
+                    autoComplete={type === 'password' ? "new-password" : ""}
+                    onChange={this.props.onInputChange}
+                    name={name}
+                    id={`#${name}`}
+                    placeholder={`${placeholder}${required ? "*" : ""}`}
+                />
                 <FormFeedback>{this.props.error}</FormFeedback>
             </FormGroup>
         );
     }
 }
 
-TextInput.propTypes = {
+Input.propTypes = {
     name: PropTypes.string.isRequired,
-    labelText: PropTypes.string.isRequired,
     onInputChange: PropTypes.func.isRequired,
+    labelText: PropTypes.string,
+    placeholder: PropTypes.string,
     type: PropTypes.string,
     required: PropTypes.bool,
     error: PropTypes.string
 };
 
-TextInput.defaultProps = {
+Input.defaultProps = {
+    labelText: "",
     type: "text",
+    placeholder: "",
     required: true,
     error: undefined,
 };

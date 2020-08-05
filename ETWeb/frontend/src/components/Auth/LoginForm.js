@@ -1,6 +1,5 @@
 import React from 'react';
-import { Button, Form, FormGroup, Label, Input, Alert } from 'reactstrap';
-import { Container } from "reactstrap";
+import { Button, Form, FormGroup, Label, Input, Alert, Container } from 'reactstrap';
 import { Link, Redirect } from 'react-router-dom';
 import TextInput from '../common/Input'
 import { loginUser } from "../../services/authService";
@@ -25,8 +24,8 @@ export default class LoginForm extends React.Component {
         const name = target.name;
 
         this.setState({
-            data: { ...this.state.data, [name]: target.value},
-            errors: {...this.state.errors, [name]: undefined},
+            data: { ...this.state.data, [name]: target.value },
+            errors: { ...this.state.errors, [name]: undefined },
         });
     };
     handleRememberMeChange = event => {

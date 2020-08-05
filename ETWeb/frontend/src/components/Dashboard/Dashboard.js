@@ -1,9 +1,8 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { userLoggedIn } from '../../services/authService'
 // import {  UploadOutlined, UserOutlined, VideoCameraOutlined  } from '@ant-design/icons';
-import { DashboardRouter, BreadCrumb } from '../../routes';
+import { DashboardRouter } from '../../routes';
 import { DashboardNavBar } from '../NavBar';
-import { NotFound } from '../Pages/index';
 
 
 export default class Dashboard extends React.Component{
@@ -16,8 +15,9 @@ export default class Dashboard extends React.Component{
     render() {
         const { user } = this.state;
         if (!userLoggedIn(user)) {
-            console.warn("Not logged in user accesses dashboard page. Redirectin");
-            return <NotFound/>
+            console.warn("Not logged in user accesses dashboard page.");
+            window.location.replace("/login");
+            return;
         }
 
         return (
