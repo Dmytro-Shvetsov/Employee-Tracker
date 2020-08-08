@@ -105,13 +105,13 @@ export default class ProjectCreationForm extends React.Component {
                         name="name"
                         labelText="Name"
                         error={errors.name}
-                        onInputChange={this.handleInputChange}
+                        onChange={this.handleInputChange}
                     />
                     <TextInput
                         name="description"
                         labelText="Brief description"
                         error={errors.description}
-                        onInputChange={this.handleInputChange}
+                        onChange={this.handleInputChange}
                         type="textarea"
                         required={false}
                     />

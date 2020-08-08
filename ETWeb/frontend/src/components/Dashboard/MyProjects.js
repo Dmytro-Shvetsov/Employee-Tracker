@@ -66,14 +66,14 @@ export default class MyProjects extends React.Component {
                 <Toast
                     className={`m-3 rounded project-info${project.id === highlightedProjectId ? " highlighted" : ""}`}
                 >
-                    <ToastHeader tag={props => <React.Fragment>{props.children}</React.Fragment>}>
+                    <ToastHeader className="pr-2" tag={props => <React.Fragment>{props.children}</React.Fragment>}>
                         <strong className="project-name col-8 text-left">{project.name}</strong>
-                        <div className="col-4 p-0 ml-auto d-flex justify-content-end">
-                        <span className="project-budget ml-auto d-flex align-items-center">
-                            <Icon component={props => "$"} style={{marginRight: "0.1rem"}}/>
+                        <div className="col-4 p-0 d-flex justify-content-end">
+                        <span className="project-budget d-flex align-items-center">
+                            <Icon component={props => "$"} />
                             <span className="count">{project.budget_usd}</span>
                         </span>
-                            <span className="project-employee-count d-flex align-items-center ml-sm-2">
+                            <span className="project-employee-count d-flex align-items-center ml-sm-1">
                             <UserOutlined/>
                             <span className="count">{project.members_count}</span>
                         </span>

@@ -10,12 +10,13 @@ urlpatterns = [
     path('api/auth/', include('accounts.api.urls')),
 
     path('admin/', admin.site.urls),
-    # path('auth/', include('accounts.urls'), name='auth'),
-
-    # Pages
-    re_path(r'.*', include('frontend.urls')),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+urlpatterns += [
+    # Pages
+    re_path(r'.*', include('frontend.urls')),
+]

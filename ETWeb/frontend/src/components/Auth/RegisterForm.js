@@ -96,26 +96,26 @@ export default class RegisterForm extends React.Component {
                         name="username"
                         labelText="Username"
                         error={errors.username}
-                        onInputChange={this.handleInputChange}
+                        onChange={this.handleInputChange}
                     />
                     <TextInput
                         name="email"
                         labelText="Email"
                         error={errors.email}
-                        onInputChange={this.handleInputChange}
+                        onChange={this.handleInputChange}
                     />
                     <TextInput
                         name="password"
                         labelText="Password"
                         error={errors.password}
-                        onInputChange={this.handleInputChange}
+                        onChange={this.handleInputChange}
                         type="password"
                     />
                     <TextInput
                         name="password2"
                         labelText="Confirm password"
                         error={errors.password2}
-                        onInputChange={this.handleInputChange}
+                        onChange={this.handleInputChange}
                         type="password"
                     />
                     <FormGroup check>

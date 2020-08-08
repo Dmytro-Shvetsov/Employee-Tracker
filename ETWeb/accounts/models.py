@@ -65,13 +65,15 @@ def wrap_user_creation(sender, instance=None, created=False, **kwargs):
 
 
 class UserProfile(models.Model):
+    DEFAULT_PROFILE_IMAGE = 'profile_images/default_user_image.jpg'
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=100, null=True, blank=True)
     last_name = models.CharField(max_length=100, null=True, blank=True)
     company = models.CharField(max_length=100, null=True, blank=True)
     current_position = models.CharField(max_length=100, null=True, blank=True)
     image = models.ImageField(upload_to='profile_images',
-                              default='profile_images/default_user_image.jpg',
+                              default=DEFAULT_PROFILE_IMAGE,
                               blank=True)
 
     @property

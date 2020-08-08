@@ -34,7 +34,7 @@ class HttpUserSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = '__all__'
+        exclude = ['id', 'user']
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -77,7 +77,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         }
 
 
-class UserAccountUpdateSerialize(serializers.ModelSerializer):
+class UserAccountUpdateSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         email = attrs['email']
         validators.is_email_valid(email)

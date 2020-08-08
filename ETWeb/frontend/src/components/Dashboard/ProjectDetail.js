@@ -2,8 +2,15 @@ import React from 'react';
 import * as projects from '../../services/projectsService'
 import { Link } from 'react-router-dom'
 import { Spinner } from 'reactstrap'
-import { Card, Table, CardHeader, CardFooter, CardBody,
-  CardTitle, CardText } from 'reactstrap';
+import {
+    Card,
+    Table,
+    CardHeader,
+    CardFooter,
+    CardBody,
+    CardTitle,
+    CardText
+} from 'reactstrap';
 import { NotFound } from '../Pages/index'
 
 

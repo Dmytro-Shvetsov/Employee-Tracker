@@ -2,12 +2,13 @@ import React from 'react';
 import NavBar, { BreadCrumb } from "../components/NavBar";
 import { Container } from 'reactstrap';
 import { useLocation } from 'react-router-dom'
+import * as utils from '../utils'
 
 
 export default props => {
     const { pathname } = useLocation();
     const routeParts = pathname.split("/").filter(Boolean);
-    const breadCrumbItems = [{href:"/", text:"Home"}];
+    const breadCrumbItems = [{href: "/", text: "Home"}];
     let tempHref = "";
     for (let i in routeParts)
     {
@@ -15,7 +16,7 @@ export default props => {
 
         breadCrumbItems.push({
             href: tempHref,
-            text: `${routeParts[i].charAt(0).toUpperCase()}${routeParts[i].slice(1)}`,
+            text: utils.capitalize(routeParts[i]),
         });
     }
 

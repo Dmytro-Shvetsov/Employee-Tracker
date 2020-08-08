@@ -1,10 +1,15 @@
+import os
+from django.conf import settings
 from rest_framework.authtoken.views import ObtainAuthToken, APIView
 from rest_framework import status, permissions
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.renderers import JSONRenderer
-from .serializers import (HttpUserSerializer, UserProfileSerializer, RegisterSerializer, UserAccountUpdateSerialize)
+from .serializers import (HttpUserSerializer,
+                          UserProfileSerializer,
+                          RegisterSerializer,
+                          UserAccountUpdateSerializer)
 
 
 def _get_auth_token(user):
@@ -23,7 +28,7 @@ class LoginView(ObtainAuthToken):
         serializer.is_valid(raise_exception=True)
 
         if serializer.errors:
-            return Response(serializer.errors, status.HTTP_401_UNAUTHORIZED)
+            return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
         user = serializer.validated_data['user']
         response = {
@@ -80,10 +85,11 @@ class AccountView(APIView):
         Update account information
     """
     def put(self, request):
-        serializer = UserAccountUpdateSerialize(instance=request.user, data=request.data)
+        serializer = UserAccountUpdateSerializer(instance=request.user, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(status=status.HTTP_202_ACCEPTED)
+        return Response(JSONRenderer().render(serializer.data),
+                        status=status.HTTP_202_ACCEPTED)
 
 
 class ProfileView(APIView):
@@ -91,7 +97,7 @@ class ProfileView(APIView):
     serializer_class = UserProfileSerializer
 
     """
-        Retrieve account information
+        Retrieve profile information
     """
     def post(self, request):
         serializer = self.serializer_class(request.user.profile)
@@ -102,9 +108,14 @@ class ProfileView(APIView):
         Update user profile information
     """
     def put(self, request):
-        if not request.data:
-            serializer = self.serializer_class(request.user.profile)
-            return Response(JSONRenderer().render(serializer.data),
-                            status=status.HTTP_200_OK)
+        profile = request.user.profile
+        prev_image = profile.image
+        serializer = self.serializer_class(instance=profile, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        if request.data.get('image', None):
+            os.remove(os.path.join(settings.MEDIA_ROOT, prev_image.name))
 
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(JSONRenderer().render(serializer.data),
+                        status=status.HTTP_200_OK)
+

@@ -12,25 +12,29 @@ export default class Input extends React.Component {
             type: props.type,
             required: props.required,
             placeholder: props.placeholder,
-            value: props.value
-        }
+            accept: props.accept,
+        };
+        Object.keys(props).filter(key => key.match(/on/)).forEach(eventKey => {
+            this.state[eventKey] = this.props[eventKey];
+        });
     }
 
     render() {
-        const { name, labelText, type, required, placeholder, value } = this.state;
+        const { name, labelText, type, required, placeholder, accept, ...events } = this.state;
         return (
             <FormGroup>
                 <Label for={name}>{labelText}</Label>
                 <BaseInput
                     type={type}
-                    value={value}
-                    disabled={this.props.disabled !== undefined}
+                    value={this.props.value}
+                    disabled={this.props.disabled}
                     invalid={this.props.error !== undefined}
                     autoComplete={type === 'password' ? "new-password" : ""}
-                    onChange={this.props.onInputChange}
                     name={name}
-                    id={`#${name}`}
+                    id={`${name}`}
                     placeholder={`${placeholder}${required ? "*" : ""}`}
+                    accept={accept}
+                    {...events}
                 />
                 <FormFeedback>{this.props.error}</FormFeedback>
             </FormGroup>
@@ -40,7 +44,7 @@ export default class Input extends React.Component {
 
 Input.propTypes = {
     name: PropTypes.string.isRequired,
-    onInputChange: PropTypes.func.isRequired,
+    // onChange: PropTypes.func.isRequired,
     labelText: PropTypes.string,
     placeholder: PropTypes.string,
     type: PropTypes.string,

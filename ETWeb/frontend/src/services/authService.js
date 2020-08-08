@@ -87,6 +87,19 @@ const getUserAccount = (authToken) => {
     );
 };
 
+const updateUserAccount = ({token}, data) => {
+    return axios.put(
+        accountEndpoint,
+        data,
+        {
+            headers: {
+                ...headers,
+                "Authorization": `${tokenKey} ${token}`
+            }
+        }
+    );
+};
+
 const getUserProfile = ({token}) => {
     return axios.post(
         profileEndpoint,
@@ -94,6 +107,25 @@ const getUserProfile = ({token}) => {
         {
             headers: {
                 ...headers,
+                "Authorization": `${tokenKey} ${token}`
+            }
+        }
+    );
+};
+
+const updateUserProfile = ({token}, data) => {
+    const formData = new FormData();
+    Object.keys(data).forEach(key => {
+        formData.append(key, data[key]);
+    });
+
+    return axios.put(
+        profileEndpoint,
+        formData,
+        {
+            headers: {
+                ...headers,
+                "Content-Type": "multipart/form-data; boundary=---WebKitFormBoundary7MA4YWxkTrZu0gW",
                 "Authorization": `${tokenKey} ${token}`
             }
         }
@@ -108,6 +140,8 @@ export {
     saveAuthToken,
     getAuthToken,
     getUserAccount,
+    updateUserAccount,
     getUserProfile,
+    updateUserProfile,
     userLoggedIn,
 }

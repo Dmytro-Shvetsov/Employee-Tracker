@@ -55,7 +55,7 @@ export default class LoginForm extends React.Component {
                     const fieldErrors = error.response.data;
                     Object.keys(fieldErrors).map((fieldName) => {
                         fieldErrors[fieldName] = fieldErrors[fieldName].join(" ");
-                        console.log(fieldErrors[fieldName])
+                        console.log(fieldErrors[fieldName]);
                     });
 
                     this.setState({
@@ -96,13 +96,13 @@ export default class LoginForm extends React.Component {
                         name="username"
                         labelText="Username"
                         error={errors.username}
-                        onInputChange={this.handleInputChange}
+                        onChange={this.handleInputChange}
                     />
                     <TextInput
                         name="password"
                         labelText="Password"
                         error={errors.password}
-                        onInputChange={this.handleInputChange}
+                        onChange={this.handleInputChange}
                         type="password"
                     />
                     <FormGroup check>

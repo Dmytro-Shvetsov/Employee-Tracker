@@ -9,6 +9,17 @@ table, th, td {
 a:hover {
     text-decoration: none;
 }
+
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}
+
 #navbar {
     font-size: 1.35rem;
     margin: 0;
@@ -123,7 +134,47 @@ a:hover {
 }
 
 .form-control:disabled {
-    background-color: #f1fef0 !important;
+    background-color: #edf0f5 !important;
+}
+
+#profile-image-input {
+    position: relative;
+    width: 196px;
+    height: 196px;
+    float: right;
+    font-size: 0.8rem;
+    margin-right: 60px;
+}
+
+#profile-image-input img {
+    position: absolute;
+    width: inherit;
+    height: inherit;
+    z-index: 10;
+}
+
+#profile-image-input input {
+    z-index: 20;
+    position: absolute;
+    bottom: 0;
+}
+
+#profile-image-input .invalid-feedback {
+    position: absolute;
+    z-index: 30;
+    bottom: -60px;
+}
+
+#profile-image-input:hover {
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+/*
+    margin right for ant icons
+*/
+span[role=img] {
+    margin-right: 0.18rem !important;
 }
 
 @media(max-width: 1000px) {
