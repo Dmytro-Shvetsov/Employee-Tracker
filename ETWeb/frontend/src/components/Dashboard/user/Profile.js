@@ -14,6 +14,7 @@ export default class UserProfile extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            reqSource: undefined,
             user: props.user,
             savedData: {},
             unsavedData: {},
@@ -23,10 +24,10 @@ export default class UserProfile extends React.Component {
     }
 
     loadProfileData = async () => {
-        const {user} = this.state;
+        await this.cancelPreviousRequests();
+        const {reqSource, user} = this.state;
         try {
-            const response = await auth.getUserProfile({user: {...user}});
-
+            const response = await auth.getUserProfile({user: {...user}}, reqSource.token);
             const data = JSON.parse(response.data);
             this.setState({
                 savedData: {...data},
@@ -47,12 +48,19 @@ export default class UserProfile extends React.Component {
         }
     };
 
+    cancelPreviousRequests = async () => {
+        if (this.state.reqSource) {
+            this.state.reqSource.cancel();
+        }
+        this.setState({reqSource: axios.CancelToken.source()});
+    };
+
     componentDidMount() {
         this.loadProfileData();
     }
 
     componentWillUnmount() {
-        // auth.source.cancel();
+        this.cancelPreviousRequests();
     }
 
     handleTextInputChange = event => {
@@ -77,14 +85,15 @@ export default class UserProfile extends React.Component {
 
     handleProfileUpdate = async event => {
         event.preventDefault();
-        const { user, unsavedData } = this.state;
+        await this.cancelPreviousRequests();
+        const { reqSource, user, unsavedData } = this.state;
 
         if (utils.typeOf(unsavedData.image) === "string") {
             delete unsavedData.image;
         }
-        try {
 
-            const response = await auth.updateUserProfile({...unsavedData, user: {...user}});
+        try {
+            const response = await auth.updateUserProfile({...unsavedData, user: {...user}}, reqSource.token);
             const data = JSON.parse(response.data);
 
             this.setState({

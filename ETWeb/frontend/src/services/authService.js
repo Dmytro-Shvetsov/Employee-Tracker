@@ -19,7 +19,7 @@ axios.interceptors.request.use(
         // set authorization header before request is sent
 
         // set authorization header before request is sent
-        let { url, data } = config;
+        let { data } = config;
         if (config.headers['Authorization'] === undefined && data !== undefined && data.user !== undefined) {
             config.headers['Authorization'] = `${tokenKey} ${data.user.token}`;
             delete data.user;
@@ -37,24 +37,31 @@ axios.interceptors.request.use(
 const resInterceptor = axios.interceptors.response.use(
     response => response,
     function (error) {
-        // handle response errors
-        switch (error.response.status) {
-            case 401: {
-                window.location.replace("/login");
-                break;
+        // check if the request was canceled manually
+        if (axios.isCancel(error)) {
+            console.warn('Request canceled.');
+        } else {
+            // handle response errors
+            switch (error.response.status) {
+                case 401: {
+                    window.location.replace("/login");
+                    break;
+                }
+                default: {
+                    console.log("Unexpected error occurred. ", error);
+                }
             }
-            default: {
-                console.log("Unexpected error occurred. ", error);
-            }
+            return Promise.reject(error);
         }
-        return Promise.reject(error);
     });
 
 
 const registerUser = ({username,
                       email,
-                      password, password2,
-                      isStaff=false}) => {
+                      password,
+                      password2,
+                      isStaff=false},
+                      cancelToken) => {
     return axios.post(
         registerEndpoint,
         {
@@ -64,17 +71,12 @@ const registerUser = ({username,
             'password2': password2,
             'is_staff': isStaff
         },
+        {cancelToken}
     );
 };
 
-const loginUser = data => {
-     return axios.post(
-        loginEndpoint,
-        {
-            ...data,
-            'include_acc_info': true
-        }
-    );
+const loginUser = (data, cancelToken) => {
+     return axios.post(loginEndpoint, {...data, 'include_acc_info': true}, {cancelToken});
 };
 
 const logoutUser = () => {
@@ -106,11 +108,11 @@ const userLoggedIn = user => {
     return user && user.token !== null && user.token !== undefined;
 };
 
-const getUserAccount = async data => {
+const getUserAccount = async (data, cancelToken) => {
     // perform request without request interceptor
     try {
         axios.interceptors.response.eject(resInterceptor);
-        return await axios.post(accountEndpoint, data);
+        return await axios.post(accountEndpoint, data, {cancelToken});
     } catch (error) {
         throw error;
     } finally {
@@ -118,15 +120,15 @@ const getUserAccount = async data => {
     }
 };
 
-const updateUserAccount = data => {
-    return axios.put(accountEndpoint, data);
+const updateUserAccount = (data, cancelToken) => {
+    return axios.put(accountEndpoint, data, {cancelToken});
 };
 
-const getUserProfile = data => {
-    return axios.post(profileEndpoint, data);
+const getUserProfile = (data, cancelToken) => {
+    return axios.post(profileEndpoint, data, cancelToken);
 };
 
-const updateUserProfile = ({user, ...data}) => {
+const updateUserProfile = ({user, ...data}, cancelToken) => {
     const formData = new FormData();
     Object.keys(data).forEach(key => {
         formData.append(key, data[key]);
@@ -140,13 +142,12 @@ const updateUserProfile = ({user, ...data}) => {
                 "Content-Type": "multipart/form-data; boundary=---WebKitFormBoundary7MA4YWxkTrZu0gW",
                 "Authorization": `${tokenKey} ${user.token}`,
             },
+            cancelToken
         }
     );
 };
 
-const source ={};
 export {
-    source,
     tokenKey,
     registerUser,
     loginUser,

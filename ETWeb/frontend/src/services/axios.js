@@ -13,6 +13,10 @@ function getCookie(cname) {
      return "";
 }
 
+const withSource = (fn,...args) => {
+
+};
+
 const globalConfig = {
     headers: {
         'X-CSRFToken': getCookie('csrftoken'),

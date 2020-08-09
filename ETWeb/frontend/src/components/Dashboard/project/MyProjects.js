@@ -4,11 +4,13 @@ import { Paginator, CustomLink } from '../../common'
 import ProjectCreationForm  from './ProjectCreationForm'
 import Icon, { UploadOutlined, UserOutlined } from '@ant-design/icons';
 import { Spinner, Toast, ToastHeader, ToastBody } from 'reactstrap'
+import axios from "axios";
 
 export default class MyProjects extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            reqSource: undefined,
             user: props.user,
             projects: undefined,
             pagesCount: 0,
@@ -20,10 +22,10 @@ export default class MyProjects extends React.Component {
 
     loadProjects = async (page=1) => {
         // console.log("Loading projects");
-        const {user} = this.state;
+        await this.cancelPreviousRequests();
+        const {reqSource, user} = this.state;
         try {
-
-            const response = await projectsService.loadProjectList({user: {...user}}, page);
+            const response = await projectsService.loadProjectList({user: {...user}}, reqSource.token, page);
             // console.log("Successful projects loading", res);
             const {data} = response;
             const projects = JSON.parse(data.results);
@@ -33,6 +35,7 @@ export default class MyProjects extends React.Component {
                 currentPage: page,
             });
         } catch (error) {
+            console.error(error.message);
             if (error.response.status === 400) {
                 const fieldErrors = error.response.data;
                 Object.keys(fieldErrors).map((fieldName) => {
@@ -47,12 +50,19 @@ export default class MyProjects extends React.Component {
         }
     };
 
+    cancelPreviousRequests = async () => {
+        if (this.state.reqSource) {
+            this.state.reqSource.cancel();
+        }
+        this.setState({reqSource: axios.CancelToken.source()});
+    };
+
     componentDidMount() {
         this.loadProjects();
     }
 
     componentWillUnmount() {
-        // projectsService.source.cancel();
+        this.cancelPreviousRequests();
     }
 
     handlePageChange = async value => {

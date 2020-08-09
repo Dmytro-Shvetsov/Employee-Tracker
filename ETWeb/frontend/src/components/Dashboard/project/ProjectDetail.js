@@ -12,20 +12,23 @@ import {
     CardText
 } from 'reactstrap';
 import { NotFound } from '../../Pages'
+import axios from "axios";
 
 
 export default class ProjectDetail extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            reqSource: undefined,
             user: props.user,
         }
     }
 
     loadProjectInfo = async id => {
-        const {user} = this.state;
+        const {reqSource, user} = this.state;
+        await this.cancelPreviousRequests();
         try {
-            const response = await projects.getProject(id, {user: {...user}});
+            const response = await projects.getProject(id, {user: {...user}}, reqSource.token);
             console.log("Project loaded.", response.data);
             this.setState({
                 ...response.data
@@ -45,13 +48,20 @@ export default class ProjectDetail extends React.Component {
         }
     };
 
+    cancelPreviousRequests = async () => {
+        if (this.state.reqSource) {
+            this.state.reqSource.cancel();
+        }
+        this.setState({reqSource: axios.CancelToken.source()});
+    };
+
     componentDidMount() {
         const { match: { params } } = this.props;
         this.loadProjectInfo(params.id);
     }
 
     componentWillUnmount() {
-        // projects.source.cancel();
+        this.cancelPreviousRequests();
     }
 
     renderMembersTable() {

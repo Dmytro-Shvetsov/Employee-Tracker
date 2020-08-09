@@ -15,6 +15,7 @@ export default class UserProfile extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            reqSource: undefined,
             user: props.user,
             savedData: {},
             unsavedData: {},
@@ -22,6 +23,13 @@ export default class UserProfile extends React.Component {
             editing: false
         }
     }
+
+    cancelPreviousRequests = async () => {
+        if (this.state.reqSource) {
+            this.state.reqSource.cancel();
+        }
+        this.setState({reqSource: axios.CancelToken.source()});
+    };
 
     componentDidMount() {
         const { user: { email } } = this.state;
@@ -33,7 +41,7 @@ export default class UserProfile extends React.Component {
     }
 
     componentWillUnmount() {
-        // auth.source.cancel();
+        this.cancelPreviousRequests();
     }
 
     handleTextInputChange = event => {
@@ -48,9 +56,10 @@ export default class UserProfile extends React.Component {
 
     handleAccountUpdate = async event => {
         event.preventDefault();
-        const {user, unsavedData} = this.state;
+        await this.cancelPreviousRequests();
+        const {reqSource, user, unsavedData} = this.state;
         try {
-            const response = await auth.updateUserAccount({...unsavedData, user: {...user}});
+            const response = await auth.updateUserAccount({...unsavedData, user: {...user}}, reqSource.token);
             const data = JSON.parse(response.data);
             this.setState({
                 savedData: {...data},

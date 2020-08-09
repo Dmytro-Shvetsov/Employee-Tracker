@@ -1,5 +1,6 @@
 import React from 'react';
-import * as auth from "../../services/authService";
+import axios from 'axios';
+import * as auth from '../../services/authService';
 import { Button, Form, FormGroup, Label, Input, Alert, Container } from 'reactstrap';
 import { Link, Redirect } from 'react-router-dom';
 import TextInput from '../common/Input'
@@ -9,6 +10,7 @@ export default class LoginForm extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            reqSource: undefined,
             data: {
                 username: '',
                 password: '',
@@ -36,9 +38,11 @@ export default class LoginForm extends React.Component {
 
     handleSubmit = async event => {
         event.preventDefault();
-        const { data } = this.state;
+        await this.cancelPreviousRequests();
+        const { reqSource, data } = this.state;
         try {
-            const response = await (auth.loginUser(data));
+            console.log(reqSource)
+            const response = await auth.loginUser(data, reqSource.token);
             const { rememberMe } = this.state;
             this.setState({
                 errors: [],
@@ -46,6 +50,7 @@ export default class LoginForm extends React.Component {
             });
             this.props.onLogin(response.data, rememberMe);
         } catch (error) {
+            console.log(error);
             if (error.response.status === 400) {
                 const fieldErrors = error.response.data;
                 Object.keys(fieldErrors).map((fieldName) => {
@@ -60,8 +65,15 @@ export default class LoginForm extends React.Component {
         }
     };
 
+    cancelPreviousRequests = async () => {
+        if (this.state.reqSource) {
+            this.state.reqSource.cancel();
+        }
+        this.setState({reqSource: axios.CancelToken.source()});
+    };
+
     componentWillUnmount() {
-        // auth.source.cancel();
+        this.cancelPreviousRequests();
     }
 
     render() {

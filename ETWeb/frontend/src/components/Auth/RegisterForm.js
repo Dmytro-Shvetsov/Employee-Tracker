@@ -4,12 +4,14 @@ import { Button, Form, FormGroup, Label, Input, Alert } from 'reactstrap';
 import { Container } from "reactstrap";
 import { Link, Redirect } from 'react-router-dom';
 import TextInput from '../common/Input'
+import axios from "axios";
 
 
 export default class RegisterForm extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            reqSource: undefined,
             data: {
                 username: '',
                 email: '',
@@ -40,8 +42,9 @@ export default class RegisterForm extends React.Component {
 
     handleSubmit = async event => {
         event.preventDefault();
+        await this.cancelPreviousRequests();
         try {
-            const response = await auth.registerUser(this.state.data);
+            const response = await auth.registerUser(this.state.data, this.state.reqSource.token);
             this.setState({
                 registrationFinished: true
             });
@@ -61,8 +64,15 @@ export default class RegisterForm extends React.Component {
         }
     };
 
+    cancelPreviousRequests = async () => {
+        if (this.state.reqSource) {
+            this.state.reqSource.cancel();
+        }
+        this.setState({reqSource: axios.CancelToken.source()});
+    };
+
     componentWillUnmount() {
-        // auth.source.cancel();
+        this.cancelPreviousRequests();
     }
 
     render() {

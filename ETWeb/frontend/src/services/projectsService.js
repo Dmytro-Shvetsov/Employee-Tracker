@@ -26,44 +26,55 @@ const resInterceptor = axios.interceptors.response.use(
     response => response,
     function (error) {
         // handle response errors
-        switch (error.response.status) {
-            case 401: {
-                // window.location.replace("/login");
-                break;
-            }
-            default: {
-                console.log("Unexpected error occurred. ", error);
+
+        // check if the request was canceled manually
+        if (axios.isCancel(error)) {
+            console.warn('Request canceled.');
+        } else {
+            switch (error.response.status) {
+                case 401: {
+                    // window.location.replace("/login");
+                    break;
+                }
+                default: {
+                    console.log("Unexpected error occurred. ", error);
+                }
             }
         }
         return Promise.reject(error);
     });
 
 
-const loadProjectList = (data, page=1) => {
-    return axios.get(
-        apiEndpoint,
-        {
+const loadProjectList = (data, cancelToken, page=1) => {
+    return axios.get(apiEndpoint, {
             headers:{"Authorization": `${tokenKey} ${data.user.token}`},
-            params: {page: page}
+            params: {page: page},
+            cancelToken
         }
     );
 };
 
-const getProject = (id, data) => {
-    return axios.get(`${apiEndpoint}/${id}/`, {headers:{"Authorization": `${tokenKey} ${data.user.token}`}});
+const getProject = (id, data, cancelToken) => {
+    return axios.get(`${apiEndpoint}/${id}/`, {
+            headers:{"Authorization": `${tokenKey} ${data.user.token}`},
+            cancelToken
+        });
 };
 
-const updateProject = (id, data) => {
-    return axios.put(`${apiEndpoint}/${id}/`, data);
+const updateProject = (id, data, cancelToken) => {
+    return axios.put(`${apiEndpoint}/${id}/`, data, {cancelToken});
 };
 
-const deleteProject = (id, data) => {
-    return axios.delete(`${apiEndpoint}/${id}/`, {headers:{"Authorization": `${tokenKey} ${data.user.token}`}});
+const deleteProject = (id, data, cancelToken) => {
+    return axios.delete(`${apiEndpoint}/${id}/`, {
+            headers:{"Authorization": `${tokenKey} ${data.user.token}`},
+            cancelToken
+        });
 };
 
 
-const createNewProject = data => {
-    return axios.post(apiEndpoint, data);
+const createNewProject = (data, cancelToken) => {
+    return axios.post(apiEndpoint, data, {cancelToken});
 };
 
 const source = {};
