@@ -25,6 +25,7 @@
     "@babel/preset-react": "^7.10.4",
     "babel-loader": "^8.1.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
+    "core-js": "^3.6.5",
     "css-loader": "^3.6.0",
     "style-loader": "^1.2.1",
     "webpack": "^4.43.0",

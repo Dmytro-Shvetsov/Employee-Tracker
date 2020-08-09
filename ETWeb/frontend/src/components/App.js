@@ -1,4 +1,4 @@
-import React, { Component, Suspense } from 'react';
+import React, { Component } from 'react';
 import BaseRouter from '../routes';
 import Layout from '../containers/Layout'
 import {saveAuthToken, getUserAccount, logoutUser, getAuthToken} from "../services/authService";
@@ -13,28 +13,32 @@ class App extends Component {
             loadingUser: true,
             user: undefined
         };
-        this.tryRestoreSession();
     }
 
-    tryRestoreSession = () => {
+    tryRestoreSession = async () => {
         const authToken = getAuthToken();
-        getUserAccount(authToken)
-        .then(res => {
-            const user = JSON.parse(res.data);
+        try {
+            const response = await getUserAccount({user:{token:authToken}});
+            const user = JSON.parse(response.data);
             this.setState({
                 user: user
             });
-        })
-        .catch(error => {
+        } catch (error) {
+            console.log(error);
             console.log(error.response.data);
             if (error.response.status !== 401) {
                 console.error("Unexpected server response when retrieving user account.");
             } else {
                 console.error("Couldn't restore session.", error.response.statusText);
             }
-        })
-        .finally(() => { this.setState({loadingUser: false}) });
+        }
+
+        this.setState({loadingUser: false});
     };
+
+    componentDidMount() {
+        this.tryRestoreSession();
+    }
 
     handleLogin = (user, remember) => {
         saveAuthToken(user.token, remember);
@@ -57,19 +61,16 @@ class App extends Component {
             return <div>Loading...</div>
         }
         const { user } = this.state;
-        console.log(user, 'user from app');
+        console.log(user, 'User (App component)');
         return (
             <React.Fragment>
-                <Suspense>
-                    <Layout user={user}>
-                        <BaseRouter
-                            user={user}
-                            onLogin={this.handleLogin}
-                            onLogout={this.handleLogout}
-                        />
-                    </Layout>
-
-                </Suspense>
+                <Layout user={user}>
+                    <BaseRouter
+                        user={user}
+                        onLogin={this.handleLogin}
+                        onLogout={this.handleLogout}
+                    />
+                </Layout>
             </React.Fragment>
         );
     }

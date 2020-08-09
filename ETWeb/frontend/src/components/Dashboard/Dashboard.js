@@ -1,9 +1,7 @@
 import React from 'react'
 import { userLoggedIn } from '../../services/authService'
 // import {  UploadOutlined, UserOutlined, VideoCameraOutlined  } from '@ant-design/icons';
-import { DashboardRouter } from '../../routes';
-import { DashboardNavBar } from '../NavBar';
-
+import { DashboardRouter, DashboardNavBar} from './index';
 
 export default class Dashboard extends React.Component{
     constructor(props) {

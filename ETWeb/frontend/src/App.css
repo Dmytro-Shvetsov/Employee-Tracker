@@ -10,21 +10,10 @@ a:hover {
     text-decoration: none;
 }
 
-.noselect {
-  -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-     -khtml-user-select: none; /* Konqueror HTML */
-       -moz-user-select: none; /* Old versions of Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none; /* Non-prefixed version, currently
-                                  supported by Chrome, Edge, Opera and Firefox */
-}
-
 #navbar {
     font-size: 1.35rem;
     margin: 0;
     padding: 1.1rem 0.4rem;
-
 }
 
 #jumbo * {
@@ -77,6 +66,11 @@ a:hover {
     padding-right: 1.7rem;
     font-size: 1.55rem;
 }
+
+.list-group-item.active {
+    background-color: #d7eeff;
+}
+
 #dashboard-navbar li{
     padding: 0;
 }

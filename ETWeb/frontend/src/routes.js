@@ -1,5 +1,5 @@
 import React from 'react';
-import { Switch, Route, Redirect, useRouteMatch } from 'react-router-dom';
+import { Switch, Route } from 'react-router-dom';
 import * as Pages from './components/Pages/index'
 import * as Auth from './components/Auth/index'
 import * as Dashboard from './components/Dashboard/index'
@@ -41,40 +41,7 @@ const BaseRouter = props => {
     );
 };
 
-const DashboardRouter = props => {
-    const match = useRouteMatch();
-    return (
-        <Switch>
-            <Route exact path={`${match.url}`}>
-                <Dashboard.Profile user={props.user}/>
-            </Route>
-            <Route exact path={`${match.url}/profile`}>
-                <Dashboard.Profile user={props.user}/>
-            </Route>
-            <Route exact path={`${match.url}/account`}>
-                <Dashboard.Account user={props.user}/>
-            </Route>
-            {props.user.is_staff && (
-                    <Switch>
-                        <Route exact path={`${match.url}/projects`}>
-                            <Dashboard.MyProjects user={props.user}/>
-                        </Route>
-                        <Route exact path={`${match.url}/project/:id`}
-                               component={({ match }) => <Dashboard.ProjectDetail match={match} user={props.user}/>}/>
-                        <Route exact path={`${match.url}/user/:id`}
-                               component={({ match }) => <Dashboard.Profile match={match} user={props.user}/>}/>
-                    </Switch>
-                )
-            }
-            <Route>
-                <Redirect to="/not-found"/>
-            </Route>
-        </Switch>
-    );
-};
-
 export default BaseRouter;
 export {
     BaseRouter,
-    DashboardRouter
 }

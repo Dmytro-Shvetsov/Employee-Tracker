@@ -1,23 +1,60 @@
-import axios from 'axios';
+import axios from './axios';
 
+// const { CancelToken } = axios;
 const registerEndpoint = `/api/auth/register/`;
+
 const loginEndpoint = `/api/auth/login/`;
 const accountEndpoint = `/api/auth/account/`;
 const profileEndpoint = `/api/auth/profile/`;
-
 const tokenKey = 'token';
+
 const expiryKey = 'expiryTime';
 const defaultTokenExpiryMs = 1800000; // half an hour
 const extendedTokenExpiryMs = 60480000; // one week
 
-const headers = {
-  'Content-Type': 'application/json',
-};
+// const source = CancelToken.source();
+
+axios.interceptors.request.use(
+    function (config) {
+        // set authorization header before request is sent
+
+        // set authorization header before request is sent
+        let { url, data } = config;
+        if (config.headers['Authorization'] === undefined && data !== undefined && data.user !== undefined) {
+            config.headers['Authorization'] = `${tokenKey} ${data.user.token}`;
+            delete data.user;
+        }
+        // console.log(config);
+        return config;
+    }, function (error) {
+        // check if the request was canceled manually
+        if (axios.isCancel(error)) {
+            console.warn('Request canceled.');
+        }
+        return Promise.reject(error);
+    });
+
+const resInterceptor = axios.interceptors.response.use(
+    response => response,
+    function (error) {
+        // handle response errors
+        switch (error.response.status) {
+            case 401: {
+                window.location.replace("/login");
+                break;
+            }
+            default: {
+                console.log("Unexpected error occurred. ", error);
+            }
+        }
+        return Promise.reject(error);
+    });
+
 
 const registerUser = ({username,
-                              email,
-                              password, password2,
-                              isStaff=false}) => {
+                      email,
+                      password, password2,
+                      isStaff=false}) => {
     return axios.post(
         registerEndpoint,
         {
@@ -30,18 +67,13 @@ const registerUser = ({username,
     );
 };
 
-const loginUser = ({username, password}) => {
+const loginUser = data => {
      return axios.post(
         loginEndpoint,
         {
-            'username': username,
-            'password': password,
+            ...data,
             'include_acc_info': true
-        }, {
-            headers: {
-             ...headers,
-            }
-         }
+        }
     );
 };
 
@@ -74,46 +106,27 @@ const userLoggedIn = user => {
     return user && user.token !== null && user.token !== undefined;
 };
 
-const getUserAccount = (authToken) => {
-    return axios.post(
-        accountEndpoint,
-        {},
-        {
-            headers: {
-                ...headers,
-                "Authorization": `${tokenKey} ${authToken}`
-            }
-        }
-    );
+const getUserAccount = async data => {
+    // perform request without request interceptor
+    try {
+        axios.interceptors.response.eject(resInterceptor);
+        return await axios.post(accountEndpoint, data);
+    } catch (error) {
+        throw error;
+    } finally {
+        axios.interceptors.response.use(resInterceptor);
+    }
 };
 
-const updateUserAccount = ({token}, data) => {
-    return axios.put(
-        accountEndpoint,
-        data,
-        {
-            headers: {
-                ...headers,
-                "Authorization": `${tokenKey} ${token}`
-            }
-        }
-    );
+const updateUserAccount = data => {
+    return axios.put(accountEndpoint, data);
 };
 
-const getUserProfile = ({token}) => {
-    return axios.post(
-        profileEndpoint,
-        {},
-        {
-            headers: {
-                ...headers,
-                "Authorization": `${tokenKey} ${token}`
-            }
-        }
-    );
+const getUserProfile = data => {
+    return axios.post(profileEndpoint, data);
 };
 
-const updateUserProfile = ({token}, data) => {
+const updateUserProfile = ({user, ...data}) => {
     const formData = new FormData();
     Object.keys(data).forEach(key => {
         formData.append(key, data[key]);
@@ -124,15 +137,16 @@ const updateUserProfile = ({token}, data) => {
         formData,
         {
             headers: {
-                ...headers,
                 "Content-Type": "multipart/form-data; boundary=---WebKitFormBoundary7MA4YWxkTrZu0gW",
-                "Authorization": `${tokenKey} ${token}`
-            }
+                "Authorization": `${tokenKey} ${user.token}`,
+            },
         }
     );
 };
 
+const source ={};
 export {
+    source,
     tokenKey,
     registerUser,
     loginUser,

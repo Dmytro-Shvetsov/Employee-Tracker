@@ -24,7 +24,6 @@ class LoginView(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data,
                                            context={'request': request})
-
         serializer.is_valid(raise_exception=True)
 
         if serializer.errors:
@@ -38,12 +37,12 @@ class LoginView(ObtainAuthToken):
             response.update(
                 HttpUserSerializer(user, context={'request': request}).data
             )
+        print(response)
         return Response(response, status.HTTP_202_ACCEPTED)
 
 
 class RegisterView(APIView):
     serializer_class = RegisterSerializer
-    authentication_classes = ()
     permission_classes = (permissions.AllowAny, )
 
     """
@@ -59,9 +58,9 @@ class RegisterView(APIView):
             return Response({'error': 'You already have an account.'}, status.HTTP_400_BAD_REQUEST)
 
         if serializer.errors:
-            return Response(serializer.errors, status.HTTP_401_UNAUTHORIZED)
+            return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
-        serializer.save()
+        user_instance = serializer.save()
 
         return Response(JSONRenderer().render({
             'token': _get_auth_token(user_instance)

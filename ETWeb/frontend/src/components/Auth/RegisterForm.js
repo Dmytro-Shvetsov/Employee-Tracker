@@ -1,6 +1,6 @@
-import { registerUser } from '../../services/authService.js'
 import React from 'react';
-import {Button, Form, FormGroup, Label, Input, FormFeedback, Alert} from 'reactstrap';
+import * as auth from '../../services/authService.js'
+import { Button, Form, FormGroup, Label, Input, Alert } from 'reactstrap';
 import { Container } from "reactstrap";
 import { Link, Redirect } from 'react-router-dom';
 import TextInput from '../common/Input'
@@ -38,40 +38,32 @@ export default class RegisterForm extends React.Component {
         });
     };
 
-    handleSubmit = event => {
+    handleSubmit = async event => {
         event.preventDefault();
-
-        registerUser(this.state.data).then((res) => {
+        try {
+            const response = await auth.registerUser(this.state.data);
             this.setState({
                 registrationFinished: true
             });
+        } catch (error) {
+            console.log(error)
+            if (error.response.status === 400) {
+                const fieldErrors = error.response.data;
+                Object.keys(fieldErrors).map((fieldName) => {
+                    fieldErrors[fieldName] = fieldErrors[fieldName].join(" ");
+                    console.log(fieldErrors[fieldName]);
+                });
 
-        }).catch((error) => {
-            console.log(error.response.data);
-
-            switch (error.response.status) {
-                case 400: {
-                    const fieldErrors = error.response.data;
-                    Object.keys(fieldErrors).map((fieldName) => {
-                        fieldErrors[fieldName] = fieldErrors[fieldName].join(" ");
-                        console.log(fieldErrors[fieldName])
-                    });
-
-                    this.setState({
-                        errors: fieldErrors
-                    });
-                    break;
-                }
-                case 401: {
-                    window.location.replace("/login");
-                    break;
-                }
-                default: {
-                    console.log("Unexpected error occurred. ", error);
-                }
+                this.setState({
+                    errors: fieldErrors
+                });
             }
-        });
+        }
     };
+
+    componentWillUnmount() {
+        // auth.source.cancel();
+    }
 
     render() {
         const { errors, registrationFinished } = this.state;

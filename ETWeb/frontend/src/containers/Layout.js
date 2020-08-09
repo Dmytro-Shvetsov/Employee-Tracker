@@ -16,7 +16,7 @@ export default props => {
 
         breadCrumbItems.push({
             href: tempHref,
-            text: utils.capitalize(routeParts[i]),
+            text: routeParts[i].split("-").map(utils.capitalize).join(" "),
         });
     }
 

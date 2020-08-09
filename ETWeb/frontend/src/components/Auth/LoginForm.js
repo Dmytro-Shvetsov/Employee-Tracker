@@ -1,8 +1,8 @@
 import React from 'react';
+import * as auth from "../../services/authService";
 import { Button, Form, FormGroup, Label, Input, Alert, Container } from 'reactstrap';
 import { Link, Redirect } from 'react-router-dom';
 import TextInput from '../common/Input'
-import { loginUser } from "../../services/authService";
 
 
 export default class LoginForm extends React.Component {
@@ -34,45 +34,35 @@ export default class LoginForm extends React.Component {
         });
     };
 
-    handleSubmit = event => {
+    handleSubmit = async event => {
         event.preventDefault();
-
-        loginUser(this.state.data).then(res => {
-            const data = res.data;
+        const { data } = this.state;
+        try {
+            const response = await (auth.loginUser(data));
             const { rememberMe } = this.state;
             this.setState({
                 errors: [],
                 loginFinished: true
             });
+            this.props.onLogin(response.data, rememberMe);
+        } catch (error) {
+            if (error.response.status === 400) {
+                const fieldErrors = error.response.data;
+                Object.keys(fieldErrors).map((fieldName) => {
+                    fieldErrors[fieldName] = fieldErrors[fieldName].join(" ");
+                    console.log(fieldErrors[fieldName]);
+                });
 
-            this.props.onLogin(data, rememberMe);
-        }).catch(error => {
-            console.error(error);
-            console.error(error.response.data);
-
-            switch (error.response.status) {
-                case 400: {
-                    const fieldErrors = error.response.data;
-                    Object.keys(fieldErrors).map((fieldName) => {
-                        fieldErrors[fieldName] = fieldErrors[fieldName].join(" ");
-                        console.log(fieldErrors[fieldName]);
-                    });
-
-                    this.setState({
-                        errors: fieldErrors
-                    });
-                    break;
-                }
-                case 401: {
-                    window.location.replace("/login");
-                    break;
-                }
-                default: {
-                    console.log("Unexpected error occurred. ", error);
-                }
+                this.setState({
+                    errors: fieldErrors
+                });
             }
-        });
+        }
     };
+
+    componentWillUnmount() {
+        // auth.source.cancel();
+    }
 
     render() {
         const { errors, loginFinished } = this.state;
