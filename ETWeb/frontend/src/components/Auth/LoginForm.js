@@ -10,7 +10,6 @@ export default class LoginForm extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            reqSource: undefined,
             data: {
                 username: '',
                 password: '',
@@ -19,7 +18,15 @@ export default class LoginForm extends React.Component {
             errors: {},
             loginFinished: false
         };
+        this.reqSource = undefined;
+        this._isMounted = false;
     }
+
+    setState = (...args) => {
+        if (this._isMounted) {
+            super.setState(...args);
+        }
+    };
 
     handleInputChange = event => {
         const target = event.target;
@@ -39,10 +46,9 @@ export default class LoginForm extends React.Component {
     handleSubmit = async event => {
         event.preventDefault();
         await this.cancelPreviousRequests();
-        const { reqSource, data } = this.state;
+        const { data } = this.state;
         try {
-            console.log(reqSource)
-            const response = await auth.loginUser(data, reqSource.token);
+            const response = await auth.loginUser(data, this.reqSource.token);
             const { rememberMe } = this.state;
             this.setState({
                 errors: [],
@@ -66,14 +72,19 @@ export default class LoginForm extends React.Component {
     };
 
     cancelPreviousRequests = async () => {
-        if (this.state.reqSource) {
-            this.state.reqSource.cancel();
+        if (this.reqSource) {
+            this.reqSource.cancel();
         }
-        this.setState({reqSource: axios.CancelToken.source()});
+        this.reqSource = axios.CancelToken.source();
     };
 
-    componentWillUnmount() {
-        this.cancelPreviousRequests();
+    componentDidMount() {
+        this._isMounted = true;
+    }
+
+    async componentWillUnmount() {
+        this._isMounted = false;
+        await this.cancelPreviousRequests();
     }
 
     render() {

@@ -40,14 +40,34 @@ a:hover {
     padding-top: 30px;
 }
 
-.auth-btn {
-    width: 105px;
+/*.auth-btn {*/
+/*    width: 105px;*/
+/*    font-weight: bold;*/
+/*    margin-left: 20px;*/
+/*}*/
+/*.auth-btn a {*/
+/*    display: inline;*/
+/*}*/
+
+.nav-link {
+    padding: 0;
+}
+
+#auth-items button  {
+    padding: 0;
+    margin-left: 1.05rem;
+}
+
+#auth-items button a {
+    height: 2.4rem;
+    width: 5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-weight: bold;
-    margin-left: 20px;
 }
-.auth-btn a {
-    display: inline;
-}
+
+
 .auth-form {
     width: 500px;
     margin: auto;

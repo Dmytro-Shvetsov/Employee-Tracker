@@ -1,32 +1,12 @@
-import axios from './axios';
+import axios from './configuredAxiosInstance';
 
-// const { CancelToken } = axios;
 const registerEndpoint = `/api/auth/register/`;
-
 const loginEndpoint = `/api/auth/login/`;
+const logoutEndpoint = `/api/auth/logout/`;
 const accountEndpoint = `/api/auth/account/`;
 const profileEndpoint = `/api/auth/profile/`;
-const tokenKey = 'token';
 
-const expiryKey = 'expiryTime';
-const defaultTokenExpiryMs = 1800000; // half an hour
-const extendedTokenExpiryMs = 60480000; // one week
-
-// const source = CancelToken.source();
-
-axios.interceptors.request.use(
-    function (config) {
-        // set authorization header before request is sent
-
-        // set authorization header before request is sent
-        let { data } = config;
-        if (config.headers['Authorization'] === undefined && data !== undefined && data.user !== undefined) {
-            config.headers['Authorization'] = `${tokenKey} ${data.user.token}`;
-            delete data.user;
-        }
-        // console.log(config);
-        return config;
-    }, function (error) {
+axios.interceptors.request.use(config => config, function (error) {
         // check if the request was canceled manually
         if (axios.isCancel(error)) {
             console.warn('Request canceled.');
@@ -79,29 +59,8 @@ const loginUser = (data, cancelToken) => {
      return axios.post(loginEndpoint, {...data, 'include_acc_info': true}, {cancelToken});
 };
 
-const logoutUser = () => {
-    localStorage.removeItem(location.origin);
-};
-
-const saveAuthToken = (token, remember=false) => {
-    let expiryTime = Date.now() + (remember ? extendedTokenExpiryMs : defaultTokenExpiryMs);
-
-    localStorage.setItem(
-        location.origin,
-        JSON.stringify({
-            [tokenKey]: token,
-            [expiryKey]: expiryTime
-        })
-    );
-};
-
-const getAuthToken = () => {
-    const tokenInfo = JSON.parse(localStorage.getItem(location.origin));
-
-    if (tokenInfo && Date.now() <= Number.parseInt(tokenInfo[expiryKey])) {
-        return tokenInfo[tokenKey];
-    }
-    return null;
+const logoutUser = cancelToken => {
+    return axios.post(logoutEndpoint, {cancelToken});
 };
 
 const userLoggedIn = user => {
@@ -109,15 +68,7 @@ const userLoggedIn = user => {
 };
 
 const getUserAccount = async (data, cancelToken) => {
-    // perform request without request interceptor
-    try {
-        axios.interceptors.response.eject(resInterceptor);
-        return await axios.post(accountEndpoint, data, {cancelToken});
-    } catch (error) {
-        throw error;
-    } finally {
-        axios.interceptors.response.use(resInterceptor);
-    }
+    return await axios.post(accountEndpoint, data, {cancelToken});
 };
 
 const updateUserAccount = (data, cancelToken) => {
@@ -134,13 +85,10 @@ const updateUserProfile = ({user, ...data}, cancelToken) => {
         formData.append(key, data[key]);
     });
 
-    return axios.put(
-        profileEndpoint,
-        formData,
+    return axios.put(profileEndpoint, formData,
         {
             headers: {
                 "Content-Type": "multipart/form-data; boundary=---WebKitFormBoundary7MA4YWxkTrZu0gW",
-                "Authorization": `${tokenKey} ${user.token}`,
             },
             cancelToken
         }
@@ -148,12 +96,9 @@ const updateUserProfile = ({user, ...data}, cancelToken) => {
 };
 
 export {
-    tokenKey,
     registerUser,
     loginUser,
     logoutUser,
-    saveAuthToken,
-    getAuthToken,
     getUserAccount,
     updateUserAccount,
     getUserProfile,

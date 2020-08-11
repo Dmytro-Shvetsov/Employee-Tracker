@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import BaseRouter from '../routes';
 import Layout from '../containers/Layout'
-import {saveAuthToken, getUserAccount, logoutUser, getAuthToken} from "../services/authService";
+import {getUserAccount, logoutUser} from "../services/authService";
 import 'bootstrap/dist/css/bootstrap.css';
 import '../App.css';
 
@@ -16,9 +16,10 @@ class App extends Component {
     }
 
     tryRestoreSession = async () => {
-        const authToken = getAuthToken();
+        // const authToken = getAuthToken();
         try {
-            const response = await getUserAccount({user:{token:authToken}});
+            const response = await getUserAccount({});
+            // const response = await getUserAccount({user:{token:authToken}});
             const user = JSON.parse(response.data);
             this.setState({
                 user: user
@@ -36,19 +37,19 @@ class App extends Component {
         this.setState({loadingUser: false});
     };
 
-    componentDidMount() {
-        this.tryRestoreSession();
+    async componentDidMount() {
+        // this.setState({loadingUser: false});
+        await this.tryRestoreSession();
     }
 
     handleLogin = (user, remember) => {
-        saveAuthToken(user.token, remember);
         this.setState({
             user: user
         });
     };
 
-    handleLogout = () => {
-        logoutUser();
+    handleLogout = async () => {
+        await logoutUser();
         this.setState({
             user: {
                 token: null

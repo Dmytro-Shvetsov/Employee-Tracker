@@ -1,20 +1,8 @@
-import axios from 'axios';
-import { tokenKey } from './authService'
+import axios from './configuredAxiosInstance';
 
 const apiEndpoint = `/api/projects/`;
 
-axios.interceptors.request.use(
-    function (config) {
-        // set authorization header before request is sent
-        let { data } = config;
-        if (config.headers['Authorization'] === undefined && data !== undefined) {
-            config.headers['Authorization'] = `${tokenKey} ${data.user.token}`;
-            delete data.user;
-        }
-        // console.log(config.headers)
-
-        return config;
-    }, function (error) {
+axios.interceptors.request.use(config => config, function (error) {
         // check if the request was canceled manually
         if (axios.isCancel(error)) {
             console.warn('Request canceled.');
@@ -33,7 +21,7 @@ const resInterceptor = axios.interceptors.response.use(
         } else {
             switch (error.response.status) {
                 case 401: {
-                    // window.location.replace("/login");
+                    window.location.replace("/login");
                     break;
                 }
                 default: {
@@ -46,19 +34,11 @@ const resInterceptor = axios.interceptors.response.use(
 
 
 const loadProjectList = (data, cancelToken, page=1) => {
-    return axios.get(apiEndpoint, {
-            headers:{"Authorization": `${tokenKey} ${data.user.token}`},
-            params: {page: page},
-            cancelToken
-        }
-    );
+    return axios.get(apiEndpoint, {params: {page: page}, cancelToken});
 };
 
 const getProject = (id, data, cancelToken) => {
-    return axios.get(`${apiEndpoint}/${id}/`, {
-            headers:{"Authorization": `${tokenKey} ${data.user.token}`},
-            cancelToken
-        });
+    return axios.get(`${apiEndpoint}/${id}/`, {cancelToken});
 };
 
 const updateProject = (id, data, cancelToken) => {
@@ -66,20 +46,14 @@ const updateProject = (id, data, cancelToken) => {
 };
 
 const deleteProject = (id, data, cancelToken) => {
-    return axios.delete(`${apiEndpoint}/${id}/`, {
-            headers:{"Authorization": `${tokenKey} ${data.user.token}`},
-            cancelToken
-        });
+    return axios.delete(`${apiEndpoint}/${id}/`, {cancelToken});
 };
-
 
 const createNewProject = (data, cancelToken) => {
     return axios.post(apiEndpoint, data, {cancelToken});
 };
 
-const source = {};
 export {
-    source,
     loadProjectList,
     createNewProject,
     getProject,

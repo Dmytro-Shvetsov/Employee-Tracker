@@ -67,7 +67,7 @@ namespace ETClient
 
         // initial pause not to make screenshot at once
         this->mutex.lock();
-        this->waitCond->wait(&this->mutex, this->screenshotTimedeltaSeconds * 1000);
+//        this->waitCond->wait(&this->mutex, this->screenshotTimedeltaSeconds * 1000);
         this->mutex.unlock();
 
         while(this->running)

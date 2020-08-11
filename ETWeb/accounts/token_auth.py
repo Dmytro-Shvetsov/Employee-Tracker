@@ -12,6 +12,8 @@ class TokenAuthMiddlewareStack:
         self.inner = inner
 
     def __call__(self, scope):
+        print(scope.keys())
+        print(scope['cookies'])
         headers = dict(scope['headers'])
         print('\n'.join(map(str, list(zip(list(headers.keys()), headers.values())))))
 
@@ -23,7 +25,7 @@ class TokenAuthMiddlewareStack:
             else:
                 scope['user'] = AnonymousUser()
 
-            # except Token.DoesNotExist:
+        scope['user'] = self.get_user(None)
 
         return self.inner(scope)
 

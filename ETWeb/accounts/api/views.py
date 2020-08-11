@@ -1,8 +1,8 @@
 import os
 from django.conf import settings
+from rest_framework.authentication import BasicAuthentication
 from rest_framework.authtoken.views import ObtainAuthToken, APIView
 from rest_framework import status, permissions
-from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.renderers import JSONRenderer
@@ -17,7 +17,20 @@ def _get_auth_token(user):
     return token.key
 
 
+def _set_signed_cookie(response, *, key, value, httponly=False, max_age=86400):
+    if not isinstance(response, Response):
+        raise ValueError('response parameter should be an instance of rest_framework.response.Response class')
+    response.set_signed_cookie(key=key,
+                               value=value,
+                               salt='7tISqgs1vdLBHBEijWcBeCqL5xN9xg=',
+                               httponly=httponly,
+                               # secure=True, # send this cookie only if request is made with https scheme
+                               max_age=max_age,
+                               samesite='Strict')  # do not send this cookie when performing cross-origin request
+
+
 class LoginView(ObtainAuthToken):
+    authentication_classes = (BasicAuthentication, )
     """
         Try authorize with given credentials
     """
@@ -30,6 +43,7 @@ class LoginView(ObtainAuthToken):
             return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
         user = serializer.validated_data['user']
+
         response = {
             'token': _get_auth_token(user),
         }
@@ -37,8 +51,18 @@ class LoginView(ObtainAuthToken):
             response.update(
                 HttpUserSerializer(user, context={'request': request}).data
             )
-        print(response)
-        return Response(response, status.HTTP_202_ACCEPTED)
+        response = Response(response, status.HTTP_202_ACCEPTED)
+        _set_signed_cookie(response, key=settings.AUTH_TOKEN_KEY, value=_get_auth_token(user), httponly=True)
+        return response
+
+
+class LogoutView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        response = Response(status=status.HTTP_200_OK)
+        _set_signed_cookie(response, key=settings.AUTH_TOKEN_KEY, value=None, httponly=True, max_age=0)
+        return response
 
 
 class RegisterView(APIView):

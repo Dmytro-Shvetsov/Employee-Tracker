@@ -11,9 +11,9 @@ class UserManager(BaseUserManager):
                     email=None, is_staff=False, is_superuser=False,
                     is_active=False, date_joined=None):
         if not username:
-            raise ValueError("Username field must have a username.")
+            raise ValueError("User must have a username.")
         if not password:
-            raise ValueError("Username field must have a password.")
+            raise ValueError("User must have a password.")
 
         user_obj = self.model(username=username)
         user_obj.set_password(password)  # change password
@@ -46,6 +46,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     def profile(self):
         obj, created = UserProfile.objects.get_or_create(user=self)
         return obj
+
+    @property
+    def projects(self):
+        try:
+            return self.project_set.all()
+        except AttributeError:
+            return []
 
     def has_perm(self, perm, obj=None):
         return self.is_superuser

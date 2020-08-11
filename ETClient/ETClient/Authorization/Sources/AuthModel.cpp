@@ -37,6 +37,7 @@ namespace ETClient
         QByteArray qsba = qs.toUtf8();
 
         QNetworkRequest request(*this->host);
+//        request.SetCookieHeader
         request.setHeader(
                     QNetworkRequest::ContentTypeHeader,
                     "application/x-www-form-urlencoded"

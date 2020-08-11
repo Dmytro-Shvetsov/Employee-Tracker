@@ -15,23 +15,31 @@ export default class UserProfile extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            reqSource: undefined,
             user: props.user,
             savedData: {},
             unsavedData: {},
             errors: {},
             editing: false
-        }
+        };
+        this.reqSource = undefined;
+        this._isMounted = false;
     }
 
-    cancelPreviousRequests = async () => {
-        if (this.state.reqSource) {
-            this.state.reqSource.cancel();
+    setState = (...args) => {
+        if (this._isMounted) {
+            super.setState(...args);
         }
-        this.setState({reqSource: axios.CancelToken.source()});
+    };
+
+    cancelPreviousRequests = async () => {
+        if (this.reqSource) {
+            this.reqSource.cancel();
+        }
+        this.reqSource = axios.CancelToken.source();
     };
 
     componentDidMount() {
+        this._isMounted = true;
         const { user: { email } } = this.state;
 
         this.setState({
@@ -40,8 +48,9 @@ export default class UserProfile extends React.Component {
         });
     }
 
-    componentWillUnmount() {
-        this.cancelPreviousRequests();
+    async componentWillUnmount() {
+        this._isMounted = false;
+        await this.cancelPreviousRequests();
     }
 
     handleTextInputChange = event => {
@@ -57,9 +66,9 @@ export default class UserProfile extends React.Component {
     handleAccountUpdate = async event => {
         event.preventDefault();
         await this.cancelPreviousRequests();
-        const {reqSource, user, unsavedData} = this.state;
+        const {user, unsavedData} = this.state;
         try {
-            const response = await auth.updateUserAccount({...unsavedData, user: {...user}}, reqSource.token);
+            const response = await auth.updateUserAccount({...unsavedData, user: {...user}}, this.reqSource.token);
             const data = JSON.parse(response.data);
             this.setState({
                 savedData: {...data},

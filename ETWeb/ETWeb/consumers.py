@@ -2,6 +2,7 @@ import asyncio
 import base64
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
+from asgiref.sync import async_to_sync
 from io import BytesIO
 from django.core.files.base import ContentFile
 from accounts.api.serializers import WebsocketUserSerializer
@@ -11,7 +12,7 @@ from random import choice
 
 
 class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
-    groups = ["broadcast",  "clients"]
+    groups = ['broadcast']
     user = None
 
     async def connect(self):
@@ -30,7 +31,10 @@ class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
 
         print('Connection accepted')
 
-        # self.channel_layer.group_add("clients", self.channel_name)
+        await self.add_user_to_groups()
+
+        print('Added user to project groups')
+
         serializer = WebsocketUserSerializer(self.user)
         user_info = await database_sync_to_async(serializer.json)()
         await self.send_json({
@@ -43,7 +47,7 @@ class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
         print(content.keys())
 
         if not self.user.is_authenticated:
-            await self.close(401)
+            await self.close(3401)
             return
 
         if content['type'] == 'data.screenshot':
@@ -56,10 +60,46 @@ class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
             'text': 'message received'
         })
 
+    async def project_employees_status(self, event):
+        print(f'Getting status of user {self.user} in project {event["project_id"]}')
+
     async def disconnect(self, close_code):
         # Called when the socket closes
-        print('Disconnected')
-    #     self.channel_layer.group_discard("clients", self.channel_name)
+        try:
+            await self.remove_user_from_groups()
+        except:
+            pass
+
+        print('Removed user from groups\nDisconnected')
+        # self.channel_layer.group_discard("clients", self.channel_name)
+
+    @database_sync_to_async
+    def add_user_to_groups(self):
+        if not self.user:
+            raise ValueError('User instance is not set')
+
+        user_id = str(self.user.id)
+
+        # add user to broadcast group
+        async_to_sync(self.channel_layer.group_add)('broadcast', user_id)
+
+        # add user to project groups, so he/she could have online status
+        for project in self.user.projects:
+            async_to_sync(self.channel_layer.group_add)(f'project_{project.id}', user_id)
+
+    @database_sync_to_async
+    def remove_user_from_groups(self):
+        if not self.user:
+            raise ValueError('User instance is not set')
+
+        user_id = str(self.user.id)
+
+        # remove user from broadcast group
+        async_to_sync(self.channel_layer.group_discard)('broadcast', user_id)
+
+        # remove user from project groups, so he/she could have offline status
+        for project in self.user.projects:
+            async_to_sync(self.channel_layer.group_discard)(f'project_{project.id}', user_id)
 
     @staticmethod
     def get_random_string(length):
@@ -99,8 +139,58 @@ class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
         network_objs = []
         create_network_objs(self.user, data['http']['request_stats'], NetworkActivity.HTTP, network_objs)
         create_network_objs(self.user, data['ssl']['client_hello_stats'], NetworkActivity.SSL, network_objs)
-        create_network_objs(self.user, data['http']['request_stats'], None, network_objs)
-        print("LEN {}".format(len(network_objs)))
+        print(data['other'].keys())
+        create_network_objs(self.user, data['other'], None, network_objs)
         NetworkActivity.objects.bulk_create(network_objs)
         print('Saved network objects')
+        print('LEN {}'.format(len(network_objs)))
+
+
+class AsyncManagerConnectionsConsumer(AsyncJsonWebsocketConsumer):
+    user = None
+
+    async def connect(self):
+        print('New connection')
+        self.user = await self.scope['user']
+        await self.accept()
+
+        if not self.user or not self.user.is_authenticated:
+            print(f'Denied connection from {self.user}')
+            await self.send_json({
+                'type': 'websocket.close',
+                'error': 'User does not exist or account has not been activated.'
+            })
+            await self.close(3401)
+            return
+        elif not self.user.is_staff:
+            print(f'Denied connection from {self.user}')
+            await self.send_json({
+                'type': 'websocket.close',
+                'error': 'You don\'t have permission to access this resource.'
+            })
+            await self.close(3403)
+            return
+
+        await self.send_json({
+            "type": "websocket.accept",
+        })
+
+    async def receive_json(self, content, **kwargs):
+        print('New message')
+        print(content.keys())
+
+        if not self.user.is_authenticated:
+            await self.close(3401)
+            return
+
+        await self.send_json({
+            'type': 'websocket.message',
+            'text': 'message received'
+        })
+
+    async def disconnect(self, close_code):
+        # Called when the socket closes
+        print('Disconnected')
+        # self.channel_layer.group_discard("clients", self.channel_name)
+
 

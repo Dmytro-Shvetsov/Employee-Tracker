@@ -1,16 +1,14 @@
 import React from 'react';
+import axios from 'axios';
 import { Form, FormGroup, Alert } from 'reactstrap';
-import TextInput from '../../common/Input'
+import {Modal, Input} from '../../common';
 import * as projectsService from "../../../services/projectsService";
-import {Modal} from "../../common";
-import axios from "axios";
 
 
 export default class ProjectCreationForm extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            reqSource: undefined,
             user: props.user,
             modal: false,
             data: {
@@ -21,7 +19,15 @@ export default class ProjectCreationForm extends React.Component {
             },
             errors: {},
         };
+        this.reqSource = undefined;
+        this._isMounted = false;
     }
+
+    setState = (...args) => {
+        if (this._isMounted) {
+            super.setState(...args);
+        }
+    };
 
     handleInputChange = event => {
         const target = event.target;
@@ -49,19 +55,19 @@ export default class ProjectCreationForm extends React.Component {
     };
 
     cancelPreviousRequests = async () => {
-        if (this.state.reqSource) {
-            this.state.reqSource.cancel();
+        if (this.reqSource) {
+            this.reqSource.cancel();
         }
-        this.setState({reqSource: axios.CancelToken.source()});
+        this.reqSource = axios.CancelToken.source();
     };
 
     handleSubmit = async event => {
         event.preventDefault();
         console.log("Trying to create new project");
         await this.cancelPreviousRequests();
-        const { reqSource, user, data } = this.state;
+        const { user, data } = this.state;
         try {
-            const response = await projectsService.createNewProject({...data, user: {...user}}, reqSource.token);
+            const response = await projectsService.createNewProject({...data, user: {...user}}, this.reqSource.token);
             console.log("Successfully created project");
             const {id} = JSON.parse(response.data);
             this.setState({
@@ -83,8 +89,13 @@ export default class ProjectCreationForm extends React.Component {
         }
     };
 
-    componentWillUnmount() {
-        this.cancelPreviousRequests();
+    componentDidMount() {
+        this._isMounted = true;
+    }
+
+    async componentWillUnmount() {
+        this._isMounted = false;
+        await this.cancelPreviousRequests();
     }
 
     render() {
@@ -100,13 +111,13 @@ export default class ProjectCreationForm extends React.Component {
                 className="d-flex justify-content-end"
             >
                 <Form className="" autoComplete="on">
-                    <TextInput
+                    <Input
                         name="name"
                         labelText="Name"
                         error={errors.name}
                         onChange={this.handleInputChange}
                     />
-                    <TextInput
+                    <Input
                         name="description"
                         labelText="Brief description"
                         error={errors.description}

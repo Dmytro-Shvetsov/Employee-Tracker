@@ -46,7 +46,7 @@ namespace ETClient
     void MainWindowModel::startDataCollection()
     {
         this->screenshotManager->setRunning(true);
-        this->networkManager->setupDevice("192.168.0.106"); // for now it's explicit
+        this->networkManager->setupDevice("192.168.0.101"); // for now it's explicit
         this->networkManager->setRunning(true);
 
         this->waitCond.wakeAll();

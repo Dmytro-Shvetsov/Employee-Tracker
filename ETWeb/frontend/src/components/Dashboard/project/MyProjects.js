@@ -1,31 +1,38 @@
 import React from 'react';
+import axios from 'axios';
 import * as projectsService from '../../../services/projectsService'
 import { Paginator, CustomLink } from '../../common'
 import ProjectCreationForm  from './ProjectCreationForm'
 import Icon, { UploadOutlined, UserOutlined } from '@ant-design/icons';
 import { Spinner, Toast, ToastHeader, ToastBody } from 'reactstrap'
-import axios from "axios";
 
 export default class MyProjects extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            reqSource: undefined,
             user: props.user,
             projects: undefined,
             pagesCount: 0,
             itemsPerPage: 0,
             currentPage: 1,
             highlightedProjectId: undefined
-        }
+        };
+        this.reqSource = undefined;
+        this._isMounted = false;
     }
+
+    setState = (...args) => {
+        if (this._isMounted) {
+            super.setState(...args);
+        }
+    };
 
     loadProjects = async (page=1) => {
         // console.log("Loading projects");
         await this.cancelPreviousRequests();
-        const {reqSource, user} = this.state;
+        const {user} = this.state;
         try {
-            const response = await projectsService.loadProjectList({user: {...user}}, reqSource.token, page);
+            const response = await projectsService.loadProjectList({user: {...user}}, this.reqSource.token, page);
             // console.log("Successful projects loading", res);
             const {data} = response;
             const projects = JSON.parse(data.results);
@@ -51,18 +58,20 @@ export default class MyProjects extends React.Component {
     };
 
     cancelPreviousRequests = async () => {
-        if (this.state.reqSource) {
-            this.state.reqSource.cancel();
+        if (this.reqSource) {
+            this.reqSource.cancel();
         }
-        this.setState({reqSource: axios.CancelToken.source()});
+        this.reqSource = axios.CancelToken.source();
     };
 
-    componentDidMount() {
-        this.loadProjects();
+    async componentDidMount() {
+        this._isMounted = true;
+        await this.loadProjects();
     }
 
-    componentWillUnmount() {
-        this.cancelPreviousRequests();
+    async componentWillUnmount() {
+        this._isMounted = false;
+        await this.cancelPreviousRequests();
     }
 
     handlePageChange = async value => {
