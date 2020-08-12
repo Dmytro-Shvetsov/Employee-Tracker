@@ -121,6 +121,22 @@ a:hover {
     word-wrap: break-word;
 }
 
+th {
+    text-align: center;
+}
+
+.online {
+    color: var(--success);
+}
+
+.offline {
+    color: var(--danger);
+}
+
+.idle {
+    color: var(--warning);
+}
+
 .project-info:hover {
     background-color: #dbeeff;
     cursor: pointer;

@@ -31,9 +31,6 @@ namespace ETClient
         qDebug() << "request " << wsRequest.url() << "with token " << token;
 
         wsRequest.setRawHeader("authorization", ("token " + token).toLocal8Bit().data());
-//        QString temp = "randomCookieVar=privit;";
-//        wsRequest.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue(temp));
-//        wsRequest.SetCookieHeader()
         this->ws.open(wsRequest);
     }
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from 'axios';
 import * as projects from '../../../services/projectsService'
 import { Link } from 'react-router-dom'
 import { Spinner } from 'reactstrap'
@@ -12,7 +13,6 @@ import {
     CardText
 } from 'reactstrap';
 import { NotFound } from '../../Pages'
-import axios from "axios";
 
 
 export default class ProjectDetail extends React.Component {
@@ -20,6 +20,10 @@ export default class ProjectDetail extends React.Component {
         super(props);
         this.state = {
             user: props.user,
+            name: undefined,
+            description: undefined,
+            members: [],
+            employeeStatuses: {},
             socket: undefined,
         };
         this.reqSource = undefined;
@@ -34,28 +38,52 @@ export default class ProjectDetail extends React.Component {
 
     initWebsocket() {
         const { host, protocol } = location;
-        console.log(protocol);
         const url = `${protocol === "http:" ? "ws" : "wss"}://${host}/master/`;
         console.log("Connecting to ", url);
-        console.log(btoa(this.state.user))
-        const socket = new WebSocket(url, [], {'authorization': 'asdlaodaps'});
+
+        const socket = new WebSocket(url);
 
         socket.onopen = event => {
-            console.log("Websocket connection established. ", event);
             socket.send(JSON.stringify({
                 type: "project.employees.status",
                 project_id: this.state.id
             }));
         };
+
         socket.onmessage = event => {
-            console.log("Received message", event);
+            console.log(
+                // event.data,
+                // event
+            );
+            const data = JSON.parse(event.data);
+            switch(data.type) {
+                case "websocket.accept": {
+                    console.log("Websocket connection established. ", data);
+                    break;
+                }
+                case "websocket.message": {
+                    console.log(data.text);
+                    break;
+                }
+                case "employee.status": {
+                    const prevStatuses = this.state.employeeStatuses;
+                    this.setState({employeeStatuses: {...prevStatuses, [data.user_id]: data.status}});
+                    break;
+                }
+                default: {
+                    console.log("Unknown message of type: ", data.type);
+                }
+            }
         };
+
         socket.onclose = event => {
-            console.log("Websocket connection closed", event);
+            console.log("Websocket connection closed. ", event.reason, event);
         };
+
         socket.onerror = event => {
-            console.log("Websocket error", event);
+            console.log("Websocket error. ", event.reason, event);
         };
+
         this.setState({
             socket
         });
@@ -67,8 +95,15 @@ export default class ProjectDetail extends React.Component {
         try {
             const response = await projects.getProject(id, {user: {...user}}, this.reqSource.token);
             console.log("Project loaded.", response.data);
+            const {data} = response;
+
+            const employeeStatuses = {};
+            data.members.forEach(m => {
+                employeeStatuses[m.id] = "offline";
+            });
             this.setState({
-                ...response.data
+                ...data,
+                employeeStatuses
             });
         } catch (error) {
             console.error(error.message);
@@ -106,12 +141,12 @@ export default class ProjectDetail extends React.Component {
     }
 
     renderMembersTable() {
-        const { user, members } = this.state;
+        const { user, members, employeeStatuses } = this.state;
         if (members === undefined) {
             console.error("renderMembersTable() called when information about the project was not loaded");
             return;
         }
-        console.log(members);
+        // console.log(members);
         return (
             <div>
                 <Table>
@@ -119,6 +154,7 @@ export default class ProjectDetail extends React.Component {
                         <tr>
                             <th>#</th>
                             <th>Username</th>
+                            <th>Status</th>
                             <th>Email</th>
                             <th>Account Registration Date</th>
                         </tr>
@@ -135,6 +171,7 @@ export default class ProjectDetail extends React.Component {
                                         @{m.username}
                                     </Link>
                                 </td>
+                                <td className={`text-center ${employeeStatuses[m.id]}`}>{employeeStatuses[m.id]}</td>
                                 <td>{m.email || <span className="text-secondary">No email provided.</span>}</td>
                                 <td>{new Date(Date.parse(m.date_joined)).toLocaleString()}</td>
                             </tr>

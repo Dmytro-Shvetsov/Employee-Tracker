@@ -20,9 +20,10 @@ def _get_auth_token(user):
 def _set_signed_cookie(response, *, key, value, httponly=False, max_age=86400):
     if not isinstance(response, Response):
         raise ValueError('response parameter should be an instance of rest_framework.response.Response class')
+
     response.set_signed_cookie(key=key,
                                value=value,
-                               salt='7tISqgs1vdLBHBEijWcBeCqL5xN9xg=',
+                               salt=settings.SIGNED_COOKIE_SALT,
                                httponly=httponly,
                                # secure=True, # send this cookie only if request is made with https scheme
                                max_age=max_age,
@@ -30,29 +31,31 @@ def _set_signed_cookie(response, *, key, value, httponly=False, max_age=86400):
 
 
 class LoginView(ObtainAuthToken):
-    authentication_classes = (BasicAuthentication, )
+    authentication_classes = ()
+    permission_classes = (permissions.AllowAny,)
+
     """
         Try authorize with given credentials
     """
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data,
                                            context={'request': request})
-        serializer.is_valid(raise_exception=True)
-
+        serializer.is_valid(raise_exception=False)
         if serializer.errors:
+            print(serializer.errors)
             return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
         user = serializer.validated_data['user']
-
+        token_key = _get_auth_token(user)
         response = {
-            'token': _get_auth_token(user),
+            'token': token_key,
         }
         if 'include_acc_info' in request.data and request.data['include_acc_info']:
             response.update(
                 HttpUserSerializer(user, context={'request': request}).data
             )
         response = Response(response, status.HTTP_202_ACCEPTED)
-        _set_signed_cookie(response, key=settings.AUTH_TOKEN_KEY, value=_get_auth_token(user), httponly=True)
+        _set_signed_cookie(response, key=settings.AUTH_TOKEN_KEY, value=token_key, httponly=True)
         return response
 
 

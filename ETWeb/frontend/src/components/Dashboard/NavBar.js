@@ -9,11 +9,15 @@ const DashboardNavBar = props => {
     const links = [
         {label: "Profile", href: `profile`},
         {label: "Account", href: `account`},
-        {label: "My Projects", href: `projects`},
-        {label: "item4", href: `whatever4`},
-        {label: "item5", href: `whatever5`}
     ];
-
+    if (props.user && props.user.is_staff) {
+        links.push({label: "My Projects", href: `projects`})
+    }
+    // add some more items to make navbar more extensive (will change in future)
+    links.push(
+            {label: "item4", href: `whatever4`},
+            {label: "item5", href: `whatever5`}
+        );
 
     return (<ListGroup>
             {links.map((item, idx) => (

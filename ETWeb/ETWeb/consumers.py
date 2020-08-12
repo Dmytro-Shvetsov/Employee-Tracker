@@ -1,6 +1,6 @@
 import asyncio
 import base64
-from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from channels.generic.websocket import AsyncJsonWebsocketConsumer, AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from asgiref.sync import async_to_sync
 from io import BytesIO
@@ -11,9 +11,17 @@ from string import ascii_letters
 from random import choice
 
 
-class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
+class AsyncUserConnectionsConsumer(AsyncJsonWebsocketConsumer):
     groups = ['broadcast']
     user = None
+
+    @database_sync_to_async
+    def add_user_to_groups(self):
+        raise NotImplementedError('add_user_to_groups() method should be implemented in descendant classes')
+
+    @database_sync_to_async
+    def remove_user_from_groups(self):
+        raise NotImplementedError('remove_user_from_groups() method should be implemented in descendant classes')
 
     async def connect(self):
         print('New connection')
@@ -31,38 +39,6 @@ class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
 
         print('Connection accepted')
 
-        await self.add_user_to_groups()
-
-        print('Added user to project groups')
-
-        serializer = WebsocketUserSerializer(self.user)
-        user_info = await database_sync_to_async(serializer.json)()
-        await self.send_json({
-            "type": "websocket.accept",
-            **user_info
-        })
-
-    async def receive_json(self, content, **kwargs):
-        print('New message')
-        print(content.keys())
-
-        if not self.user.is_authenticated:
-            await self.close(3401)
-            return
-
-        if content['type'] == 'data.screenshot':
-            await self.save_screenshot(content['screenshot'].encode())
-        elif content['type'] == 'data.network':
-            await self.save_network_activities(content)
-
-        await self.send_json({
-            'type': 'websocket.message',
-            'text': 'message received'
-        })
-
-    async def project_employees_status(self, event):
-        print(f'Getting status of user {self.user} in project {event["project_id"]}')
-
     async def disconnect(self, close_code):
         # Called when the socket closes
         try:
@@ -71,35 +47,10 @@ class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
             pass
 
         print('Removed user from groups\nDisconnected')
-        # self.channel_layer.group_discard("clients", self.channel_name)
 
-    @database_sync_to_async
-    def add_user_to_groups(self):
-        if not self.user:
-            raise ValueError('User instance is not set')
 
-        user_id = str(self.user.id)
-
-        # add user to broadcast group
-        async_to_sync(self.channel_layer.group_add)('broadcast', user_id)
-
-        # add user to project groups, so he/she could have online status
-        for project in self.user.projects:
-            async_to_sync(self.channel_layer.group_add)(f'project_{project.id}', user_id)
-
-    @database_sync_to_async
-    def remove_user_from_groups(self):
-        if not self.user:
-            raise ValueError('User instance is not set')
-
-        user_id = str(self.user.id)
-
-        # remove user from broadcast group
-        async_to_sync(self.channel_layer.group_discard)('broadcast', user_id)
-
-        # remove user from project groups, so he/she could have offline status
-        for project in self.user.projects:
-            async_to_sync(self.channel_layer.group_discard)(f'project_{project.id}', user_id)
+class DataCollectionMixin:
+    user = None
 
     @staticmethod
     def get_random_string(length):
@@ -136,6 +87,7 @@ class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
                     NetworkActivity(host_name=host, message_count=count, protocol_type=protocol,
                                     employee=employee)
                 )
+
         network_objs = []
         create_network_objs(self.user, data['http']['request_stats'], NetworkActivity.HTTP, network_objs)
         create_network_objs(self.user, data['ssl']['client_hello_stats'], NetworkActivity.SSL, network_objs)
@@ -146,23 +98,130 @@ class AsyncClientConnectionsConsumer(AsyncJsonWebsocketConsumer):
         print('LEN {}'.format(len(network_objs)))
 
 
-class AsyncManagerConnectionsConsumer(AsyncJsonWebsocketConsumer):
-    user = None
+class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectionMixin):
+    STATUS_VALUES = ['online', 'offline', 'idle']
+    status = None
+
+    @database_sync_to_async
+    def set_status(self, value):
+        if value not in self.STATUS_VALUES:
+            raise ValueError(f'invalid value for parameter value {repr(value)}')
+
+        self.status = value
+        for project in self.user.projects:
+            async_to_sync(self.user_status_report)({
+                'project_id': project.id,
+                'user_id': self.user.id,
+                'status': self.status
+            })
+
+    @database_sync_to_async
+    def add_user_to_groups(self):
+        if not self.user:
+            raise ValueError('User instance is not set')
+
+        # add user to broadcast group
+        async_to_sync(self.channel_layer.group_add)('broadcast', self.channel_name)
+
+        # add user to project groups, so he/she could have online status
+        for project in self.user.projects:
+            async_to_sync(self.channel_layer.group_add)(f'project_{project.id}', self.channel_name)
+
+    @database_sync_to_async
+    def remove_user_from_groups(self):
+        if not self.user:
+            raise ValueError('User instance is not set')
+
+        # remove user from broadcast group
+        async_to_sync(self.channel_layer.group_discard)('broadcast', self.channel_name)
+
+        # remove user from project groups, so he/she could have offline status
+        for project in self.user.projects:
+            async_to_sync(self.channel_layer.group_discard)(f'project_{project.id}', self.channel_name)
 
     async def connect(self):
-        print('New connection')
-        self.user = await self.scope['user']
-        await self.accept()
+        await super().connect()
+        await self.add_user_to_groups()
+        print('Added user to project groups')
 
-        if not self.user or not self.user.is_authenticated:
-            print(f'Denied connection from {self.user}')
-            await self.send_json({
-                'type': 'websocket.close',
-                'error': 'User does not exist or account has not been activated.'
-            })
-            await self.close(3401)
-            return
-        elif not self.user.is_staff:
+        await self.set_status('online')
+
+        serializer = WebsocketUserSerializer(self.user)
+        user_info = await database_sync_to_async(serializer.json)()
+        await self.send_json({
+            "type": "websocket.accept",
+            **user_info
+        })
+
+    async def receive_json(self, content, **kwargs):
+        print('New message')
+        print(content.keys())
+
+        msg_type = content['type']
+        if msg_type == 'data.screenshot':
+            await self.save_screenshot(content['screenshot'].encode())
+        elif msg_type == 'data.network':
+            await self.save_network_activities(content)
+
+        await self.send_json({
+            'type': 'websocket.message',
+            'text': 'message received',
+        })
+
+    async def user_status_report(self, event):
+        """
+            Function that handles messages of type user.status.report sent from AsyncManagerConnectionsConsumer instances.
+            Obtained information is sent back to channel of manager that sent the message.
+        """
+        print(event)
+        # await self.channel_layer.send(event['report_to'], {
+        await self.channel_layer.group_send(f"project_{event['project_id']}_staff", {
+            'type': 'employee.status',
+            'user_id': self.user.id,
+            'status': self.status,
+        })
+
+    async def disconnect(self, close_code):
+        await super().disconnect(close_code)
+        await self.set_status('offline')
+    #
+    # async def employee_status(self, event):
+    #     """
+    #         Function that handles messages of type employee.status sent by other instances of this class.
+    #     """
+    #     # ignore status reports from other employees
+    #     print(f'{self.user.id} ignored {event}')
+    #     pass
+
+
+class AsyncManagerConnectionsConsumer(AsyncUserConnectionsConsumer):
+    @database_sync_to_async
+    def add_user_to_groups(self):
+        if not self.user:
+            raise ValueError('User instance is not set')
+        # add user to broadcast group
+        async_to_sync(self.channel_layer.group_add)('broadcast', self.channel_name)
+
+        # add user to project staff-only groups, so he/she could receive employees' reports from there
+        for project in self.user.projects:
+            async_to_sync(self.channel_layer.group_add)(f'project_{project.id}_staff', self.channel_name)
+
+    @database_sync_to_async
+    def remove_user_from_groups(self):
+        if not self.user:
+            raise ValueError('User instance is not set')
+
+        # remove user from broadcast group
+        async_to_sync(self.channel_layer.group_discard)('broadcast', self.channel_name)
+
+        # remove user from project groups, so he/she could have offline status
+        for project in self.user.projects:
+            async_to_sync(self.channel_layer.group_discard)(f'project_{project.id}_staff', self.channel_name)
+
+    async def connect(self):
+        await super().connect()
+
+        if not self.user.is_staff:
             print(f'Denied connection from {self.user}')
             await self.send_json({
                 'type': 'websocket.close',
@@ -171,26 +230,37 @@ class AsyncManagerConnectionsConsumer(AsyncJsonWebsocketConsumer):
             await self.close(3403)
             return
 
+        await self.add_user_to_groups()
+
         await self.send_json({
             "type": "websocket.accept",
         })
 
     async def receive_json(self, content, **kwargs):
-        print('New message')
+        print('New message. ', content['type'])
         print(content.keys())
 
-        if not self.user.is_authenticated:
-            await self.close(3401)
-            return
+        msg_type = content['type']
+        if msg_type == 'project.employees.status':
+            await self.ping_employees_of_project(content.get('project_id', -1))
 
         await self.send_json({
             'type': 'websocket.message',
             'text': 'message received'
         })
 
-    async def disconnect(self, close_code):
-        # Called when the socket closes
-        print('Disconnected')
-        # self.channel_layer.group_discard("clients", self.channel_name)
+    async def ping_employees_of_project(self, project_id):
+        print(f'Sending message to project group {project_id}')
+        await self.channel_layer.group_send(f'project_{project_id}', {
+            'type': 'user.status.report',
+            # 'report_to': str(self.channel_name),
+            'project_id': project_id,
+        })
 
-
+    async def employee_status(self, event):
+        """
+            Function that handles messages of type employee.status sent from AsyncClientConnectionsConsumer instances.
+            Obtained information is sent back to frontend to update the user's current work status.
+        """
+        print(event)
+        await self.send_json(event)

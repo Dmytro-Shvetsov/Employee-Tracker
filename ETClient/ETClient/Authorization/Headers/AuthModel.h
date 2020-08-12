@@ -8,6 +8,7 @@
 #include <QByteArray>
 #include <QNetworkReply>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include "definitions.h"
 
 

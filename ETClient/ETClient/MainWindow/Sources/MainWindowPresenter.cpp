@@ -82,12 +82,11 @@ namespace ETClient
         }
         qDebug() << "Loaded user data";
         this->mwForm->setLoadingState(false);
-        this->mwModel->startDataCollection();
     }
 
     void MainWindowPresenter::handleWebsocketCloseResponse(const QJsonDocument& response)
     {
-        this->mwModel->stopDataCollection();
+//        this->mwModel->stopDataCollection();
         this->mwForm->setLoadingState(false);
         this->onLogout(response["error"].toString());
     }
@@ -128,13 +127,14 @@ namespace ETClient
     void MainWindowPresenter::onWebsocketConnected()
     {
         this->mwForm->setOnlineStatus(true);
+        this->mwModel->startDataCollection();
         qDebug() << "Ws connected (presenter slot)";
     }
 
     void MainWindowPresenter::onWebsocketDisconnected()
     {
         this->mwForm->setOnlineStatus(false);
-
+        this->mwModel->stopDataCollection();
         qDebug() << "Ws disconnected (presenter slot)";
     }
 

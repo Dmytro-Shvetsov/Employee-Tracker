@@ -16,10 +16,8 @@ class App extends Component {
     }
 
     tryRestoreSession = async () => {
-        // const authToken = getAuthToken();
         try {
             const response = await getUserAccount({});
-            // const response = await getUserAccount({user:{token:authToken}});
             const user = JSON.parse(response.data);
             this.setState({
                 user: user
