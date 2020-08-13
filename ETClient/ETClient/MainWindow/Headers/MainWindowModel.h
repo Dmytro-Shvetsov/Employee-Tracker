@@ -10,6 +10,7 @@
 #include "WebsocketClient.h"
 #include "ScreenshotManager.h"
 #include "NetworkManager.h"
+#include "ConnectionStatusManager.h"
 
 
 namespace ETClient
@@ -23,6 +24,7 @@ namespace ETClient
 
         ScreenshotManager* screenshotManager;
         NetworkManager* networkManager;
+        ConnectionStatusManager* conStatusManager;
 
         QWaitCondition waitCond;
         QList<QFuture<void>> workerStates;
@@ -32,6 +34,7 @@ namespace ETClient
         void onWebsocketConnected();
         void onWebsocketDisconnect();
         void onTextMessageReceived(const QString& message);
+        void onStatusChanged(const qint8& newStatus);
     public:
         explicit MainWindowModel(QObject* parent = nullptr, QWindow* windowObj = nullptr);
         ~MainWindowModel();
@@ -44,6 +47,7 @@ namespace ETClient
         void websocketConnected();
         void websocketDisconnected();
         void textMessageReceived(const QString&);
+        void statusChanged(const qint8& newStatus);
     };
 }
 

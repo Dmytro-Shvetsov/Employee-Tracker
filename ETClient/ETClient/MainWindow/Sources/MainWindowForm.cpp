@@ -54,6 +54,7 @@ namespace ETClient
     void MainWindowForm::hideView()
     {
         this->hide();
+        this->setEnabled(true);
     }
 
     QWindow* MainWindowForm::getWindowObj()
@@ -73,10 +74,35 @@ namespace ETClient
                 );
     }
 
-    void MainWindowForm::setOnlineStatus(bool online)
+    void MainWindowForm::setStatus(const qint8& newStatus)
     {
-        this->ui->statusValue->setText(online ? "online" : "offline");
-        this->ui->statusValue->setStyleSheet(online ? "color:#1eff00;" : "color:red;");
+        QLabel* status = this->ui->statusValue;
+        switch (newStatus)
+        {
+        case STATUSES::ONLINE:
+        {
+            status->setText("online");
+            status->setStyleSheet("color:#1eff00;");
+            break;
+        }
+        case STATUSES::OFFLINE:
+        {
+            status->setText("offline");
+            status->setStyleSheet("color:red");
+            break;
+        }
+        case STATUSES::IDLE:
+        {
+            status->setText("idle");
+            status->setStyleSheet("color:#fffb00;");
+            break;
+        }
+        default:
+        {
+            qDebug() << "Warning! unknown status code " << newStatus <<
+                        " passed to MainWindowForm::setStatus. No changes applied";
+        }
+        }
     }
 
     void MainWindowForm::setUserImage(const QPixmap& img)
@@ -110,6 +136,13 @@ namespace ETClient
     void MainWindowForm::closeEvent(QCloseEvent* event)
     {
         emit this->windowClosed(event);
+    }
+
+    void MainWindowForm::hideEvent(QHideEvent *event)
+    {
+        event->accept();
+        this->setEnabled(true);
+
     }
 
     void MainWindowForm::onLogoutClick()

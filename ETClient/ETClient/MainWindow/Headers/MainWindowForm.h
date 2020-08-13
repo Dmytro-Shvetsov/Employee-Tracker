@@ -27,7 +27,7 @@ namespace ETClient
         virtual QWindow* getWindowObj() = 0;
         virtual void setUsernameText(const QString& username) = 0;
         virtual void setDateJoined(const QDate& date) = 0;
-        virtual void setOnlineStatus(bool online) = 0;
+        virtual void setStatus(const qint8&) = 0;
         virtual void setUserImage(const QPixmap& img) = 0;
         virtual void setLoadingState(bool value) = 0;
     public: // signals
@@ -45,6 +45,7 @@ namespace ETClient
         QLocale locale = QLocale::English;
 
         void closeEvent(QCloseEvent* event)override;
+        void hideEvent(QHideEvent* event)override;
     private slots:
         void onLogoutClick();
 //        void onWindowClosed();
@@ -57,9 +58,10 @@ namespace ETClient
         QWindow* getWindowObj()override;
         void setUsernameText(const QString& username)override;
         void setDateJoined(const QDate& date)override;
-        void setOnlineStatus(bool online)override;
+        void setStatus(const qint8&)override;
         void setUserImage(const QPixmap& img)override;
         void setLoadingState(bool value)override;
+
     signals:
         void logout(const QString& message="")override;
         void windowClosed(QCloseEvent* event)override;

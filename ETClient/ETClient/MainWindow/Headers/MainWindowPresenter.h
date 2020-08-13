@@ -23,6 +23,7 @@ namespace ETClient
         void onWebsocketConnected();
         void onWebsocketDisconnected();
         void onTextMessageReceived(const QString& message);
+        void onStatusChanged(const qint8& newStatus);
     public slots:
         void destroy();
     public:

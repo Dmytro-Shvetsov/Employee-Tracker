@@ -26,6 +26,7 @@ HEADERS += \
     Authorization/Headers/AuthForm.h \
     Authorization/Headers/AuthModel.h \
     Authorization/Headers/AuthPresenter.h \
+    MainWindow/Headers/ConnectionStatusManager.h \
     MainWindow/Headers/MainWindowForm.h \
     MainWindow/Headers/MainWindowModel.h \
     MainWindow/Headers/MainWindowPresenter.h \
@@ -42,6 +43,7 @@ SOURCES += \
     Authorization/Sources/AuthForm.cpp \
     Authorization/Sources/AuthModel.cpp \
     Authorization/Sources/AuthPresenter.cpp \
+    MainWindow/Sources/ConnectionStatusManager.cpp \
     MainWindow/Sources/MainWindowForm.cpp \
     MainWindow/Sources/MainWindowModel.cpp \
     MainWindow/Sources/MainWindowPresenter.cpp \

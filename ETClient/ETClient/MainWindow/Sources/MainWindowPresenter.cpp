@@ -23,6 +23,10 @@ namespace ETClient
                 SIGNAL(textMessageReceived(const QString&)),
                 this,
                 SLOT(onTextMessageReceived(const QString&)));
+        connect(this->mwModel,
+                SIGNAL(statusChanged(const qint8&)),
+                this,
+                SLOT(onStatusChanged(const qint8&)));
     }
 
     MainWindowPresenter::~MainWindowPresenter()
@@ -58,6 +62,7 @@ namespace ETClient
                 SIGNAL(windowClosed(QCloseEvent*)),
                 this,
                 SLOT(onWindowClosed(QCloseEvent*)));
+
     }
 
     void MainWindowPresenter::handleWebsocketAcceptResponse(const QJsonDocument& response)
@@ -86,14 +91,12 @@ namespace ETClient
 
     void MainWindowPresenter::handleWebsocketCloseResponse(const QJsonDocument& response)
     {
-//        this->mwModel->stopDataCollection();
         this->mwForm->setLoadingState(false);
         this->onLogout(response["error"].toString());
     }
 
       void MainWindowPresenter::onWindowClosed(QCloseEvent* event)
     {
-        this->mwModel->stopDataCollection();
         this->mwModel->disconnectClient();
 
         connect(this->mwModel,
@@ -126,15 +129,16 @@ namespace ETClient
 
     void MainWindowPresenter::onWebsocketConnected()
     {
-        this->mwForm->setOnlineStatus(true);
         this->mwModel->startDataCollection();
+        this->mwForm->setStatus(STATUSES::ONLINE);
+
         qDebug() << "Ws connected (presenter slot)";
     }
 
     void MainWindowPresenter::onWebsocketDisconnected()
     {
-        this->mwForm->setOnlineStatus(false);
         this->mwModel->stopDataCollection();
+        this->mwForm->setStatus(STATUSES::OFFLINE);
         qDebug() << "Ws disconnected (presenter slot)";
     }
 
@@ -150,6 +154,11 @@ namespace ETClient
             qDebug() << "Websocket close";
             this->handleWebsocketCloseResponse(response);
         }
+    }
+
+    void MainWindowPresenter::onStatusChanged(const qint8& newStatus)
+    {
+        this->mwForm->setStatus(newStatus);
     }
 
     void MainWindowPresenter::destroy()

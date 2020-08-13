@@ -5,7 +5,9 @@ namespace ETClient
 {
     MainWindowModel::MainWindowModel(QObject* parent, QWindow* windowObj):
         QObject(parent),
-        screenshotManager(new ScreenshotManager(&this->waitCond, this, windowObj))
+        screenshotManager(new ScreenshotManager(&this->waitCond, this, windowObj)),
+        networkManager(new NetworkManager(&this->waitCond, this)),
+        conStatusManager(new ConnectionStatusManager(this))
     {
         connect(this->socket,
                 SIGNAL(connected()),
@@ -21,8 +23,6 @@ namespace ETClient
                 SLOT(onTextMessageReceived(const QString&)));
 
 
-        this->networkManager = new NetworkManager(&this->waitCond, this);
-
         connect(this->screenshotManager,
                 SIGNAL(screenshotReady()),
                 this,
@@ -32,6 +32,11 @@ namespace ETClient
                 SIGNAL(dataReadyToExtract()),
                 this,
                 SLOT(onNetworkDataReady()));
+
+        connect(this->conStatusManager,
+                SIGNAL(statusChanged(const qint8&)),
+                this,
+                SLOT(onStatusChanged(const qint8&)));
     }
 
     MainWindowModel::~MainWindowModel()
@@ -46,11 +51,13 @@ namespace ETClient
     void MainWindowModel::startDataCollection()
     {
         this->screenshotManager->setRunning(true);
-        this->networkManager->setupDevice("192.168.0.101"); // for now it's explicit
+        this->networkManager->setupDevice("192.168.0.102"); // for now it's explicit
         this->networkManager->setRunning(true);
 
         this->waitCond.wakeAll();
-        if (this->workerStates.size() == 0)
+        if (this->workerStates.size() == 0
+                && false // ha ha funny
+                )
         {
             QFuture<void> smFutureObj = QtConcurrent::run(this->screenshotManager, &ScreenshotManager::run);
             this->workerStates.append(smFutureObj);
@@ -58,6 +65,9 @@ namespace ETClient
             QFuture<void> nmFutureObj = QtConcurrent::run(this->networkManager, &NetworkManager::run);
             this->workerStates.append(nmFutureObj);
         }
+
+        this->conStatusManager->restartIdleTimer();
+        QCoreApplication::instance()->installEventFilter(this->conStatusManager);
     }
 
     void MainWindowModel::stopDataCollection()
@@ -70,6 +80,8 @@ namespace ETClient
         {
             item.waitForFinished();
         }
+        this->workerStates.clear();
+        this->removeEventFilter(this->conStatusManager);
         qDebug() << "Finished data collection work, good to go";
     }
 
@@ -177,6 +189,11 @@ namespace ETClient
     void MainWindowModel::onTextMessageReceived(const QString &message)
     {
         emit this->textMessageReceived(message);
+    }
+
+    void MainWindowModel::onStatusChanged(const qint8& newStatus)
+    {
+        emit this->statusChanged(newStatus);
     }
 
     void MainWindowModel::connectClient(const QString& token)
