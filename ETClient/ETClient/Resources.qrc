@@ -3,5 +3,8 @@
         <file>Resources/auth_lock.jpg</file>
         <file>Resources/icon.ico</file>
         <file>Resources/loading.gif</file>
+        <file>Resources/user_idle.ico</file>
+        <file>Resources/user_offline.ico</file>
+        <file>Resources/user_online.ico</file>
     </qresource>
 </RCC>

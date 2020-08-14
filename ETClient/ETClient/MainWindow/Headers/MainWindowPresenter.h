@@ -27,7 +27,7 @@ namespace ETClient
     public slots:
         void destroy();
     public:
-        explicit MainWindowPresenter(QObject* parent);
+        explicit MainWindowPresenter(QObject* parent = nullptr);
         ~MainWindowPresenter();
         void init(const QString& userAuthToken);
     signals:

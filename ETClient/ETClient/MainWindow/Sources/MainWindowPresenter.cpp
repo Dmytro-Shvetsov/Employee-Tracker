@@ -99,10 +99,10 @@ namespace ETClient
     {
         this->mwModel->disconnectClient();
 
-        connect(this->mwModel,
-                SIGNAL(websocketDisconnected()),
-                this,
-                SLOT(destroy()));
+//        connect(this->mwModel,
+//                SIGNAL(websocketDisconnected()),
+//                this,
+//                SLOT(destroy()));
     }
 
     void MainWindowPresenter::onLogout(const QString& message)
@@ -110,7 +110,6 @@ namespace ETClient
         this->mwModel->disconnectClient();
 
         const auto wsDisconnectCallback = [this, &message]() {
-            this->mwForm->hideView();
             emit this->logout(message);
         };
 
@@ -169,7 +168,6 @@ namespace ETClient
     void MainWindowPresenter::destroy()
     {
         qDebug() << "Destroy method called";
-        this->mwForm->hideView();
         this->deleteLater();
     }
 

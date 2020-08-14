@@ -8,34 +8,24 @@ namespace ETClient
         loadingView(nullptr),
         loadingMovie(new QMovie(":/Resources/loading.gif"))
     {
-//        trayIcon = new QSystemTrayIcon(this);
-//        trayIcon->setIcon(this->style()->standardIcon(QStyle::SP_ComputerIcon));
-//        trayIcon->setToolTip("Employee Tracker");
-//        /* After that create a context menu */
-//        QMenu* menu = new QMenu(this);
-//        QAction* quitAction = new QAction("Exit", this);
+        this->trayIcon = new QSystemTrayIcon(this);
+        this->trayIcon->setIcon(this->style()->standardIcon(QStyle::SP_ComputerIcon));
+        this->trayIcon->setToolTip("Employee Tracker");
+        // After that create a context menu
+        QMenu* menu = new QMenu(this);
+        QAction* quitAction = new QAction("Exit", this);
 
-//        /* connect the signals clicks on menu items to by appropriate slots.
-//         * The first menu item expands the application from the tray,
-//         * And the second menu item terminates the application
-//         * */
-////            connect(viewWindow, SIGNAL(triggered()), this, SLOT(show()));
-//        connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
+        connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
 
-//        menu->addAction(quitAction);
+        menu->addAction(quitAction);
 
-//        /* Set the context menu on the icon
-//         * And show the application icon in the system tray
-//         * */
-//        trayIcon->setContextMenu(menu);
-//        trayIcon->show();
+        this->trayIcon->setContextMenu(menu);
 
-//        /* Also connect clicking on the icon to the signal processor of this press
-//         * */
-//        connect(trayIcon,
-//                SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
-//                this,
-//                SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
+        // connect clicking on the icon to the signal processor of this press
+        connect(this->trayIcon,
+                SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
+                this,
+                SLOT(onTrayIconActivated(QSystemTrayIcon::ActivationReason)));
     }
 
     MainWindowForm::~MainWindowForm()
@@ -50,7 +40,6 @@ namespace ETClient
         {
             delete this->idleAlert;
         }
-//        delete this->trayIcon;
         delete this->ui;
 
         qDebug() << "Deleted MainWindowForm";
@@ -127,6 +116,9 @@ namespace ETClient
             statusTxt = "online";
             status->setText(statusTxt);
             status->setStyleSheet("color:#1eff00;");
+
+            QIcon icon(":/Resources/user_online.ico");
+            this->trayIcon->setIcon(icon);
             break;
         }
         case STATUSES::OFFLINE:
@@ -134,6 +126,9 @@ namespace ETClient
             statusTxt = "offline";
             status->setText(statusTxt);
             status->setStyleSheet("color:red");
+
+            QIcon icon(":/Resources/user_offline.ico");
+            this->trayIcon->setIcon(icon);
             break;
         }
         case STATUSES::IDLE:
@@ -141,16 +136,20 @@ namespace ETClient
             statusTxt = "idle";
             status->setStyleSheet("color:#fffb00;");
             status->setText(statusTxt);
+
+            QIcon icon(":/Resources/user_idle.ico");
+            this->trayIcon->setIcon(icon);
+
             if (this->idleAlert->isVisible() == false)
             {
                 QTimer::singleShot(1000, this, [this](){
+                    if (this->trayIcon->isVisible())
+                    {
+                        this->showView();
+                    }
                     this->idleAlert->exec();
                 });
             }
-
-//            msgBox.setT
-//            msgBox.setIcon(this->style()->standardIcon(QStyle::SP_ComputerIcon));
-
             break;
         }
         default:
@@ -195,17 +194,39 @@ namespace ETClient
         emit this->windowClosed(event);
     }
 
-//    void MainWindowForm::hideEvent(QHideEvent *event)
-//    {
-//        event->accept();
-//        qDebug() << "fffocus";
-////        this->setFocus();
-////        raise();
-
-//    }
+    void MainWindowForm::hideEvent(QHideEvent* event)
+    {
+        if (this->isVisible() == false)
+        {
+            return;
+        }
+        this->hideView();
+        this->trayIcon->show();
+        this->trayIcon->showMessage("Employee Tracker",
+                                    "Program was minimized to system tray.");
+    }
 
     void MainWindowForm::onLogoutClick()
     {
         emit this->logout();
+    }
+
+    void MainWindowForm::onTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
+    {
+        switch (reason)
+        {
+        case QSystemTrayIcon::ActivationReason::DoubleClick:
+        {
+            this->showView();
+            this->raise();
+            this->setFocus();
+            this->trayIcon->hide();
+            break;
+        default:
+        {
+            break;
+        }
+        }
+        }
     }
 }

@@ -28,7 +28,6 @@ namespace ETClient
         QElapsedTimer stopwatch;
         qint32 minMsForIdle = MIN_IDLE_TIME_SECONDS * 1000;
         qint8 currentStatus;
-//        bool eventFilter(QObject* obj, QEvent* event);
 
     public:
         explicit ConnectionStatusManager(QWaitCondition* waitCond, QObject* parent = nullptr, bool running = false);

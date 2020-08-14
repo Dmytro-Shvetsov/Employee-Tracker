@@ -51,17 +51,18 @@ namespace ETClient
         Q_OBJECT
     private:
         Ui::MainWindowForm* ui;
-//        QSystemTrayIcon* trayIcon;
+        QSystemTrayIcon* trayIcon;
         QLabel* loadingView;
         QMovie* loadingMovie;
         QMessageBox* idleAlert = nullptr;
         QLocale locale = QLocale::English;
 
         void closeEvent(QCloseEvent* event)override;
-//        void hideEvent(QHideEvent* event)override;
+        void hideEvent(QHideEvent* event)override;
 
     private slots:
         void onLogoutClick();
+        void onTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
     public:
         explicit MainWindowForm(QWidget* parent = nullptr);
         virtual ~MainWindowForm();
