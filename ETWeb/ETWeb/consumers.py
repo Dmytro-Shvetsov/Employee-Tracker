@@ -162,6 +162,14 @@ class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectio
             await self.save_screenshot(content['screenshot'].encode())
         elif msg_type == 'data.network':
             await self.save_network_activities(content)
+        elif msg_type == 'user.status.change':
+            try:
+                await self.set_status(content.get('status', None))
+            except ValueError:
+                await self.send_json({
+                    'type': 'websocket.message',
+                    'text': 'invalid status sent'
+                })
 
         await self.send_json({
             'type': 'websocket.message',

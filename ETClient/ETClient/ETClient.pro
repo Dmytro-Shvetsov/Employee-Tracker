@@ -63,4 +63,6 @@ RESOURCES += \
     Resources.qrc
 
 DISTFILES += \
-    Resources/auth_lock.jpg
+    Resources/auth_lock.jpg \
+    Resources/warning.ico \
+    Resources/warning.jpg

@@ -72,8 +72,8 @@ namespace ETClient
                     // std::cout<<temp;
                 }
                 // std::cout << std::endl;
-                // perform action keystroke checks every one second
-                this->waitCond->wait(&this->mutex, 1000);
+                // perform action keystroke checks every 100 ms
+                this->waitCond->wait(&this->mutex, 100);
                 this->mutex.unlock();
             }
         }

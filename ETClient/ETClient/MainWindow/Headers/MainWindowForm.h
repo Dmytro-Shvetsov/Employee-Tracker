@@ -17,6 +17,7 @@
 #include <QMovie>
 #include <QLocale>
 #include <QMessageBox>
+#include <QTimer>
 #include "definitions.h"
 #include "ui_MainWindowForm.h"
 
@@ -37,7 +38,7 @@ namespace ETClient
         virtual QWindow* getWindowObj() = 0;
         virtual void setUsernameText(const QString& username) = 0;
         virtual void setDateJoined(const QDate& date) = 0;
-        virtual void setStatus(const qint8&) = 0;
+        virtual QString setStatus(const qint8&) = 0;
         virtual void setUserImage(const QPixmap& img) = 0;
         virtual void setLoadingState(bool value) = 0;
     public: // signals
@@ -53,6 +54,7 @@ namespace ETClient
 //        QSystemTrayIcon* trayIcon;
         QLabel* loadingView;
         QMovie* loadingMovie;
+        QMessageBox* idleAlert = nullptr;
         QLocale locale = QLocale::English;
 
         void closeEvent(QCloseEvent* event)override;
@@ -69,7 +71,7 @@ namespace ETClient
         QWindow* getWindowObj()override;
         void setUsernameText(const QString& username)override;
         void setDateJoined(const QDate& date)override;
-        void setStatus(const qint8&)override;
+        QString setStatus(const qint8&)override;
         void setUserImage(const QPixmap& img)override;
         void setLoadingState(bool value)override;
 

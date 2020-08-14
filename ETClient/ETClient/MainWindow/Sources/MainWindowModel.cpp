@@ -212,4 +212,19 @@ namespace ETClient
     {
         return this->websocketIsConnected;
     }
+
+    void MainWindowModel::sendMessage(const QJsonObject& message)
+    {
+        if (!this->clientIsConnected())
+        {
+            qDebug() << "Attempted to send message when client is not connected. Message ignored";
+            return;
+        }
+        this->socket->sendMessage(message);
+    }
+
+    void MainWindowModel::setConnectionStatus(const qint8& newStatus)
+    {
+        this->conStatusManager->setStatus(newStatus);
+    }
 }

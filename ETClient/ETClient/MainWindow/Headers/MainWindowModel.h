@@ -43,6 +43,8 @@ namespace ETClient
         void connectClient(const QString& token);
         void disconnectClient();
         bool clientIsConnected()const;
+        void sendMessage(const QJsonObject& message);
+        void setConnectionStatus(const qint8& newStatus);
     signals:
         void websocketConnected();
         void websocketDisconnected();

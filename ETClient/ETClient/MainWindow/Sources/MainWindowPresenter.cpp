@@ -130,7 +130,7 @@ namespace ETClient
     void MainWindowPresenter::onWebsocketConnected()
     {
         this->mwModel->startDataCollection();
-        this->mwForm->setStatus(STATUSES::ONLINE);
+        this->mwModel->setConnectionStatus(STATUSES::ONLINE);
 
         qDebug() << "Ws connected (presenter slot)";
     }
@@ -138,7 +138,7 @@ namespace ETClient
     void MainWindowPresenter::onWebsocketDisconnected()
     {
         this->mwModel->stopDataCollection();
-        this->mwForm->setStatus(STATUSES::OFFLINE);
+        this->mwModel->setConnectionStatus(STATUSES::OFFLINE);
         qDebug() << "Ws disconnected (presenter slot)";
     }
 
@@ -158,7 +158,12 @@ namespace ETClient
 
     void MainWindowPresenter::onStatusChanged(const qint8& newStatus)
     {
-        this->mwForm->setStatus(newStatus);
+        QString statusTxt = this->mwForm->setStatus(newStatus);
+
+        QJsonObject message;
+        message["type"] = "user.status.change";
+        message["status"] = statusTxt;
+        this->mwModel->sendMessage(message);
     }
 
     void MainWindowPresenter::destroy()

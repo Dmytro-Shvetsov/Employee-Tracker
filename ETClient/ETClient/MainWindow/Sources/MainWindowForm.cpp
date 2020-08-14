@@ -46,6 +46,10 @@ namespace ETClient
         }
 
         delete this->loadingMovie;
+        if (this->idleAlert != nullptr)
+        {
+            delete this->idleAlert;
+        }
 //        delete this->trayIcon;
         delete this->ui;
 
@@ -74,6 +78,14 @@ namespace ETClient
                 SIGNAL(clicked()),
                 this,
                 SLOT(onLogoutClick()));
+
+        this->idleAlert = new QMessageBox(QMessageBox::Icon::Warning,
+                                          "Are you still there?",
+                                          "You have gone idle.\nPress OK to continue.",
+                                          QMessageBox::Ok);
+
+        QPixmap warningIcon(":/Resources/icon.ico");
+        idleAlert->setWindowIcon(warningIcon);
     }
 
     void MainWindowForm::showView()
@@ -104,27 +116,41 @@ namespace ETClient
                 );
     }
 
-    void MainWindowForm::setStatus(const qint8& newStatus)
+    QString MainWindowForm::setStatus(const qint8& newStatus)
     {
         QLabel* status = this->ui->statusValue;
+        QString statusTxt;
         switch (newStatus)
         {
         case STATUSES::ONLINE:
         {
-            status->setText("online");
+            statusTxt = "online";
+            status->setText(statusTxt);
             status->setStyleSheet("color:#1eff00;");
             break;
         }
         case STATUSES::OFFLINE:
         {
-            status->setText("offline");
+            statusTxt = "offline";
+            status->setText(statusTxt);
             status->setStyleSheet("color:red");
             break;
         }
         case STATUSES::IDLE:
         {
-            status->setText("idle");
+            statusTxt = "idle";
             status->setStyleSheet("color:#fffb00;");
+            status->setText(statusTxt);
+            if (this->idleAlert->isVisible() == false)
+            {
+                QTimer::singleShot(1000, this, [this](){
+                    this->idleAlert->exec();
+                });
+            }
+
+//            msgBox.setT
+//            msgBox.setIcon(this->style()->standardIcon(QStyle::SP_ComputerIcon));
+
             break;
         }
         default:
@@ -133,6 +159,7 @@ namespace ETClient
                         " passed to MainWindowForm::setStatus. No changes applied";
         }
         }
+        return statusTxt;
     }
 
     void MainWindowForm::setUserImage(const QPixmap& img)
