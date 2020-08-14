@@ -19,13 +19,13 @@ namespace ETClient
     {
         Q_OBJECT
     private:
+        bool running;
+        QMutex mutex;
+        QWaitCondition* waitCond;
         QByteArray screenshotBytes;
         QWindow* windowObj;
         QSize defaultScreenshotSize;
         qint32 screenshotTimedeltaSeconds;
-        bool running;
-        QMutex mutex;
-        QWaitCondition* waitCond;
     public:
         explicit ScreenshotManager(QWaitCondition* waitCond, QObject* parent = nullptr,
                                    QWindow* windowObj = nullptr,

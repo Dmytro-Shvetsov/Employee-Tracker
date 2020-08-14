@@ -7,7 +7,7 @@ namespace ETClient
         QObject(parent),
         screenshotManager(new ScreenshotManager(&this->waitCond, this, windowObj)),
         networkManager(new NetworkManager(&this->waitCond, this)),
-        conStatusManager(new ConnectionStatusManager(this))
+        conStatusManager(new ConnectionStatusManager(&this->waitCond, this))
     {
         connect(this->socket,
                 SIGNAL(connected()),
@@ -53,27 +53,29 @@ namespace ETClient
         this->screenshotManager->setRunning(true);
         this->networkManager->setupDevice("192.168.0.102"); // for now it's explicit
         this->networkManager->setRunning(true);
+        this->conStatusManager->setRunning(true);
 
         this->waitCond.wakeAll();
-        if (this->workerStates.size() == 0
-                && false // ha ha funny
-                )
+        if (this->workerStates.size() == 0)
         {
-            QFuture<void> smFutureObj = QtConcurrent::run(this->screenshotManager, &ScreenshotManager::run);
-            this->workerStates.append(smFutureObj);
+//            QFuture<void> smFutureObj = QtConcurrent::run(this->screenshotManager, &ScreenshotManager::run);
+//            this->workerStates.append(smFutureObj);
 
-            QFuture<void> nmFutureObj = QtConcurrent::run(this->networkManager, &NetworkManager::run);
-            this->workerStates.append(nmFutureObj);
+//            QFuture<void> nmFutureObj = QtConcurrent::run(this->networkManager, &NetworkManager::run);
+//            this->workerStates.append(nmFutureObj);
+
+            QFuture<void> cmFutureObj = QtConcurrent::run(this->conStatusManager, &ConnectionStatusManager::run);
+            this->workerStates.append(cmFutureObj);
         }
 
-        this->conStatusManager->restartIdleTimer();
-        QCoreApplication::instance()->installEventFilter(this->conStatusManager);
+//        QCoreApplication::instance()->installEventFilter(this->conStatusManager);
     }
 
     void MainWindowModel::stopDataCollection()
     {
         this->screenshotManager->setRunning(false);
         this->networkManager->setRunning(false);
+        this->conStatusManager->setRunning(false);
         this->waitCond.wakeAll();
 
         for(auto& item: this->workerStates)

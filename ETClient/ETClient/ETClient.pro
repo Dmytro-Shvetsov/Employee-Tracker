@@ -15,7 +15,7 @@ BUILD_VERSION = x86
 BUILD_MODE = Debug
 
 
-LIBS += -lWs2_32 -lIPHLPAPI
+LIBS += -lWs2_32 -lIPHLPAPI -lUser32
 LIBS += -L"$${DEPENDENCY_DIR}/lib/$${BUILD_VERSION}/" -lwpcap -lPacket -lpthreadVC2 \
         -L"$${DEPENDENCY_DIR}/lib/$${BUILD_VERSION}/$${BUILD_MODE}" -lCommon++ -lPacket++ -lPcap++
 

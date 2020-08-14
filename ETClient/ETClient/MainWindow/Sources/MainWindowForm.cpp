@@ -8,6 +8,34 @@ namespace ETClient
         loadingView(nullptr),
         loadingMovie(new QMovie(":/Resources/loading.gif"))
     {
+//        trayIcon = new QSystemTrayIcon(this);
+//        trayIcon->setIcon(this->style()->standardIcon(QStyle::SP_ComputerIcon));
+//        trayIcon->setToolTip("Employee Tracker");
+//        /* After that create a context menu */
+//        QMenu* menu = new QMenu(this);
+//        QAction* quitAction = new QAction("Exit", this);
+
+//        /* connect the signals clicks on menu items to by appropriate slots.
+//         * The first menu item expands the application from the tray,
+//         * And the second menu item terminates the application
+//         * */
+////            connect(viewWindow, SIGNAL(triggered()), this, SLOT(show()));
+//        connect(quitAction, SIGNAL(triggered()), this, SLOT(close()));
+
+//        menu->addAction(quitAction);
+
+//        /* Set the context menu on the icon
+//         * And show the application icon in the system tray
+//         * */
+//        trayIcon->setContextMenu(menu);
+//        trayIcon->show();
+
+//        /* Also connect clicking on the icon to the signal processor of this press
+//         * */
+//        connect(trayIcon,
+//                SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
+//                this,
+//                SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
     }
 
     MainWindowForm::~MainWindowForm()
@@ -18,7 +46,9 @@ namespace ETClient
         }
 
         delete this->loadingMovie;
+//        delete this->trayIcon;
         delete this->ui;
+
         qDebug() << "Deleted MainWindowForm";
     }
 
@@ -138,12 +168,14 @@ namespace ETClient
         emit this->windowClosed(event);
     }
 
-    void MainWindowForm::hideEvent(QHideEvent *event)
-    {
-        event->accept();
-        this->setEnabled(true);
+//    void MainWindowForm::hideEvent(QHideEvent *event)
+//    {
+//        event->accept();
+//        qDebug() << "fffocus";
+////        this->setFocus();
+////        raise();
 
-    }
+//    }
 
     void MainWindowForm::onLogoutClick()
     {

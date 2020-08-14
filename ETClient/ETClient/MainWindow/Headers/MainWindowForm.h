@@ -1,12 +1,22 @@
 #pragma once
 
+//#include <stdlib.h>
+//#ifndef _WINDOWS_
+//#include <windows.h>
+//#endif
+
 #include <QMainWindow>
+#include <QCloseEvent>
+#include <QSystemTrayIcon>
+#include <QStyle>
+#include <QMenu>
+#include <QAction>
 #include <QObject>
 #include <QDebug>
 #include <QDate>
 #include <QMovie>
 #include <QLocale>
-#include <QCloseEvent>
+#include <QMessageBox>
 #include "definitions.h"
 #include "ui_MainWindowForm.h"
 
@@ -40,15 +50,16 @@ namespace ETClient
         Q_OBJECT
     private:
         Ui::MainWindowForm* ui;
+//        QSystemTrayIcon* trayIcon;
         QLabel* loadingView;
         QMovie* loadingMovie;
         QLocale locale = QLocale::English;
 
         void closeEvent(QCloseEvent* event)override;
-        void hideEvent(QHideEvent* event)override;
+//        void hideEvent(QHideEvent* event)override;
+
     private slots:
         void onLogoutClick();
-//        void onWindowClosed();
     public:
         explicit MainWindowForm(QWidget* parent = nullptr);
         virtual ~MainWindowForm();
