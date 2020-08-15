@@ -52,6 +52,7 @@ export default class RegisterForm extends React.Component {
         await this.cancelPreviousRequests();
         try {
             const response = await auth.registerUser(this.state.data, this.reqSource.token);
+            alert(response.data.detail);
             this.setState({
                 registrationFinished: true
             });
@@ -91,7 +92,6 @@ export default class RegisterForm extends React.Component {
         const { errors, registrationFinished } = this.state;
 
         if (registrationFinished) {
-            alert('You are almost there! Check out your email to complete registration.');
             return <Redirect to="/login"/>
         }
         return (

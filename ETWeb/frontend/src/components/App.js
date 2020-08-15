@@ -23,12 +23,12 @@ class App extends Component {
                 user: user
             });
         } catch (error) {
-            console.log(error);
-            console.log(error.response.data);
-            if (error.response.status !== 401) {
-                console.error("Unexpected server response when retrieving user account.");
-            } else {
+            // console.log(error.message);
+            // console.log(error.response.data);
+            if (error.response.status === 401 || error.response.status === 403) {
                 console.error("Couldn't restore session.", error.response.statusText);
+            } else {
+                console.error("Unexpected server response when retrieving user account.");
             }
         }
 

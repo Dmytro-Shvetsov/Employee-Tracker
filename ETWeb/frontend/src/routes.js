@@ -25,6 +25,10 @@ const BaseRouter = props => {
                 <Route exact path="/logout">
                     <Auth.Logout onLogout={props.onLogout}/>
                 </Route>
+                <Route
+                    exact path={`/activate/:uidb64([0-9A-Za-z_\\-]+)/:token([0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})`}
+                    component={({match}) => <Auth.AccountActivation match={match}/>}
+                />
 
                 {/*
                   * Dashboard component group routes.

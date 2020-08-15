@@ -4,7 +4,6 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 urlpatterns = [
     path('', ProjectListView.as_view()),
-    # path('<int:pk>/', ProjectDetail.as_view())
     re_path(r'(?P<pk>\d+)/', ProjectDetail.as_view())
 ]
 

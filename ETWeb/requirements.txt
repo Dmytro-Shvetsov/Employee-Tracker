@@ -1,3 +1,4 @@
+six
 python==3.7.2
 django==3.0.8
 channels==2.4.0

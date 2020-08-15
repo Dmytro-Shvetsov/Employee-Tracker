@@ -1,15 +1,28 @@
 import os
-from django.conf import settings
-from rest_framework.authentication import BasicAuthentication
 from rest_framework.authtoken.views import ObtainAuthToken, APIView
 from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.renderers import JSONRenderer
+from django.conf import settings
+
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+
+from django.template.loader import render_to_string
+
+from django.core.mail import EmailMessage
+from .tokens import account_activation_token
 from .serializers import (HttpUserSerializer,
                           UserProfileSerializer,
                           RegisterSerializer,
-                          UserAccountUpdateSerializer)
+                          UserAccountUpdateSerializer,
+                          AccountConfirmationSerializer)
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
 
 
 def _get_auth_token(user):
@@ -25,7 +38,7 @@ def _set_signed_cookie(response, *, key, value, httponly=False, max_age=86400):
                                value=value,
                                salt=settings.SIGNED_COOKIE_SALT,
                                httponly=httponly,
-                               # secure=True, # send this cookie only if request is made with https scheme
+                               secure=settings.USE_HTTPS, # send this cookie only if request is made with https scheme
                                max_age=max_age,
                                samesite='Strict')  # do not send this cookie when performing cross-origin request
 
@@ -38,6 +51,7 @@ class LoginView(ObtainAuthToken):
         Try authorize with given credentials
     """
     def post(self, request, *args, **kwargs):
+        print(11)
         serializer = self.serializer_class(data=request.data,
                                            context={'request': request})
         serializer.is_valid(raise_exception=False)
@@ -71,6 +85,26 @@ class LogoutView(APIView):
 class RegisterView(APIView):
     serializer_class = RegisterSerializer
     permission_classes = (permissions.AllowAny, )
+    authentication_classes = ()
+
+    def mail_confirmation_link(self, user):
+        mail_subject = 'Activate your blog account.'
+
+        link = '{protocol}://{domain}/activate/{uid}/{token}'.format(
+            protocol='https' if settings.USE_HTTPS else 'http',
+            domain=get_current_site(self.request).domain,
+            uid=urlsafe_base64_encode(force_bytes(user.pk)),
+            token=account_activation_token.make_token(user)
+        )
+
+        message = render_to_string('accounts/account_active_email.html', {
+            'user': user,
+            'confirm_link': link,
+        })
+        EmailMessage(mail_subject, message, to=[user.email]).send()
+        return Response({
+            'detail': 'Please confirm your email address to complete the registration'
+        }, status.HTTP_201_CREATED)
 
     """
         Create new user
@@ -88,10 +122,24 @@ class RegisterView(APIView):
             return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
         user_instance = serializer.save()
+        # 'token': _get_auth_token(user_instance)
 
-        return Response(JSONRenderer().render({
-            'token': _get_auth_token(user_instance)
-        }), status=status.HTTP_201_CREATED)
+        return self.mail_confirmation_link(user_instance)
+
+
+class AccountConfirmationView(APIView):
+    permission_classes = (permissions.AllowAny,)
+    authentication_classes = ()
+    serializer_class = AccountConfirmationSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({
+            'detail': 'Thank you for your email confirmation. Now you can login your account.',
+        }, status.HTTP_201_CREATED)
 
 
 class AccountView(APIView):

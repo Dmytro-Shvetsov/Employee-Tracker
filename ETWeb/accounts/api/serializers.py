@@ -1,7 +1,10 @@
 import base64
 from rest_framework import serializers
 from django.contrib.auth.views import get_user_model
+from .tokens import account_activation_token
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from accounts.models import UserProfile
+from django.utils.encoding import force_bytes, force_text
 from . import validators
 
 
@@ -51,9 +54,9 @@ class RegisterSerializer(serializers.ModelSerializer):
             password = attrs['password']
             password2 = attrs['password2']
 
-            # if (validators.is_username_valid(username) and validators.is_email_valid(email) and
-            #         validators.is_password_valid(password, password2)):
-            #     return attrs
+            if (validators.is_username_valid(username) and validators.is_email_valid(email) and
+                    validators.is_password_valid(password, password2)):
+                return attrs
             return attrs
         except KeyError as ex:
             missing_key = str(ex)
@@ -75,6 +78,30 @@ class RegisterSerializer(serializers.ModelSerializer):
                 'write_only': True
              }
         }
+
+
+class AccountConfirmationSerializer(serializers.Serializer):
+    uidb64 = serializers.CharField(max_length=2083, required=True, allow_null=False, allow_blank=False)
+    token = serializers.CharField(max_length=2083, required=True, allow_null=False, allow_blank=False)
+
+    def validate(self, attrs):
+        try:
+            uid = force_text(urlsafe_base64_decode(attrs['uidb64']))
+            user = User.objects.get(pk=uid)
+        except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if not user or not account_activation_token.check_token(user, attrs['token']):
+            raise serializers.ValidationError('Invalid confirmation data provided.')
+
+        self.context['user'] = user
+        return attrs
+
+    def save(self, **kwargs):
+        user = self.context['user']
+        user.is_active = True
+        user.save()
+        return user
 
 
 class UserAccountUpdateSerializer(serializers.ModelSerializer):
