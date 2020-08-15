@@ -8,6 +8,7 @@
 <body>
     <div id="root"></div>
     {% load static %}
+    {% csrf_token %}
     <script type="application/javascript" src="{% static 'frontend/main.js' %}"></script>
 </body>
 </html>
