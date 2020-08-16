@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
+import * as utils from "../utils";
 import {
     Button,
     Navbar,
     Nav,
     NavItem,
     Breadcrumb,
-    BreadcrumbItem
+    BreadcrumbItem, ListGroupItem
 } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import { userLoggedIn } from '../services/authService'
+
 
 
 const AuthItems = props => {
@@ -39,26 +41,55 @@ const AuthItems = props => {
 };
 
 const MainNavBar = props => {
+    const links = [
+        {label: "Here will be logo", href: "/", id:"logo"},
+        {label: "Features", href: "/features"},
+        {label: "How it works", href: "/idea"},
+        {label: "Benefits", href: "/benefits"},
+        {label: "Contact Us", href: "/contact"},
+    ];
+
+    const authItems = [];
+    if (userLoggedIn(props.user)) {
+        authItems.push({label: "Profile", href: "/dashboard"}, {label: "Log Out", href: "/logout"})
+    } else {
+        authItems.push({label: "Log In", href: "/login"}, {label: "Sign Up", href: "/register"})
+    }
+
+    let [activeItem, setActiveItem] = useState(utils.getActiveNavItemIdx(links.concat(authItems)) || -1);
     return (
         <Navbar color="dark" expand="md">
             <Nav className="m-auto" id="navbar" navbar>
-                <NavItem>
-                    <Link to="/" id="logo" className="nav-link text-light">Employee Tracker</Link>
-                </NavItem>
-                <NavItem active key="features">
-                    <Link to="/features" className="nav-link text-light">Features</Link>
-                </NavItem>
-                <NavItem>
-                    <Link to="/idea" className="nav-link text-light">How it works</Link>
-                </NavItem>
-                <NavItem>
-                    <Link to="/benefits" className="nav-link text-light">Benefits</Link>
-                </NavItem>
-                <NavItem>
-                    <Link to="/contact" className="nav-link text-light">Contact Us</Link>
-                </NavItem>
+                {links.map((item, idx) => {
+                    const {label, href, ...rest} = item;
+                    return (
+                        <NavItem
+                            onClick={() => setActiveItem(idx)}
+                            key={idx}
+                            active={activeItem === idx}
+                            {...rest}
+                        >
+                            <Link to={href} className="nav-link text-light">{label}</Link>
+                        </NavItem>
+                    );
+                })}
+
                 <div id="auth-items">
-                    <AuthItems user={props.user}/>
+                    {authItems.map((item, idx) => {
+                        const {label, href, ...rest} = item;
+                        const shiftedIdx = idx + links.length;
+                        return (
+                            <Button
+                                color="light"
+                                onClick={() => setActiveItem(shiftedIdx)}
+                                key={shiftedIdx}
+                                active={activeItem === shiftedIdx}
+                                {...rest}
+                            >
+                                <Link className="text-dark nav-link" to={href}>{label}</Link>
+                            </Button>
+                        );
+                    })}
                 </div>
             </Nav>
         </Navbar>

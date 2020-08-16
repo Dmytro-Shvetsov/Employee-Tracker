@@ -96,7 +96,7 @@ export default class ContactForm extends React.Component {
                         This will provide a quicker and more accurate response from our support team.
                     </p>
                 </Container>
-                <Form className="form-center" autoComplete="on">
+                <Form className="form-center" id="contact-form" autoComplete="on">
                     <Input
                         name="email"
                         labelText="Your Email"

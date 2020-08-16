@@ -1,5 +1,16 @@
 :root {
-  --staff-user-bg-color: #f4fe9b;
+    --staff-user-bg-color: #f4fe9b;
+    --active-color: #d7eeff;
+}
+
+#content {
+    background-image: url("/media/background.jpg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-origin: padding-box;
+    background-attachment: fixed;
+    /*height: 90vh;*/
 }
 
 table, th, td {
@@ -19,35 +30,23 @@ a:hover {
 #jumbo * {
     display: inline-block;
 }
+
 #jumbo {
     text-align: center;
 }
 
 #navbar, #footer {
+    height: 5vh;
     display: flex;
     justify-content: space-around;
     align-items: center;
-    height: 5vh;
 }
 
-#footer {
-    margin-top: 100px;
-    padding-bottom: 30px;
-}
-
-#main {
+main {
     min-height: 90vh;
     padding-top: 30px;
+    margin-bottom: 200px;
 }
-
-/*.auth-btn {*/
-/*    width: 105px;*/
-/*    font-weight: bold;*/
-/*    margin-left: 20px;*/
-/*}*/
-/*.auth-btn a {*/
-/*    display: inline;*/
-/*}*/
 
 .nav-link {
     padding: 0;
@@ -73,6 +72,10 @@ a:hover {
     padding-top: 40px;
 }
 
+#contact-form textarea {
+    min-height: 100px;
+}
+
 .auth-other {
     text-align: center;
     margin-top: 20px;
@@ -87,7 +90,11 @@ a:hover {
 }
 
 .list-group-item.active {
-    background-color: #d7eeff;
+    background-color: var(--active-color);
+}
+
+.nav-item.active a{
+    color: var(--active-color) !important;
 }
 
 #dashboard-navbar li{
@@ -100,10 +107,6 @@ a:hover {
     height: 4rem;
     font-size: 1.05rem;
     padding-left: 1.2rem;
-}
-
-#dashboard-content {
-    min-height: 900px;
 }
 
 #dashboard-content nav {

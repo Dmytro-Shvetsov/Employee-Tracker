@@ -23,13 +23,17 @@ export default props => {
     return (
         <React.Fragment>
             <NavBar user={props.user}/>
-            <Container id="main">
-                <BreadCrumb breadcrumbItemsList={breadCrumbItems} />
-                {props.children}
-            </Container>
-            <Container className="" id="footer">
-                All rights reserved &copy;2020
-            </Container>
+            <div id="content">
+                <main>
+                    <Container>
+                        <BreadCrumb breadcrumbItemsList={breadCrumbItems} />
+                        {props.children}
+                    </Container>
+                </main>
+                <Container id="footer">
+                    All rights reserved &copy;2020
+                </Container>
+            </div>
         </React.Fragment>
     );
 };
