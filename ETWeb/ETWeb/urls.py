@@ -2,12 +2,14 @@ from django.contrib import admin
 from django.urls import path, re_path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from .api.views import ContactView
 
 
 urlpatterns = [
     # API
     path('api/projects/', include('projects.api.urls')),
     path('api/auth/', include('accounts.api.urls')),
+    path('api/contact/', ContactView.as_view()),
 
     path('admin/', admin.site.urls),
 ]

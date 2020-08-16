@@ -8,7 +8,7 @@ import {
     Spinner
 } from 'reactstrap';
 import { SaveOutlined, EditOutlined, CloseSquareOutlined } from '@ant-design/icons';
-import { Input } from '../../common';
+import { Input } from '../../common/index';
 
 export default class UserProfile extends React.Component {
     constructor(props) {

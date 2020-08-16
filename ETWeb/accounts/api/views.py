@@ -7,9 +7,8 @@ from rest_framework.renderers import JSONRenderer
 from django.conf import settings
 
 from django.contrib.sites.shortcuts import get_current_site
-from django.utils.encoding import force_bytes, force_text
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.template.loader import render_to_string
 
 from django.core.mail import EmailMessage
@@ -51,7 +50,6 @@ class LoginView(ObtainAuthToken):
         Try authorize with given credentials
     """
     def post(self, request, *args, **kwargs):
-        print(11)
         serializer = self.serializer_class(data=request.data,
                                            context={'request': request})
         serializer.is_valid(raise_exception=False)
@@ -60,16 +58,23 @@ class LoginView(ObtainAuthToken):
             return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
         user = serializer.validated_data['user']
+
         token_key = _get_auth_token(user)
+
         response = {
             'token': token_key,
         }
+        # if request is sent from the web application, include serialized user data to the response data
         if 'include_acc_info' in request.data and request.data['include_acc_info']:
             response.update(
                 HttpUserSerializer(user, context={'request': request}).data
             )
+
         response = Response(response, status.HTTP_202_ACCEPTED)
-        _set_signed_cookie(response, key=settings.AUTH_TOKEN_KEY, value=token_key, httponly=True)
+        # persist authorization token in the http-only cookie
+        remember = request.data.get('remember', False)
+        age = settings.EXTENDED_AUTH_TOKEN_COOKIE_AGE if remember else settings.DEFAULT_AUTH_TOKEN_COOKIE_AGE
+        _set_signed_cookie(response, key=settings.AUTH_TOKEN_KEY, value=token_key, httponly=True, max_age=age)
         return response
 
 
@@ -101,9 +106,11 @@ class RegisterView(APIView):
             'user': user,
             'confirm_link': link,
         })
-        EmailMessage(mail_subject, message, to=[user.email]).send()
+        EmailMessage(mail_subject, message, to=[user.email]).send(fail_silently=True)
         return Response({
-            'detail': 'Please confirm your email address to complete the registration'
+            'detail':
+                'We have sent you an email to activate your account. '
+                'Follow the steps in the email to finish the registration.'
         }, status.HTTP_201_CREATED)
 
     """

@@ -9,6 +9,7 @@ export default class Input extends React.Component {
         this.state = {
             name: props.name,
             labelText: props.labelText,
+            labelFirst: props.labelFirst,
             type: props.type,
             required: props.required,
             placeholder: props.placeholder,
@@ -20,10 +21,11 @@ export default class Input extends React.Component {
     }
 
     render() {
-        const { name, labelText, type, required, placeholder, accept, ...events } = this.state;
+        const { name, labelText, labelFirst, type, required, placeholder, accept, ...events } = this.state;
+        const label = <Label for={name}>{labelText}</Label>;
         return (
             <FormGroup>
-                <Label for={name}>{labelText}</Label>
+                {labelFirst && label}
                 <BaseInput
                     type={type}
                     value={this.props.value}
@@ -36,6 +38,7 @@ export default class Input extends React.Component {
                     accept={accept}
                     {...events}
                 />
+                {!labelFirst && label}
                 <FormFeedback>{this.props.error}</FormFeedback>
             </FormGroup>
         );
@@ -54,6 +57,7 @@ Input.propTypes = {
 
 Input.defaultProps = {
     labelText: "",
+    labelFirst: true,
     type: "text",
     placeholder: "",
     required: true,

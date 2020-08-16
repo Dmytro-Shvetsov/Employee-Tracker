@@ -1,10 +1,10 @@
 import base64
 from rest_framework import serializers
 from django.contrib.auth.views import get_user_model
-from .tokens import account_activation_token
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_text
 from accounts.models import UserProfile
-from django.utils.encoding import force_bytes, force_text
+from .tokens import account_activation_token
 from . import validators
 
 
@@ -48,7 +48,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         try:
-            print(attrs)
+            # print(attrs)
             username = attrs['username']
             email = attrs['email']
             password = attrs['password']
@@ -81,8 +81,8 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class AccountConfirmationSerializer(serializers.Serializer):
-    uidb64 = serializers.CharField(max_length=2083, required=True, allow_null=False, allow_blank=False)
-    token = serializers.CharField(max_length=2083, required=True, allow_null=False, allow_blank=False)
+    uidb64 = serializers.CharField(max_length=2083, required=True)
+    token = serializers.CharField(max_length=2083, required=True)
 
     def validate(self, attrs):
         try:

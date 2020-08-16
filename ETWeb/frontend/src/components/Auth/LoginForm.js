@@ -1,9 +1,9 @@
 import React from 'react';
 import axios from 'axios';
 import * as auth from '../../services/authService';
-import { Button, Form, FormGroup, Label, Input, Alert, Container } from 'reactstrap';
+import { Button, Form, FormGroup, Label, Alert, Container } from 'reactstrap';
 import { Link, Redirect } from 'react-router-dom';
-import TextInput from '../common/Input'
+import {Input} from '../common/index'
 
 
 export default class LoginForm extends React.Component {
@@ -46,9 +46,9 @@ export default class LoginForm extends React.Component {
     handleSubmit = async event => {
         event.preventDefault();
         await this.cancelPreviousRequests();
-        const { data } = this.state;
+        const { data, rememberMe:remember } = this.state;
         try {
-            const response = await auth.loginUser(data, this.reqSource.token);
+            const response = await auth.loginUser({...data, remember}, this.reqSource.token);
             const { rememberMe } = this.state;
             this.setState({
                 errors: [],
@@ -104,26 +104,27 @@ export default class LoginForm extends React.Component {
                         link or <Link to = "/contact">contact our staff</Link> for assistance.
                     </p>
                 </Container>
-                <Form className="auth-form" autoComplete="on">
-                    <TextInput
+                <Form className="form-center" autoComplete="on">
+                    <Input
                         name="username"
                         labelText="Username"
                         error={errors.username}
                         onChange={this.handleInputChange}
                     />
-                    <TextInput
+                    <Input
                         name="password"
                         labelText="Password"
                         error={errors.password}
                         onChange={this.handleInputChange}
                         type="password"
                     />
-                    <FormGroup check>
-                        <Label check>
-                            <Input type="checkbox" onChange={this.handleRememberMeChange}/>{' '}
-                            Remember me
-                        </Label>
-                    </FormGroup>
+                    <Input
+                        name="rememberMe"
+                        labelText="Remember me"
+                        labelFirst={false}
+                        type="checkbox"
+                        onChange={this.handleRememberMeChange}
+                    />
                     <FormGroup>
                         <Alert color="danger" isOpen={errors.non_field_errors !== undefined}>
                             {errors.non_field_errors}
@@ -134,7 +135,7 @@ export default class LoginForm extends React.Component {
                             <Link to="/auth/reset">Forgot your username or password?</Link>
                         </Label>
                         <br />
-                        <Button onClick={(event) => this.handleSubmit(event)}>Submit</Button>
+                        <Button onClick={this.handleSubmit}>Submit</Button>
                     </FormGroup>
                 </Form>
             </React.Fragment>

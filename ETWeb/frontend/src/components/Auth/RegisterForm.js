@@ -1,10 +1,10 @@
 import React from 'react';
+import axios from 'axios';
 import * as auth from '../../services/authService.js'
-import { Button, Form, FormGroup, Label, Input, Alert } from 'reactstrap';
+import { Button, Form, FormGroup, Alert } from 'reactstrap';
 import { Container } from "reactstrap";
 import { Link, Redirect } from 'react-router-dom';
-import TextInput from '../common/Input'
-import axios from "axios";
+import {Input} from '../common/index'
 
 
 export default class RegisterForm extends React.Component {
@@ -42,8 +42,12 @@ export default class RegisterForm extends React.Component {
     };
 
     handleIsStaffChange = event => {
+        const {data} = this.state;
         this.setState({
-            isStaff: !this.state.data.isStaff,
+            data: {
+                ...data,
+                isStaff: !this.state.data.isStaff
+            },
         });
     };
 
@@ -57,7 +61,7 @@ export default class RegisterForm extends React.Component {
                 registrationFinished: true
             });
         } catch (error) {
-            console.log(error)
+            console.log(error.message);
             if (error.response.status === 400) {
                 const fieldErrors = error.response.data;
                 Object.keys(fieldErrors).map((fieldName) => {
@@ -105,39 +109,46 @@ export default class RegisterForm extends React.Component {
                         link or <Link to = "/contact">contact our staff</Link> for assistance.
                     </p>
                 </Container>
-                <Form className="auth-form" autoComplete="on">
-                    <TextInput
+                <Form className="form-center" autoComplete="on">
+                    <Input
                         name="username"
                         labelText="Username"
                         error={errors.username}
                         onChange={this.handleInputChange}
                     />
-                    <TextInput
+                    <Input
                         name="email"
                         labelText="Email"
                         error={errors.email}
                         onChange={this.handleInputChange}
                     />
-                    <TextInput
+                    <Input
                         name="password"
                         labelText="Password"
                         error={errors.password}
                         onChange={this.handleInputChange}
                         type="password"
                     />
-                    <TextInput
+                    <Input
                         name="password2"
                         labelText="Confirm password"
                         error={errors.password2}
                         onChange={this.handleInputChange}
                         type="password"
                     />
-                    <FormGroup check>
-                        <Label check>
-                            <Input type="checkbox" onChange={this.handleIsStaffChange}/>{' '}
-                            I'd like to create a manager account
-                        </Label>
-                    </FormGroup>
+                    <Input
+                        name="isStaff"
+                        labelText="I'd like to create a manager account"
+                        labelFirst={false}
+                        type="checkbox"
+                        onChange={this.handleIsStaffChange}
+                    />
+
+                    {/*<FormGroup check>*/}
+                    {/*    <Label check>*/}
+                    {/*        */}
+                    {/*    </Label>*/}
+                    {/*</FormGroup>*/}
                     <FormGroup>
                         <Alert color="danger" isOpen={errors.non_field_errors !== undefined}>
                             {errors.non_field_errors}

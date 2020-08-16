@@ -13,7 +13,7 @@ const BaseRouter = props => {
                 <Route exact path="/features" component={Pages.Home}/>
                 {/*<Route exact path="/idea" component={Home}/>*/}
                 {/*<Route exact path="/benefits" component={Home}/>*/}
-                {/*<Route exact path="/contact" component={Home}/>*/}
+                <Route exact path="/contact" component={Pages.Contact}/>
 
                 {/* Auth component group routes */}
                 <Route exact path="/register">
