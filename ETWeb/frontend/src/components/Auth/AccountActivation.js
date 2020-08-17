@@ -35,7 +35,6 @@ export default class AccountActivation extends React.Component {
             const response = await confirmEmail(params, this.reqSource.token);
             console.log('Confirmation successful', response);
             alert(response.data.detail);
-            this.setState({responseReceived: true});
         } catch (error) {
             console.error(error.message);
             if (error.response.status === 400) {
@@ -45,6 +44,7 @@ export default class AccountActivation extends React.Component {
                 alert('Unknown email confirmation error.');
             }
         }
+        this.setState({responseReceived: true});
     };
 
     async componentDidMount() {

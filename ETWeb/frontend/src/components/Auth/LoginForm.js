@@ -51,12 +51,12 @@ export default class LoginForm extends React.Component {
             const response = await auth.loginUser({...data, remember}, this.reqSource.token);
             const { rememberMe } = this.state;
             this.setState({
-                errors: [],
+                errors: {},
                 loginFinished: true
             });
             this.props.onLogin(response.data, rememberMe);
         } catch (error) {
-            console.log(error);
+            console.log(error.message);
             if (error.response.status === 400) {
                 const fieldErrors = error.response.data;
                 Object.keys(fieldErrors).map((fieldName) => {
@@ -132,7 +132,7 @@ export default class LoginForm extends React.Component {
                     </FormGroup>
                     <FormGroup className="auth-other">
                         <Label>
-                            <Link to="/auth/reset">Forgot your username or password?</Link>
+                            <Link to="/reset-password">Forgot your username or password?</Link>
                         </Label>
                         <br />
                         <Button onClick={this.handleSubmit}>Submit</Button>

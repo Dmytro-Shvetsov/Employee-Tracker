@@ -5,14 +5,6 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.renderers import JSONRenderer
 from django.conf import settings
-
-from django.contrib.sites.shortcuts import get_current_site
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
-from django.template.loader import render_to_string
-
-from django.core.mail import EmailMessage
-from .tokens import account_activation_token
 from .serializers import (HttpUserSerializer,
                           UserProfileSerializer,
                           RegisterSerializer,
@@ -93,25 +85,7 @@ class RegisterView(APIView):
     authentication_classes = ()
 
     def mail_confirmation_link(self, user):
-        mail_subject = 'Activate your blog account.'
-
-        link = '{protocol}://{domain}/activate/{uid}/{token}'.format(
-            protocol='https' if settings.USE_HTTPS else 'http',
-            domain=get_current_site(self.request).domain,
-            uid=urlsafe_base64_encode(force_bytes(user.pk)),
-            token=account_activation_token.make_token(user)
-        )
-
-        message = render_to_string('accounts/account_active_email.html', {
-            'user': user,
-            'confirm_link': link,
-        })
-        EmailMessage(mail_subject, message, to=[user.email]).send(fail_silently=True)
-        return Response({
-            'detail':
-                'We have sent you an email to activate your account. '
-                'Follow the steps in the email to finish the registration.'
-        }, status.HTTP_201_CREATED)
+        pass
 
     """
         Create new user
@@ -122,16 +96,19 @@ class RegisterView(APIView):
 
         serializer.is_valid(raise_exception=False)
         user_instance = serializer.validated_data.get('user', None)
-        if user_instance:
+        if user_instance and user_instance.is_authenticated:
             return Response({'error': 'You already have an account.'}, status.HTTP_400_BAD_REQUEST)
 
         if serializer.errors:
             return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
-        user_instance = serializer.save()
+        serializer.save()
         # 'token': _get_auth_token(user_instance)
-
-        return self.mail_confirmation_link(user_instance)
+        return Response({
+            'detail':
+                'We have sent you an email to activate your account. '
+                'Follow the steps in the email to finish the registration.'
+        }, status.HTTP_201_CREATED)
 
 
 class AccountConfirmationView(APIView):
@@ -181,6 +158,7 @@ class ProfileView(APIView):
         Retrieve profile information
     """
     def post(self, request):
+        print(request.user.profile)
         serializer = self.serializer_class(request.user.profile)
         return Response(JSONRenderer().render(serializer.data),
                         status=status.HTTP_200_OK)

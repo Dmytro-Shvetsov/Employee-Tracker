@@ -67,7 +67,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             username=self.validated_data['username'],
             email=self.validated_data['email'],
             password=self.validated_data['password'],
-            is_staff=self.validated_data['is_staff']
+            is_staff=self.validated_data['is_staff'],
+            is_active=False
         )
 
     class Meta:
@@ -100,7 +101,8 @@ class AccountConfirmationSerializer(serializers.Serializer):
     def save(self, **kwargs):
         user = self.context['user']
         user.is_active = True
-        user.save()
+        user.save(force_update=True)
+        user.send_account_activated()
         return user
 
 

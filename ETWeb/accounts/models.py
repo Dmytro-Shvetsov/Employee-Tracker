@@ -1,9 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.conf import settings
-from django.db.models.signals import post_save
-from django.dispatch import receiver
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from rest_framework.authtoken.models import Token
+from .api.signals import account_activated
 
 
 class UserManager(BaseUserManager):
@@ -31,7 +30,7 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=255, unique=True)
-    email = models.CharField(max_length=60)
+    email = models.CharField(unique=True, max_length=60)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)  # cannot login by default
@@ -54,6 +53,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         except AttributeError:
             return []
 
+    def send_account_activated(self, **kwargs):
+        return account_activated.send(sender=settings.AUTH_USER_MODEL, instance=self, token=UserProfile,
+                                      userprofile=UserProfile, **kwargs)
+
     def has_perm(self, perm, obj=None):
         return self.is_superuser
 
@@ -62,13 +65,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     class Meta:
         db_table = "accounts_users"
-
-
-@receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def wrap_user_creation(sender, instance=None, created=False, **kwargs):
-    if created:
-        Token.objects.create(user=instance)
-        UserProfile.objects.create(user=instance)
 
 
 class UserProfile(models.Model):

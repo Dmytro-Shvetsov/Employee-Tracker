@@ -29,6 +29,14 @@ const BaseRouter = props => {
                     exact path={`/activate/:uidb64([0-9A-Za-z_\\-]+)/:token([0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})`}
                     component={({match}) => <Auth.AccountActivation match={match}/>}
                 />
+                <Route
+                    exact path={`/reset-password`}
+                    component={Auth.PasswordResetForm}
+                />
+                <Route
+                    exact path={`/reset-password/confirm/:token`}
+                    component={({match}) => <Auth.PasswordResetConfirmForm match={match}/>}
+                />
 
                 {/*
                   * Dashboard component group routes.

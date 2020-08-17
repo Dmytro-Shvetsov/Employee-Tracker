@@ -1,12 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
+import { withRouter, useHistory } from 'react-router-dom';
 
-const CustomLink = ({ history, to, onClick, tag: Tag, staticContext, ...rest }) => {
+const CustomLink = ({ to, onClick, tag: Tag, staticContext, ...rest }) => {
+    const history = useHistory();
     return <Tag
         {...rest}
         onClick={event => {
             onClick(event);
+            console.log(history);
             history.push(to);
         }}
     />
@@ -15,14 +17,11 @@ const CustomLink = ({ history, to, onClick, tag: Tag, staticContext, ...rest }) 
 CustomLink.propTypes = {
     to: PropTypes.string.isRequired,
     children: PropTypes.node.isRequired,
-    history: PropTypes.shape({
-        push: PropTypes.func.isRequired
-    }).isRequired,
     onClick: PropTypes.func
 };
 
 CustomLink.defaultProps = {
-    onClick: () => {}
+    onClick: event => {}
 };
 
 export default withRouter(CustomLink);

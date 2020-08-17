@@ -21,7 +21,8 @@ const DashboardNavBar = props => {
 
     let [activeItem, setActiveItem] = useState(utils.getActiveNavItemIdx(links) || 0);
 
-    return (<ListGroup>
+    return (
+        <ListGroup>
             {links.map((item, idx) => (
                 <ListGroupItem
                     action

@@ -1,11 +1,12 @@
 import axios from './configuredAxiosInstance';
 
-const registerEndpoint = `/api/auth/register/`;
-const accountConfirmEndpoint = `/api/auth/activate/`;
-const loginEndpoint = `/api/auth/login/`;
-const logoutEndpoint = `/api/auth/logout/`;
-const accountEndpoint = `/api/auth/account/`;
-const profileEndpoint = `/api/auth/profile/`;
+const registerEndpoint = '/api/auth/register/';
+const accountConfirmEndpoint = '/api/auth/activate/';
+const loginEndpoint = '/api/auth/login/';
+const logoutEndpoint = '/api/auth/logout/';
+const passwordResetEndpoint = '/api/auth/reset_password/';
+const accountEndpoint = '/api/auth/account/';
+const profileEndpoint = '/api/auth/profile/';
 
 const registerUser = ({username,
                       email,
@@ -35,7 +36,19 @@ const loginUser = (data, cancelToken) => {
 };
 
 const logoutUser = cancelToken => {
-    return axios.post(logoutEndpoint, {cancelToken});
+    return axios.post(logoutEndpoint, {}, {cancelToken});
+};
+
+const resetPassword = (data, cancelToken) => {
+    return axios.post(passwordResetEndpoint, data, {cancelToken});
+};
+
+const validatePasswordResetToken = (data, cancelToken) => {
+    return axios.post(passwordResetEndpoint + 'validate_token/', data, {cancelToken})
+};
+
+const confirmPasswordReset = (data, cancelToken) => {
+    return axios.post(passwordResetEndpoint + 'confirm/', data,{cancelToken})
 };
 
 const userLoggedIn = user => {
@@ -51,7 +64,7 @@ const updateUserAccount = (data, cancelToken) => {
 };
 
 const getUserProfile = (data, cancelToken) => {
-    return axios.post(profileEndpoint, data, cancelToken);
+    return axios.post(profileEndpoint, data, {cancelToken});
 };
 
 const updateUserProfile = ({user, ...data}, cancelToken) => {
@@ -76,6 +89,9 @@ export {
     confirmEmail,
     loginUser,
     logoutUser,
+    resetPassword,
+    validatePasswordResetToken,
+    confirmPasswordReset,
     getUserAccount,
     updateUserAccount,
     getUserProfile,

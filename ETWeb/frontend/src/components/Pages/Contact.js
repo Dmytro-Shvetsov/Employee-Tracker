@@ -48,7 +48,7 @@ export default class ContactForm extends React.Component {
             console.log('mailed', response.data);
             this.setState({
                 data: {},
-                errors: [],
+                errors: {},
                 successMessage: response.data.detail
             });
         } catch (error) {

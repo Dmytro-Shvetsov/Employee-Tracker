@@ -6,3 +6,4 @@ channels_redis
 djangorestframework==3.11.0
 psycopg2
 Pillow
+django_rest_passwordreset

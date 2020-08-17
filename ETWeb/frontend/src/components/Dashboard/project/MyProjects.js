@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import * as projectsService from '../../../services/projectsService'
-import { Paginator, CustomLink } from '../../common'
+import { Paginator, CustomLink } from '../../common/index'
 import ProjectCreationForm  from './ProjectCreationForm'
 import Icon, { UploadOutlined, UserOutlined } from '@ant-design/icons';
 import { Spinner, Toast, ToastHeader, ToastBody } from 'reactstrap'

@@ -41,6 +41,7 @@ class SafeTokenAuthentication(BaseAuthentication):
             # try to authorize by token from httponly cookie set by LoginView
             auth_token = request.get_signed_cookie(settings.AUTH_TOKEN_KEY, default=None,
                                                    salt=settings.SIGNED_COOKIE_SALT)
+            # print(auth_token)
             if not auth_token:
                 return None
 
@@ -49,13 +50,14 @@ class SafeTokenAuthentication(BaseAuthentication):
         except Token.DoesNotExist:
             raise exceptions.AuthenticationFailed('Could not authenticate with provided credentials.')
 
-        if user is None:
+        if not user:
             raise exceptions.AuthenticationFailed('User not found')
 
         if not user.is_active:
             raise exceptions.AuthenticationFailed('User is inactive')
 
         self.enforce_csrf(request)
+        # print(user)
         return user, None
 
     def enforce_csrf(self, request):
