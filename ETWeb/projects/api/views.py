@@ -3,7 +3,9 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import Response, APIView
 from rest_framework.settings import api_settings
 from rest_framework.renderers import JSONRenderer
-from .serializers import GeneralProjectSerializer, DetailProjectSerializer
+from .serializers import (GeneralProjectSerializer, DetailProjectSerializer,
+                          AddMembersSerializer, RemoveMembersSerializer)
+from projects.models import Project
 from ETWeb.api.views import JSONUpdateMixin
 from collections import OrderedDict
 
@@ -60,3 +62,43 @@ class ProjectDetail(generics.RetrieveDestroyAPIView, JSONUpdateMixin):
     def get_queryset(self):
         return self.request.user.project_set.prefetch_related().all()
 
+
+class ManageMembersView(APIView):
+    serializer_class = DetailProjectSerializer
+
+    def get_project(self, pk):
+        try:
+            return self.request.user.project_set.get(id=pk)
+        except Project.DoesNotExist:
+            return None
+
+    def put(self, request, pk):
+        project = self.get_project(pk)
+        if not project:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = AddMembersSerializer(instance=project, data=request.data, context={'projects': request.user.project_set})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(JSONRenderer().render({
+            'detail': 'New members were successfully added to the project.',
+            'project': self.serializer_class(project).data
+        }), status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        project = self.get_project(pk)
+        if not project:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = RemoveMembersSerializer(instance=project,
+                                             data=request.data,
+                                             context={
+                                                 'projects': request.user.project_set,
+                                                 'request': request
+                                             })
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(JSONRenderer().render({
+            'detail': 'New members were successfully deleted from the project.',
+            'project': self.serializer_class(project).data
+        }), status=status.HTTP_200_OK)

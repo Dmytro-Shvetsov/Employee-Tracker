@@ -1,6 +1,8 @@
 import axios from './configuredAxiosInstance';
 
 const apiEndpoint = `/api/projects/`;
+const searchAccountsEndpoint = `/api/accounts/search/`;
+
 
 const loadProjectList = (data, cancelToken, page=1) => {
     return axios.get(apiEndpoint, {params: {page: page}, cancelToken});
@@ -22,10 +24,20 @@ const createNewProject = (data, cancelToken) => {
     return axios.post(apiEndpoint, data, {cancelToken});
 };
 
+const findMembersByUsername = (username, cancelToken) => {
+    return axios.get(searchAccountsEndpoint + `${username}/`, {cancelToken})
+};
+
+const addMembersToProject = (data, cancelToken) => {
+    return axios.post(apiEndpoint + 'add_members/', data, {cancelToken})
+};
+
 export {
     loadProjectList,
     createNewProject,
     getProject,
     updateProject,
-    deleteProject
+    deleteProject,
+    findMembersByUsername,
+    addMembersToProject,
 }

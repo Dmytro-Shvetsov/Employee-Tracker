@@ -6,6 +6,7 @@ const Modal = props => {
   const {
     modalTitle,
     triggerBtnLabel,
+    triggerBtnColor,
     actionBtnLabel,
     className,
     onAction,
@@ -19,7 +20,7 @@ const Modal = props => {
   return (
       <div>
           <div className={className}>
-            <Button color="secondary"
+            <Button color={triggerBtnColor}
                     onClick={onToggle}
                     className="mx-2"
             >
@@ -45,6 +46,7 @@ Modal.propTypes = {
     actionBtnLabel: PropTypes.string.isRequired,
     onAction: PropTypes.func.isRequired,
     onToggle: PropTypes.func.isRequired,
+    triggerBtnColor: PropTypes.string,
     modalTitle: PropTypes.string,
     className: PropTypes.string,
     modal: PropTypes.bool,
@@ -53,6 +55,7 @@ Modal.propTypes = {
 Modal.defaultProps = {
     modalTitle: '',
     className: '',
+    triggerBtnColor: 'secondary',
     modal: false,
 };
 

@@ -74,7 +74,6 @@ export default class PasswordResetConfirmForm extends React.Component {
             console.log(error.message);
             if (error.response.status === 400) {
                 const fieldErrors = error.response.data;
-                console.log(fieldErrors)
                 Object.keys(fieldErrors).map((fieldName) => {
                     fieldErrors[fieldName] = fieldErrors[fieldName].join(" ");
                     console.log(fieldErrors[fieldName]);

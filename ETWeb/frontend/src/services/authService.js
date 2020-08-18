@@ -1,12 +1,12 @@
 import axios from './configuredAxiosInstance';
 
-const registerEndpoint = '/api/auth/register/';
-const accountConfirmEndpoint = '/api/auth/activate/';
-const loginEndpoint = '/api/auth/login/';
-const logoutEndpoint = '/api/auth/logout/';
-const passwordResetEndpoint = '/api/auth/reset_password/';
-const accountEndpoint = '/api/auth/account/';
-const profileEndpoint = '/api/auth/profile/';
+const registerEndpoint = '/api/accounts/auth/register/';
+const accountConfirmEndpoint = '/api/accounts/auth/activate/';
+const loginEndpoint = '/api/accounts/auth/login/';
+const logoutEndpoint = '/api/accounts/auth/logout/';
+const passwordResetEndpoint = '/api/accounts/auth/reset_password/';
+const accountEndpoint = '/api/accounts/account/';
+const profileEndpoint = '/api/accounts/profile/';
 
 const registerUser = ({username,
                       email,

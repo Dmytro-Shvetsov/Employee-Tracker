@@ -46,14 +46,6 @@ export default class ProjectCreationForm extends React.Component {
         })
     };
 
-    // todo
-    handleMemberAdd = event => {
-        console.log('adding member');
-        this.setState({
-            // rememberMe: !this.state.rememberMe,
-        });
-    };
-
     cancelPreviousRequests = async () => {
         if (this.reqSource) {
             this.reqSource.cancel();
@@ -65,9 +57,10 @@ export default class ProjectCreationForm extends React.Component {
         event.preventDefault();
         console.log("Trying to create new project");
         await this.cancelPreviousRequests();
-        const { user, data } = this.state;
+        // const { user, data } = this.state;
+        const { data } = this.state;
         try {
-            const response = await projectsService.createNewProject({...data, user: {...user}}, this.reqSource.token);
+            const response = await projectsService.createNewProject(data, this.reqSource.token);
             console.log("Successfully created project");
             const {id} = JSON.parse(response.data);
             this.setState({

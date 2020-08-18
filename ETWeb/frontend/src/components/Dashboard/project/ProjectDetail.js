@@ -12,7 +12,7 @@ import {
     CardTitle,
     CardText
 } from 'reactstrap';
-import { NotFound } from '../../Pages'
+import { NotFound } from '../../Pages';
 
 
 export default class ProjectDetail extends React.Component {
@@ -101,6 +101,7 @@ export default class ProjectDetail extends React.Component {
             data.members.forEach(m => {
                 employeeStatuses[m.id] = "offline";
             });
+            employeeStatuses[this.state.user.id] = "online";
             this.setState({
                 ...data,
                 employeeStatuses
@@ -168,7 +169,13 @@ export default class ProjectDetail extends React.Component {
                                         to={m.id === user.id ? "/dashboard/profile" : `/dashboard/activity-logs/user/${m.id}`}
                                         className="username-link"
                                     >
-                                        @{m.username}
+                                        {m.id === user.id && (
+                                            <React.Fragment>
+                                                @{m.username}
+                                                <span className="font-weight-bolder" style={{fontSize: "0.9rem"}}> (You)</span>
+                                            </React.Fragment>
+                                        )}
+
                                     </Link>
                                 </td>
                                 <td className={`text-center ${employeeStatuses[m.id]}`}>{employeeStatuses[m.id]}</td>
@@ -203,10 +210,17 @@ export default class ProjectDetail extends React.Component {
                     <CardTitle className="font-italic">Description:</CardTitle>
                     <CardText>{description}</CardText>
 
-                    <CardTitle className="font-italic">Members:</CardTitle>
+                    <CardTitle className="font-italic d-flex justify-content-between align-items-end">
+                        Members:
+
+                    </CardTitle>
                     {this.renderMembersTable()}
                 </CardBody>
-                <CardFooter>Owners: </CardFooter>
+                <CardFooter>
+                    <span style={{visibility: "hidden"}}>
+                        Owners:
+                    </span>
+                </CardFooter>
             </Card>
         );
     }

@@ -8,7 +8,7 @@ from .api.views import ContactView
 urlpatterns = [
     # API
     path('api/projects/', include('projects.api.urls')),
-    path('api/auth/', include('accounts.api.urls')),
+    path('api/accounts/', include('accounts.api.urls')),
     path('api/contact/', ContactView.as_view()),
 
     path('admin/', admin.site.urls),

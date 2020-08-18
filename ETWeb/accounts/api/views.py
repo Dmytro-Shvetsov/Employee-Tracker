@@ -9,7 +9,8 @@ from .serializers import (HttpUserSerializer,
                           UserProfileSerializer,
                           RegisterSerializer,
                           UserAccountUpdateSerializer,
-                          AccountConfirmationSerializer)
+                          AccountConfirmationSerializer,
+                          SearchUserSerializer)
 from django.contrib.auth import get_user_model
 
 
@@ -177,4 +178,19 @@ class ProfileView(APIView):
         serializer.save()
         return Response(JSONRenderer().render(serializer.data),
                         status=status.HTTP_200_OK)
+
+
+class SearchUsersView(APIView):
+    serializer_class = SearchUserSerializer
+
+    """
+        Search users by username
+    """
+    def get(self, request, username, *args, **kwargs):
+        # case insensitive search of any usernames that contain the pattern
+        matches = User.objects.filter(username__iregex=username)
+        serializer = self.serializer_class(matches, many=True)
+        return Response(JSONRenderer().render({
+            'users': serializer.data,
+        }), status=status.HTTP_200_OK)
 

@@ -64,7 +64,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return True
 
     class Meta:
-        db_table = "accounts_users"
+        db_table = 'accounts_users'
 
 
 class UserProfile(models.Model):
