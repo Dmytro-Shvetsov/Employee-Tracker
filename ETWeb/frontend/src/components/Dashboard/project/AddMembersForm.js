@@ -1,7 +1,18 @@
 import React from 'react';
 import axios from 'axios';
-import { Form, FormGroup, Alert } from 'reactstrap';
+import {CloseCircleOutlined, UserAddOutlined} from '@ant-design/icons';
+import {
+    Form,
+    FormGroup,
+    Alert,
+    Badge,
+    Dropdown,
+    DropdownToggle,
+    DropdownMenu,
+    DropdownItem
+} from 'reactstrap';
 import {Modal, Input} from '../../common';
+import * as utils from '../../../utils';
 import * as projectsService from "../../../services/projectsService";
 
 
@@ -9,13 +20,13 @@ export default class AddMembersForm extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            user: props.user,
-            modal: false,
+            windowModalOpen: false,
+            matchesDropdownOpen: false,
+            username: '',
+            searchMembers: [],
             data: {
-                usernamePattern: '',
-                description: '',
-                members: [],
-                membersAdded: false,
+                projectId: props.projectId,
+                selectedMembers: new Set(),
             },
             errors: {},
         };
@@ -30,36 +41,60 @@ export default class AddMembersForm extends React.Component {
     };
 
     handleUsernameChange = async event => {
-        const target = event.target;
+        const username = event.target.value;
         await this.cancelPreviousRequests();
+        let searchMembers = [];
         try {
-            const response = await projectsService.findMembersByUsername(
-                {username: target.value}, this.reqSource.token
-            );
-            const {data} = this.state;
-
-            this.setState({
-                ...data,
-                members: response.members
-            });
+            const response = await projectsService.findMembersByUsername(username, this.reqSource.token);
+            searchMembers = JSON.parse(response.data).users;
+        } catch (error) {
+            if (error.message !== undefined) {
+                console.log(error.message);
+            }
         }
+        // console.log(searchMembers.map(item => item.username));
         this.setState({
-            data: { ...this.state.data, [name]: target.value },
+            username,
+            searchMembers,
             errors: { ...this.state.errors, [name]: undefined },
         });
     };
 
-    handleToggle = () => {
-        const { modal } = this.state;
+    windowModalToggle = () => {
         this.setState({
-            modal: !modal
-        })
+            windowModalOpen: !this.state.windowModalOpen,
+            // reset other fields
+            matchesDropdownOpen: false,
+            username: '',
+            searchMembers: [],
+            data: {...this.state.data, selectedMembers: new Set()},
+            errors: {}
+        });
     };
 
-    handleMemberAdd = event => {
-        console.log('adding member');
+    matchesDropdownToggle = () => {
         this.setState({
-            // rememberMe: !this.state.rememberMe,
+            matchesDropdownOpen: !this.state.matchesDropdownOpen
+        });
+    };
+
+    handleMemberSelect = member => {
+        // console.log('adding member');
+        const prevSelectedUsers = this.state.data.selectedMembers;
+        const newSelectedUsers = prevSelectedUsers.copy();
+        newSelectedUsers.add(member);
+        this.setState({
+            data: {...this.state.data, selectedMembers: newSelectedUsers}
+        });
+    };
+
+    handleMemberDeselect = member => {
+        // console.log('removing member');
+        const prevSelectedUsers = this.state.data.selectedMembers;
+        const newSelectedUsers = prevSelectedUsers.copy();
+        newSelectedUsers.delete(member);
+        this.setState({
+            data: {...this.state.data, selectedMembers: newSelectedUsers}
         });
     };
 
@@ -72,12 +107,21 @@ export default class AddMembersForm extends React.Component {
 
     handleSubmit = async event => {
         event.preventDefault();
-        console.log("Trying to create new project");
+        // console.log("Trying to add new members");
         await this.cancelPreviousRequests();
-        const { data } = this.state;
+        const { data: { projectId, selectedMembers } } = this.state;
         try {
+            const response = await projectsService.addMembersToProject({
+                id: projectId,
+                new_members: selectedMembers.map(item => item.id)
+            }, this.reqSource.token);
 
+            const project = JSON.parse(response.data).project;
+            this.props.onMembersAdded(project);
+
+            this.windowModalToggle();
         } catch (error) {
+            console.log(error.message);
             if (error.response.status === 400) {
                 const fieldErrors = error.response.data;
                 Object.keys(fieldErrors).map((fieldName) => {
@@ -101,20 +145,111 @@ export default class AddMembersForm extends React.Component {
         await this.cancelPreviousRequests();
     }
 
+    renderFoundUsernameMatches () {
+        const {searchMembers} = this.state;
+        // const searchMembers = [];
+        // console.log(searchMembers);
+        // searchMembers.push({id: 1, username: 'asdasdasdasd'})
+        // searchMembers.push({id: 2, username: 'asdasdasdasd'})
+        // searchMembers.push({id: 3, username: 'asdasdasdasd'})
+        // searchMembers.push({id: 4, username: 'asdasdasdasd'})
+        // searchMembers.push({id: 5, username: 'asdjqwndjqwdjqwndjqnwdjnqwjndqkwjndqkjwndqjkwnd'})
+        // searchMembers.push({id: 6, username: 'asdjqwndjqwdjqwndjqnwdjnqwjndqkwjndqkjwndqjkwnd'})
+        // searchMembers.push({id: 7, username: 'asdjqwndjqwdjqwndjqnwdjnqwjndqkwjndqkjwndqjkwnd'})
+        // searchMembers.push({id: 8, username: 'asdjqwndjqwdjqwndjqnwdjnqwjndqkwjndqkjwndqjkwnd'})
+        // searchMembers.push({id: 9, username: 'asdjqwndjqwdjqwndjqnwdjnqwjndqkwjndqkjwndqjkwnd'})
+        return (
+            <React.Fragment>
+                {searchMembers.length === 0 ? (
+                    <DropdownItem key={-1}>
+                        <small className="text-muted m-3" key="hint">No users were found by specified username</small>
+                    </DropdownItem>
+                ) : (
+                    searchMembers.map(user => (
+                        <DropdownItem
+                            className="d-flex align-items-center"
+                            key={user.id}
+                            onClick={() => this.handleMemberSelect(user)}
+                        >
+                            <UserAddOutlined className="ml-2"/>
+                            {user.username}
+                        </DropdownItem>
+                    ))
+                )}
+            </React.Fragment>
+        );
+    }
+
+    renderAddedMembers() {
+        const {selectedMembers} = this.state.data;
+        const children = [];
+        selectedMembers.forEach(user => {
+            children.push(
+                <Badge
+                    className="d-flex align-items-center m-1 pl-2 user-badge"
+                    style={{height:"1.5rem"}}
+                    key={`user-${user.id}`}
+                >
+                    {user.username}
+                    <CloseCircleOutlined key={`deselect-user-${user.id}`} onClick={() => this.handleMemberDeselect(user)}/>
+                </Badge>
+            );
+        });
+        // console.log("n-selected", children.length);
+        return (
+            <React.Fragment>
+                {children.length === 0 ? (
+                        <div
+                            className="d-flex justify-content-center align-items-center"
+                            style={{width:"100%", height:"100%"}}
+                        >
+                            <small className="text-muted">You have not added any members yet.</small>
+                        </div>
+                    ) : children
+                }
+            </React.Fragment>
+        );
+    };
+
     render() {
-        const {modal, errors} = this.state;
+        const {windowModalOpen, matchesDropdownOpen, username, errors} = this.state;
+        // console.log(matchesDropdownOpen);
         return (
             <Modal
-                // className="bg-warning"
                 triggerBtnLabel="Add new members"
                 triggerBtnColor="success"
-                onAction={() => {
-                    alert(1)
-                }}
-                actionBtnLabel={"Add"}
-                onToggle={this.handleAddMembersToggle}
-                modal={addMembersModal}
+                actionBtnLabel="Save"
+                onAction={this.handleSubmit}
+                onToggle={this.windowModalToggle}
+                modal={windowModalOpen}
             >
+                <h6>
+                    Start typing username of the account. Click the correct user to add them to the list.
+                    Press "Save" to save the changes.
+                </h6>
+                <Form autoComplete="off">
+                    <Dropdown isOpen={matchesDropdownOpen && username !== ""} toggle={this.matchesDropdownToggle} direction="down">
+                        <DropdownToggle tag="div">
+                            <Input
+                                name="username"
+                                labelText="Username"
+                                error={errors.username}
+                                onChange={this.handleUsernameChange}
+                            />
+                        </DropdownToggle>
+                        <DropdownMenu className="matches-dropdown">
+                            {this.renderFoundUsernameMatches()}
+                        </DropdownMenu>
+                    </Dropdown>
+                    <div id="new-member-list" className="d-flex flex-wrap align-content-start" color="primary">
+                        {this.renderAddedMembers()}
+                    </div>
+                    <FormGroup className="mt-2">
+                        <Alert color="danger" isOpen={errors.new_members !== undefined}>
+                            {errors.new_members}
+                        </Alert>
+                    </FormGroup>
+                </Form>
             </Modal>
         );
     }

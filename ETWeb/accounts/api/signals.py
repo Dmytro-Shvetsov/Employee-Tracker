@@ -6,7 +6,6 @@ from django.utils.http import urlsafe_base64_encode
 from django.dispatch import Signal, receiver
 from django.db.models.signals import post_save
 from django.template.loader import render_to_string
-from django.urls import reverse
 from .tokens import account_activation_token
 
 
@@ -39,12 +38,6 @@ def user_instance_created(sender, instance, created, raw, **kwargs):
             'confirm_link': link,
         })
         EmailMessage(mail_subject, message, to=[instance.email]).send(fail_silently=True)
-
-# @receiver(post_save, sender=settings.AUTH_USER_MODEL)
-# def wrap_user_creation(sender, instance=None, created=False, **kwargs):
-#     if created:
-#         Token.objects.create(user=instance)
-#         UserProfile.objects.create(user=instance)
 
 
 @receiver(reset_password_token_created)

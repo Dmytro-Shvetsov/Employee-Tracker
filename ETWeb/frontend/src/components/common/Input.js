@@ -14,6 +14,7 @@ export default class Input extends React.Component {
             required: props.required,
             placeholder: props.placeholder,
             accept: props.accept,
+            autoComplete: props.autoComplete
         };
         Object.keys(props).filter(key => key.match(/on/)).forEach(eventKey => {
             this.state[eventKey] = this.props[eventKey];
@@ -31,7 +32,7 @@ export default class Input extends React.Component {
                     value={this.props.value}
                     disabled={this.props.disabled}
                     invalid={this.props.error !== undefined}
-                    autoComplete={type === 'password' ? "new-password" : ""}
+                    // autoComplete={type === 'password' ? "new-password" : "none"}
                     name={name}
                     id={`${name}`}
                     placeholder={`${placeholder}${required ? "*" : ""}`}
@@ -39,7 +40,7 @@ export default class Input extends React.Component {
                     {...events}
                 />
                 {!labelFirst && label}
-                <FormFeedback>{this.props.error}</FormFeedback>
+                {this.props.error && (<FormFeedback>{this.props.error}</FormFeedback>)}
             </FormGroup>
         );
     }
@@ -47,10 +48,10 @@ export default class Input extends React.Component {
 
 Input.propTypes = {
     name: PropTypes.string.isRequired,
-    // onChange: PropTypes.func.isRequired,
     labelText: PropTypes.string,
     placeholder: PropTypes.string,
     type: PropTypes.string,
+    autoComplete: PropTypes.string,
     required: PropTypes.bool,
     error: PropTypes.string
 };

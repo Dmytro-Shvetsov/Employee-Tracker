@@ -33,3 +33,29 @@ export function getActiveNavItemIdx(links) {
     });
     return initActiveItem;
 }
+
+/**
+ * Make shallow copy of Set object.
+ * @returns {Set<any>} New instance with copied elements.
+ */
+Set.prototype.copy = function () {
+    console.log(this.entries());
+    const newInstance = new Set();
+    this.forEach(item => {
+        newInstance.add(item);
+    });
+    return newInstance;
+};
+
+/**
+ * Analogous array's map function for Set object.
+ * @param callback {function} Function to apply to elements
+ * @returns {Set<any>} New array with transformed elements.
+ */
+Set.prototype.map = function (callback) {
+    const newArray = [];
+    this.forEach(item => {
+        newArray.push(callback(item));
+    });
+    return newArray;
+};

@@ -1,0 +1,8 @@
+{% autoescape off %}
+Hi {{ invitation.new_member.username }},
+{{ invitation.manager.username }} has invited you to join his project '{{ invitation.project.name }}'.
+If you wish to accept their invitation, click link below.
+
+{{ accept_link }}
+
+{% endautoescape %}

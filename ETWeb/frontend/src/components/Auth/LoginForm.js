@@ -107,12 +107,14 @@ export default class LoginForm extends React.Component {
                 <Form className="form-center" autoComplete="on">
                     <Input
                         name="username"
+                        autoComplete="username"
                         labelText="Username"
                         error={errors.username}
                         onChange={this.handleInputChange}
                     />
                     <Input
                         name="password"
+                        autoComplete="current-password"
                         labelText="Password"
                         error={errors.password}
                         onChange={this.handleInputChange}

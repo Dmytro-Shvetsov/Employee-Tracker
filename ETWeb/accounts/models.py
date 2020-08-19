@@ -54,7 +54,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             return []
 
     def send_account_activated(self, **kwargs):
-        return account_activated.send(sender=settings.AUTH_USER_MODEL, instance=self, token=UserProfile,
+        return account_activated.send(sender=settings.AUTH_USER_MODEL, instance=self, token=Token,
                                       userprofile=UserProfile, **kwargs)
 
     def has_perm(self, perm, obj=None):

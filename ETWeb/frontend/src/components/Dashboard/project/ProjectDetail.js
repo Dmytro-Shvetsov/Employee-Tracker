@@ -1,9 +1,10 @@
 import React from 'react';
 import axios from 'axios';
 import * as projects from '../../../services/projectsService'
+import AddMembersForm from './AddMembersForm'
 import { Link } from 'react-router-dom'
-import { Spinner } from 'reactstrap'
 import {
+    Spinner,
     Card,
     Table,
     CardHeader,
@@ -91,11 +92,10 @@ export default class ProjectDetail extends React.Component {
 
     loadProjectInfo = async id => {
         await this.cancelPreviousRequests();
-        const {user} = this.state;
         try {
-            const response = await projects.getProject(id, {user: {...user}}, this.reqSource.token);
-            console.log("Project loaded.", response.data);
-            const {data} = response;
+            const response = await projects.getProject(id, this.reqSource.token);
+            const data = JSON.parse(response.data);
+            console.log("Project loaded.", data);
 
             const employeeStatuses = {};
             data.members.forEach(m => {
@@ -212,7 +212,10 @@ export default class ProjectDetail extends React.Component {
 
                     <CardTitle className="font-italic d-flex justify-content-between align-items-end">
                         Members:
-
+                        <AddMembersForm
+                            projectId={id}
+                            onMembersAdded={updatedProjectData => {this.setState({...updatedProjectData});}}
+                        />
                     </CardTitle>
                     {this.renderMembersTable()}
                 </CardBody>

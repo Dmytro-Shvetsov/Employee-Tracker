@@ -5,7 +5,9 @@ from rest_framework.settings import api_settings
 from rest_framework.renderers import JSONRenderer
 from .serializers import (GeneralProjectSerializer, DetailProjectSerializer,
                           AddMembersSerializer, RemoveMembersSerializer)
-from projects.models import Project
+from projects.models import Project, ProjectInvitationToken
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_text
 from ETWeb.api.views import JSONUpdateMixin
 from collections import OrderedDict
 
@@ -55,9 +57,16 @@ class ProjectListView(APIView, PageNumberPagination):
 
 
 class ProjectDetail(generics.RetrieveDestroyAPIView, JSONUpdateMixin):
-    renderer_classes = (JSONRenderer,)
     serializer_class = DetailProjectSerializer
     model_name = serializer_class.Meta.model.__name__
+
+    """
+    Retrieve a model instance.
+    """
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(JSONRenderer().render(serializer.data))
 
     def get_queryset(self):
         return self.request.user.project_set.prefetch_related().all()
@@ -77,11 +86,15 @@ class ManageMembersView(APIView):
         if not project:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = AddMembersSerializer(instance=project, data=request.data, context={'projects': request.user.project_set})
+        serializer = AddMembersSerializer(instance=project, data=request.data,
+                                          context={
+                                              'request': request,
+                                              'projects': request.user.project_set
+                                          })
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(JSONRenderer().render({
-            'detail': 'New members were successfully added to the project.',
+            'detail': 'Invitation links were successfully sent to new members.',
             'project': self.serializer_class(project).data
         }), status=status.HTTP_200_OK)
 
@@ -102,3 +115,27 @@ class ManageMembersView(APIView):
             'detail': 'New members were successfully deleted from the project.',
             'project': self.serializer_class(project).data
         }), status=status.HTTP_200_OK)
+
+class AcceptProjectInvitationView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_invitation_token(self, token):
+        try:
+            return ProjectInvitationToken.objects.get(token, new_member=self.request.user)
+        except ProjectInvitationToken.DoesNotExist:
+            return None
+
+    def post(self, request, token):
+        token = force_text(urlsafe_base64_decode(token))
+        invitation = self.get_invitation_token(token)
+        if not invitation:
+            return Response({
+                'detail': 'Invalid token. Make sure you are logged in as the user mentioned in the invitation email.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        elif invitation.accepted:
+            return Response({
+                'detail': f'You are already a member of project \'{invitation.project.name}\''
+            }, status.HTTP_200_OK)
+        invitation.accepted = True
+        # todo
+

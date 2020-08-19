@@ -210,10 +210,44 @@ th {
     margin-left: 0.5rem;
 }
 /*
-    margin right for ant icons
+    margin for ant icons
 */
 span[role=img] {
+    margin-left: 0.18rem !important;
     margin-right: 0.18rem !important;
+}
+
+.user-badge {
+    font-size: 0.9rem;
+    border-radius: 1rem;
+    padding: 6px;
+    font-weight: 600;
+}
+
+.user-badge span[role=img] {
+    margin-left: 0.36rem !important;
+}
+
+.matches-dropdown {
+    width: 100%;
+    padding: 0;
+    max-height: 6rem;
+    overflow-y: auto;
+}
+
+.matches-dropdown .dropdown-item{
+    padding: 0;
+}
+
+#new-member-list {
+    border: 1px solid cadetblue;
+    height: 100px;
+    overflow-y: auto;
+    background-color: #f0f6ff;
+}
+
+.user-badge span[role=img]:hover {
+    cursor: pointer;
 }
 
 @media(max-width: 1000px) {

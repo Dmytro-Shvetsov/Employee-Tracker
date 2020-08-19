@@ -103,7 +103,7 @@ export default class ProjectCreationForm extends React.Component {
                 onAction={this.handleSubmit}
                 className="d-flex justify-content-end"
             >
-                <Form className="" autoComplete="on">
+                <Form autoComplete="on">
                     <Input
                         name="name"
                         labelText="Name"

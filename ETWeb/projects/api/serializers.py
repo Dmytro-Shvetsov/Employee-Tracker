@@ -1,9 +1,11 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db.models import Q
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from projects.models import Project
+from projects.models import Project, ProjectInvitationToken
 from accounts.api.serializers import HttpUserSerializer
+from .signals import send_project_invitation
 from rest_framework import status
 
 
@@ -65,21 +67,16 @@ class DetailProjectSerializer(serializers.ModelSerializer):
 
 
 class AddMembersSerializer(serializers.Serializer):
-    # project_id = serializers.IntegerField(required=True)
     new_members = serializers.ListField(child=serializers.IntegerField(min_value=0), required=True)
 
     def __init__(self, instance, *args, **kwargs):
         self.instance = instance
-        super().__init__(*args, **kwargs)
-    # def validate_project_id(self, value):
-    #     try:
-    #         self.instance = self.context['projects'].get(id=value)
-    #     except Project.DoesNotExist:
-    #         raise ValidationError({'id': 'Project with specified id was not found.'})
-    #     else:
-    #         return value
+        super().__init__(instance=instance, *args, **kwargs)
 
     def validate_new_members(self, ids):
+        if len(ids) == 0:
+            raise ValidationError('No members selected.')
+
         # get user objects associated with passed ids
         associated_id_user_dict = User.objects.in_bulk(ids)
         # check if all passed user ids are valid
@@ -103,12 +100,24 @@ class AddMembersSerializer(serializers.Serializer):
         return users
 
     def save(self, **kwargs):
-        self.instance.members.add(*self.validated_data['new_members'])
+        manager = self.context['request'].user
+        project = self.instance
+        for member in self.validated_data['new_members']:
+            # if an invitation for the particular user already exists, it's timestamp will be updated
+            defaults = {
+                # 'key': ProjectInvitationToken.generate_key(),
+                'timestamp': timezone.now()
+            }
+            token, created = ProjectInvitationToken.objects.update_or_create(project=project,
+                                                                             manager=manager,
+                                                                             new_member=member,
+                                                                             defaults=defaults)
+            token.save()
+
         return self.instance
 
 
 class RemoveMembersSerializer(serializers.Serializer):
-    # project_id = serializers.IntegerField(required=True)
     delete_members = serializers.ListField(child=serializers.IntegerField(min_value=0), required=True)
 
     def __init__(self, instance, *args, **kwargs):
@@ -116,8 +125,11 @@ class RemoveMembersSerializer(serializers.Serializer):
         super().__init__(instance=instance, *args, **kwargs)
 
     def validate_delete_members(self, ids):
+        if len(ids) == 0:
+            raise ValidationError('No members selected.')
+
         if self.context['request'].user.id in ids:
-            raise ValidationError('You cannot remove yourself from your project.')
+            raise ValidationError('You cannot remove yourself from your own project.')
 
         return ids
 
