@@ -84,7 +84,7 @@ export default class MyProjects extends React.Component {
         this.setState({
             highlightedProjectId: id,
         });
-        await this.loadProjects(pagesCount);
+        await this.loadProjects(pagesCount || 1);
     };
 
     renderSingleProject(project) {
@@ -123,7 +123,11 @@ export default class MyProjects extends React.Component {
         const { projects } = this.state;
         return (
             <React.Fragment>
-                {projects.map(proj => this.renderSingleProject(proj))}
+                {projects.length === 0 ? (
+                    <div className="text-muted text-center" style={{width:"100%"}}>
+                        You don't have any projects yet.
+                    </div>
+                ) : projects.map(proj => this.renderSingleProject(proj))}
             </React.Fragment>
         );
     }
@@ -139,16 +143,17 @@ export default class MyProjects extends React.Component {
                     user={user}
                     onProjectCreated={this.handleProjectCreated}
                 />
-                <div className="row d-flex flex-wrap">
+                <div className="row d-flex flex-wrap text-center">
                     {this.renderProjects()}
                 </div>
-                <Paginator
-                    className={"row d-flex justify-content-center py-auto"}
-                    page={currentPage}
-                    count={pagesCount}
-                    onPageChange={this.handlePageChange}
-                />
-
+                {pagesCount >= 1 && (
+                    <Paginator
+                        className={"row d-flex justify-content-center py-auto"}
+                        page={currentPage}
+                        count={pagesCount}
+                        onPageChange={this.handlePageChange}
+                    />
+                )}
             </React.Fragment>
         );
     }

@@ -1,8 +1,9 @@
 import React from 'react';
 import axios from 'axios';
-import * as projects from '../../../services/projectsService'
-import AddMembersForm from './AddMembersForm'
-import { Link } from 'react-router-dom'
+import * as projects from '../../../services/projectsService';
+import AddMembersForm from './AddMembersForm';
+import DeleteProjectButton from './DeleteProjectButton';
+import { Link } from 'react-router-dom';
 import {
     Spinner,
     Card,
@@ -122,6 +123,11 @@ export default class ProjectDetail extends React.Component {
         }
     };
 
+    handleProjectDeleted = async () => {
+        await this.cancelPreviousRequests();
+        history.back();
+    };
+
     cancelPreviousRequests = async () => {
         if (this.reqSource) {
             this.reqSource.cancel();
@@ -210,7 +216,10 @@ export default class ProjectDetail extends React.Component {
 
         return (
             <Card>
-                <CardHeader tag="h3">{name}</CardHeader>
+                <CardHeader className="d-flex justify-content-between">
+                    <h3>{name}</h3>
+                    <DeleteProjectButton projectId={id} onProjectDeleted={this.handleProjectDeleted}/>
+                </CardHeader>
                 <CardBody>
                     <CardTitle className="font-italic">Description:</CardTitle>
                     <CardText>{description}</CardText>

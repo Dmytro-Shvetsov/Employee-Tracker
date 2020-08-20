@@ -19,8 +19,8 @@ const updateProject = (id, data, cancelToken) => {
     return axios.put(`${apiEndpoint}/${id}/`, data, {cancelToken});
 };
 
-const deleteProject = (id, data, cancelToken) => {
-    return axios.delete(`${apiEndpoint}/${id}/`, {cancelToken});
+const deleteProject = (id, cancelToken) => {
+    return axios.delete(apiEndpoint + `${id}/`, {cancelToken});
 };
 
 const createNewProject = (data, cancelToken) => {

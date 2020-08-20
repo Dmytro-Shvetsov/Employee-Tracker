@@ -155,17 +155,6 @@ export default class AddMembersForm extends React.Component {
 
     renderFoundUsernameMatches () {
         const {searchMembers} = this.state;
-        // const searchMembers = [];
-        // console.log(searchMembers);
-        // searchMembers.push({id: 1, username: 'asdasdasdasd'})
-        // searchMembers.push({id: 2, username: 'asdasdasdasd'})
-        // searchMembers.push({id: 3, username: 'asdasdasdasd'})
-        // searchMembers.push({id: 4, username: 'asdasdasdasd'})
-        // searchMembers.push({id: 5, username: 'asdjqwndjqwdjqwndjqnwdjnqwjndqkwjndqkjwndqjkwnd'})
-        // searchMembers.push({id: 6, username: 'asdjqwndjqwdjqwndjqnwdjnqwjndqkwjndqkjwndqjkwnd'})
-        // searchMembers.push({id: 7, username: 'asdjqwndjqwdjqwndjqnwdjnqwjndqkwjndqkjwndqjkwnd'})
-        // searchMembers.push({id: 8, username: 'asdjqwndjqwdjqwndjqnwdjnqwjndqkwjndqkjwndqjkwnd'})
-        // searchMembers.push({id: 9, username: 'asdjqwndjqwdjqwndjqnwdjnqwjndqkwjndqkjwndqjkwnd'})
         return (
             <React.Fragment>
                 {searchMembers.length === 0 ? (
@@ -225,6 +214,7 @@ export default class AddMembersForm extends React.Component {
         return (
             <Modal
                 triggerBtnLabel="Add new members"
+                modalTitle="Add new members"
                 triggerBtnColor="success"
                 actionBtnLabel="Save"
                 onAction={this.handleSubmit}
