@@ -23,6 +23,7 @@ const Modal = props => {
             <Button color={triggerBtnColor}
                     onClick={onToggle}
                     className="mx-2"
+                    type="button"
             >
               {triggerBtnLabel}
             </Button>
@@ -33,8 +34,8 @@ const Modal = props => {
             {props.children}
           </ModalBody>
           <ModalFooter>
-            <Button color="success" onClick={onAction}>{actionBtnLabel}</Button>{' '}
-            <Button color="secondary" onClick={onToggle}>Cancel</Button>
+            <Button color="success" type="button" onClick={onAction}>{actionBtnLabel}</Button>{' '}
+            <Button color="secondary" type="reset" onClick={onToggle}>Cancel</Button>
           </ModalFooter>
         </BaseModal>
       </div>

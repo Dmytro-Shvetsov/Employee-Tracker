@@ -39,7 +39,10 @@ const addMembersToProject = ({id, ...data}, cancelToken) => {
 };
 
 const acceptProjectInvitation = (invitationToken, cancelToken) => {
-    return axios.post(projectsInvitationsEndpoint, {token:invitationToken}, {cancelToken});
+    if (invitationToken === "") {
+        return Promise.reject({message: "Empty token"});
+    }
+    return axios.post(projectsInvitationsEndpoint + `${invitationToken}/`, {token:invitationToken}, {cancelToken});
 };
 
 const deleteMembersFromProject = ({id, ...data}, cancelToken) => {

@@ -16,7 +16,7 @@ def attempted_to_add_new_members(sender, instance, created, raw, *args, **kwags)
     if raw:
         return
     if created:
-        accept_link = '{protocol}://{domain}/projects/confirm_invitation/{token}'.format(
+        accept_link = '{protocol}://{domain}/projects/confirm-invitation/{token}'.format(
             protocol='https' if settings.USE_HTTPS else 'http',
             domain=settings.BASE_URL,
             token=urlsafe_base64_encode(force_bytes(instance.key))

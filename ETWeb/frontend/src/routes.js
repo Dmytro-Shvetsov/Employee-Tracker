@@ -14,13 +14,19 @@ const BaseRouter = props => {
                 {/*<Route exact path="/idea" component={Home}/>*/}
                 {/*<Route exact path="/benefits" component={Home}/>*/}
                 <Route exact path="/contact" component={Pages.Contact}/>
-
+                <Route
+                    exact path="/projects/confirm-invitation/:token"
+                    component={({match}) => (
+                        <Pages.AcceptProjectInvitation match={match} user={props.user}/>
+                    )}
+                />
                 {/* Auth component group routes */}
+                <Route exact path="/login" component={({location}) => (
+                        <Auth.LoginForm onLogin={props.onLogin} location={location}/>
+                    )}
+                />
                 <Route exact path="/register">
                     <Auth.RegisterForm onLogin={props.onLogin}/>
-                </Route>
-                <Route exact path="/login">
-                    <Auth.LoginForm onLogin={props.onLogin}/>
                 </Route>
                 <Route exact path="/logout">
                     <Auth.Logout onLogout={props.onLogout}/>

@@ -28,6 +28,7 @@ export default class AddMembersForm extends React.Component {
                 projectId: props.projectId,
                 selectedMembers: new Set(),
             },
+            successMessage: undefined,
             errors: {},
         };
         this.reqSource = undefined;
@@ -68,6 +69,7 @@ export default class AddMembersForm extends React.Component {
             username: '',
             searchMembers: [],
             data: {...this.state.data, selectedMembers: new Set()},
+            successMessage: undefined,
             errors: {}
         });
     };
@@ -115,11 +117,16 @@ export default class AddMembersForm extends React.Component {
                 id: projectId,
                 new_members: selectedMembers.map(item => item.id)
             }, this.reqSource.token);
-
-            const project = JSON.parse(response.data).project;
-            this.props.onMembersAdded(project);
-
-            this.windowModalToggle();
+            const data = JSON.parse(response.data);
+            const formData = this.state.data;
+            this.setState({
+                successMessage: data.detail,
+                username: "",
+                searchMembers: [],
+                data: {...formData, selectedMembers: new Set()}
+            });
+            this.props.onMembersAdded(data.project);
+            // this.windowModalToggle();
         } catch (error) {
             console.log(error.message);
             if (error.response.status === 400) {
@@ -130,6 +137,7 @@ export default class AddMembersForm extends React.Component {
                 });
 
                 this.setState({
+                    successMessage: undefined,
                     errors: fieldErrors
                 });
             }
@@ -212,7 +220,7 @@ export default class AddMembersForm extends React.Component {
     };
 
     render() {
-        const {windowModalOpen, matchesDropdownOpen, username, errors} = this.state;
+        const {windowModalOpen, matchesDropdownOpen, username, successMessage, errors} = this.state;
         // console.log(matchesDropdownOpen);
         return (
             <Modal
@@ -245,6 +253,9 @@ export default class AddMembersForm extends React.Component {
                         {this.renderAddedMembers()}
                     </div>
                     <FormGroup className="mt-2">
+                        <Alert color="success" isOpen={successMessage !== undefined}>
+                            {successMessage}
+                        </Alert>
                         <Alert color="danger" isOpen={errors.new_members !== undefined}>
                             {errors.new_members}
                         </Alert>

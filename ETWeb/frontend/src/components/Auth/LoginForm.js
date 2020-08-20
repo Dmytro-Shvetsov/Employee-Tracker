@@ -91,7 +91,8 @@ export default class LoginForm extends React.Component {
         const { errors, loginFinished } = this.state;
 
         if (loginFinished) {
-            return <Redirect to="/"/>
+            const {location} = this.props;
+            return <Redirect to={location.state && location.state.next || "/"}/>
         }
 
         return (

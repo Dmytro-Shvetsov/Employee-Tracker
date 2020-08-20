@@ -4,10 +4,11 @@ import * as projectsService from '../../services/projectsService';
 import { FormGroup, Alert } from 'reactstrap';
 import { Redirect } from 'react-router-dom';
 
-export default class PasswordResetConfirmForm extends React.Component {
+export default class AcceptProjectInvitation extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            user: props.user,
             token: undefined,
             successMessage: undefined,
             tokenError: undefined,
@@ -27,13 +28,14 @@ export default class PasswordResetConfirmForm extends React.Component {
         await this.cancelPreviousRequests();
         try {
             const response = await projectsService.acceptProjectInvitation(token, this.reqSource.token);
-            this.setState({successMessage: `${response.data.detail} Redirecting...`});
+            // console.log(response.data);
+            this.setState({successMessage: response.data.detail + " Redirecting..."});
         } catch (error) {
             console.log(error.message);
             console.log(error.response.data);
             const {data} = error.response;
             if (data !== undefined) {
-                this.setState({tokenError: data.token.join(" ")});
+                this.setState({tokenError: data.token.join(" ") +  " Redirecting..."});
             }
         }
         // redirect in 4 seconds
@@ -51,6 +53,7 @@ export default class PasswordResetConfirmForm extends React.Component {
 
     async componentDidMount() {
         this._isMounted = true;
+        // console.log(this.props.match);
         await this.acceptInvitation(this.props.match.params.token);
     }
 
@@ -63,22 +66,28 @@ export default class PasswordResetConfirmForm extends React.Component {
     }
 
     render() {
-        const { invitationResolved, successMessage, errors } = this.state;
+        const {user, invitationResolved, successMessage, tokenError} = this.state;
+        // console.log(user);
         return (
-                <React.Fragment>
-                    <FormGroup>
-                        <Alert color="success" isOpen={successMessage !== undefined}>
-                            {successMessage}
-                        </Alert>
-                        <Alert color="danger" isOpen={errors.token !== undefined}>
-                            {errors.token}
-                        </Alert>
-                    </FormGroup>
-                    {invitationResolved && (
-                        <Redirect to="/"/>
-                    )}
-                </React.Fragment>
-            );
-        }
+            <React.Fragment>
+                {invitationResolved && (
+                    <Redirect to="/"/>
+                )}
+                <FormGroup>
+                    <Alert color="success text-center" isOpen={successMessage !== undefined}>
+                        {successMessage}
+                    </Alert>
+                    <Alert color="danger text-center" isOpen={tokenError !== undefined}>
+                        {tokenError}
+                    </Alert>
+                </FormGroup>
+                {(user === undefined || user === null) && (
+                    <Redirect to={{
+                        pathname:"/login",
+                        state: {next:this.props.match.url}
+                    }}/>
+                )}
+            </React.Fragment>
+        );
     }
 }

@@ -139,6 +139,9 @@ export default class ProjectDetail extends React.Component {
     async componentWillUnmount() {
         this._isMounted = false;
         await this.cancelPreviousRequests();
+        if (this.state.socket !== undefined) {
+            this.state.socket.close();
+        }
     }
 
     renderMembersTable() {
@@ -169,12 +172,14 @@ export default class ProjectDetail extends React.Component {
                                         to={m.id === user.id ? "/dashboard/profile" : `/dashboard/activity-logs/user/${m.id}`}
                                         className="username-link"
                                     >
-                                        {m.id === user.id && (
+                                        {m.id === user.id ? (
                                             <React.Fragment>
                                                 @{m.username}
                                                 <span className="font-weight-bolder" style={{fontSize: "0.9rem"}}> (You)</span>
                                             </React.Fragment>
-                                        )}
+                                        ) : (
+                                                <React.Fragment>@{m.username}</React.Fragment>
+                                            )}
 
                                     </Link>
                                 </td>

@@ -4,10 +4,8 @@ from rest_framework.views import Response, APIView
 from rest_framework.settings import api_settings
 from rest_framework.renderers import JSONRenderer
 from .serializers import (GeneralProjectSerializer, DetailProjectSerializer,
-                          AddMembersSerializer, RemoveMembersSerializer)
-from projects.models import Project, ProjectInvitationToken
-from django.utils.http import urlsafe_base64_decode
-from django.utils.encoding import force_text
+                          AddMembersSerializer, RemoveMembersSerializer, ProjectInvitationSerializer)
+from projects.models import Project
 from ETWeb.api.views import JSONUpdateMixin
 from collections import OrderedDict
 
@@ -94,7 +92,7 @@ class ManageMembersView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(JSONRenderer().render({
-            'detail': 'Invitation links were successfully sent to new members.',
+            'detail': 'Invitations were successfully sent to new members.',
             'project': self.serializer_class(project).data
         }), status=status.HTTP_200_OK)
 
@@ -112,30 +110,22 @@ class ManageMembersView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(JSONRenderer().render({
-            'detail': 'New members were successfully deleted from the project.',
+            'detail': 'Selected members were successfully deleted from the project.',
             'project': self.serializer_class(project).data
         }), status=status.HTTP_200_OK)
 
+
 class AcceptProjectInvitationView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
-
-    def get_invitation_token(self, token):
-        try:
-            return ProjectInvitationToken.objects.get(token, new_member=self.request.user)
-        except ProjectInvitationToken.DoesNotExist:
-            return None
+    serializer_class = ProjectInvitationSerializer
 
     def post(self, request, token):
-        token = force_text(urlsafe_base64_decode(token))
-        invitation = self.get_invitation_token(token)
-        if not invitation:
-            return Response({
-                'detail': 'Invalid token. Make sure you are logged in as the user mentioned in the invitation email.'
-            }, status=status.HTTP_400_BAD_REQUEST)
-        elif invitation.accepted:
-            return Response({
-                'detail': f'You are already a member of project \'{invitation.project.name}\''
-            }, status.HTTP_200_OK)
-        invitation.accepted = True
-        # todo
+        print(request.user)
+        serializer = self.serializer_class(data={'token': token},
+                                           context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        invitation = serializer.save()
 
+        return Response({
+            'detail': f'Congratulations! Now you are a member of project \'{invitation.project.name}\'.'
+        }, status.HTTP_200_OK)

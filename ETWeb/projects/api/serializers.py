@@ -1,10 +1,12 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from projects.models import Project, ProjectInvitationToken
 from accounts.api.serializers import HttpUserSerializer
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_text, DjangoUnicodeDecodeError
+from django.utils import timezone
 from .signals import send_project_invitation
 from rest_framework import status
 
@@ -137,3 +139,43 @@ class RemoveMembersSerializer(serializers.Serializer):
         self.instance.members.filter(id__in=self.validated_data['delete_members']).delete()
         return self.instance
 
+
+class ProjectInvitationSerializer(serializers.Serializer):
+    token = serializers.CharField(max_length=80, required=True)
+
+    def get_invitation(self, raw_token):
+        try:
+            token = force_text(urlsafe_base64_decode(raw_token))
+            # print(repr(token))
+            return ProjectInvitationToken.objects.get(key=token, new_member=self.context['request'].user)
+        except (ProjectInvitationToken.DoesNotExist, DjangoUnicodeDecodeError):
+            raise ValidationError('Invalid token. Make sure you are logged in '
+                                  'as the user mentioned in the invitation email.')
+
+    @staticmethod
+    def check_invitation_accepted(invitation):
+        if invitation.accepted:
+            raise ValidationError(f'You are already a member of project \'{invitation.project.name}\'',
+                                  code=status.HTTP_200_OK)
+
+    @staticmethod
+    def check_invitation_expired(invitation):
+        range_end = timezone.now()
+        range_start = range_end - timezone.timedelta(seconds=settings.PROJECT_INVITATION_AGE)
+        valid_timestamp = range_start <= invitation.timestamp <= range_end
+        if not valid_timestamp:
+            raise ValidationError('This invitation has expired.')
+
+    def validate_token(self, raw_token):
+        invitation = self.get_invitation(raw_token)
+        self.check_invitation_accepted(invitation)
+        self.check_invitation_expired(invitation)
+        return invitation
+
+    def save(self, **kwargs):
+        invitation = self.validated_data['token']
+
+        invitation.project.members.add(invitation.new_member)
+        invitation.accepted = True
+        invitation.save()
+        return invitation
