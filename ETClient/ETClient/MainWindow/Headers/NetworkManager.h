@@ -45,7 +45,6 @@ namespace ETClient
         SSLStatsCollector* sslStatsCollector;
         HttpStatsCollector* httpStatsCollector;
         std::string interfaceInUseIP;
-        std::map<QString, quint32> unknownHostCount; // a map for counting the hostnames seen in traffic
 
         PacketArrivedData()
         {
@@ -62,7 +61,6 @@ namespace ETClient
         {
             this->sslStatsCollector->clear();
             this->httpStatsCollector->clear();
-            this->unknownHostCount.clear();
         }
 
         void tryCollectStats(Packet* parsedPacket)
@@ -70,47 +68,6 @@ namespace ETClient
             // if the stats collector doesn't parse a packet, it returns false
             bool collectStatus = (this->sslStatsCollector->tryCollectStats(parsedPacket)
                 || this->httpStatsCollector->tryCollectStats(parsedPacket));
-            // if none of the collectors have parsed the packet, just take the source/destination IP.
-            if (!collectStatus && parsedPacket->isPacketOfType(pcpp::IPv4))
-            {
-                std::string srcIP = parsedPacket->getLayerOfType<pcpp::IPv4Layer>()->getSrcIpAddress().toString();
-                std::string dstIP = parsedPacket->getLayerOfType<pcpp::IPv4Layer>()->getDstIpAddress().toString();
-                if (srcIP != this->interfaceInUseIP)
-                {
-                    this->unknownHostCount[QString::fromStdString(srcIP)]++;
-                }
-                else if (dstIP != this->interfaceInUseIP)
-                {
-                    this->unknownHostCount[QString::fromStdString(dstIP)]++;
-                }
-
-//                qDebug("Source ip is '%s'; Dest ip is '%s'", srcIP.c_str(), dstIP.c_str());
-            }
-        }
-        /**
-         * Function to get host name by its IPv4 address
-         */
-        static const std::string resolveIPv4(const char* ipStr)
-        {
-            struct in_addr ip;
-            struct hostent* hp;
-
-            if (!inet_pton(AF_INET, ipStr, &ip))
-            {
-                // can't parse IP address
-                return "";
-            }
-
-            if ((hp = gethostbyaddr(
-                (const char *)&ip,
-                sizeof ip, AF_INET)) == NULL)
-            {
-                // no name associated with
-                return "";
-            }
-    //                std::string name = hp->h_name;
-    //                delete hp;
-            return hp->h_name;
         }
     };
     class NetworkManager : public QObject

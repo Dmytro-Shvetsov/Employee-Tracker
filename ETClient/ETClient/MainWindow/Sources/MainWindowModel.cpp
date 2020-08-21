@@ -156,25 +156,6 @@ namespace ETClient
         message["ssl"] = sslData;
         sslClientHelloStats = nullptr;
 
-        // render stats about other most frequent hosts
-        QJsonArray unknownHosts;
-        auto map2vec = NetworkManager::sortHostnamesByFreq(data.unknownHostCount);
-        auto itBegin = map2vec.begin();
-        auto itEnd = map2vec.begin();
-        // pick top MAX_UKNOWN_HOSTS_RESOLVE most frequent hosts and try to resolve their names
-        itEnd += MAX_UKNOWN_HOSTS_RESOLVE > map2vec.size() ? map2vec.size() : MAX_UKNOWN_HOSTS_RESOLVE;
-        for (; itBegin != itEnd; itBegin++)
-        {
-            QJsonObject item;
-            item[itBegin->first] = QJsonValue::fromVariant(itBegin->second);
-            unknownHosts.append(item);
-        }
-        otherData["hostnames"] = unknownHosts;
-        // mount other data to the root node
-        message["other"] = otherData;
-//        delete map2vec;
-//        map2vec->clear();
-
         this->socket->sendMessage(message);
         data.clear();
 

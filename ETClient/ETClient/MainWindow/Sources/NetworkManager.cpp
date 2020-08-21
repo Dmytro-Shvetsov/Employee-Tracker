@@ -258,30 +258,6 @@ namespace ETClient
         }
     }
 
-    void NetworkManager::printUnknownHostNames(std::map<QString, quint32>& hostCount)
-    {
-        quint32 nUnknownHosts = hostCount.size();
-        qDebug("Unknown host size: %d", nUnknownHosts);
-
-
-        auto map2vec = sortHostnamesByFreq(hostCount);
-
-        auto itBegin = map2vec.begin();
-        auto itEnd = map2vec.begin();
-
-        // pick top MAX_UKNOWN_HOSTS_RESOLVE most frequent hosts and try to resolve their names
-        itEnd += MAX_UKNOWN_HOSTS_RESOLVE > nUnknownHosts ? nUnknownHosts : MAX_UKNOWN_HOSTS_RESOLVE;
-
-        PRINT_STAT_HEADLINE("################ Unknown host names: ###################");
-        for (; itBegin != itEnd; itBegin++)
-        {
-            std::string resolvedIP = PacketArrivedData::resolveIPv4(itBegin->first.toStdString().c_str());
-            qDebug("%s -> %d",
-                   (resolvedIP == "" ? itBegin->first.toStdString().c_str() : resolvedIP.c_str()),
-                    itBegin->second);
-        }
-    }
-
     void NetworkManager::printStatsSummary(HttpStatsCollector& collector)
     {
         PRINT_STAT_HEADLINE("HTTP request stats");

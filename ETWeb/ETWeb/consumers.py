@@ -61,23 +61,23 @@ class DataCollectionMixin:
         new_screenshot.image.save(f'{self.user}_screenshot_{self.get_random_string(10)}.jpg',
                                   ContentFile(BytesIO(base64.decodebytes(encoded_image)).read()))
         new_screenshot.save()
-
-    async def save_network_activities(self, data):
-        unknown_hosts = data['other']['hostnames']
-        resolved_hosts = []
-        for host_count_dict in unknown_hosts:
-            host, count = next(iter(host_count_dict.items()))
-            resolved_hostname = await NetworkActivity.resolve_ipv4_host(host)
-            if not resolved_hostname:
-                continue
-            resolved_hosts.append({resolved_hostname: count})
-
-        print('Resolved unknown hosts')
-        data['other']['hostnames'] = resolved_hosts
-        await self._save_network_data(data)
+    #
+    # async def save_network_activities(self, data):
+    #     unknown_hosts = data['other']['hostnames']
+    #     resolved_hosts = []
+    #     for host_count_dict in unknown_hosts:
+    #         host, count = next(iter(host_count_dict.items()))
+    #         resolved_hostname = await NetworkActivity.resolve_ipv4_host(host)
+    #         if not resolved_hostname:
+    #             continue
+    #         resolved_hosts.append({resolved_hostname: count})
+    #
+    #     print('Resolved unknown hosts')
+    #     data['other']['hostnames'] = resolved_hosts
+    #     await self._save_network_data(data)
 
     @database_sync_to_async
-    def _save_network_data(self, data):
+    def save_network_activities(self, data):
         def create_network_objs(employee, stats, protocol, res):
             for host_count_dict in stats['hostnames']:
                 host, count = next(iter(host_count_dict.items()))
@@ -89,11 +89,10 @@ class DataCollectionMixin:
         network_objs = []
         create_network_objs(self.user, data['http']['request_stats'], NetworkActivity.HTTP, network_objs)
         create_network_objs(self.user, data['ssl']['client_hello_stats'], NetworkActivity.SSL, network_objs)
-        print(data['other'].keys())
-        create_network_objs(self.user, data['other'], None, network_objs)
+
         NetworkActivity.objects.bulk_create(network_objs)
         print('Saved network objects')
-        print('LEN {}'.format(len(network_objs)))
+        print('Total length {}'.format(len(network_objs)))
 
 
 class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectionMixin):

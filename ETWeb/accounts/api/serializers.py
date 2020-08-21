@@ -161,8 +161,6 @@ class ActivityLogsSerializer(serializers.Serializer):
     def get_recent_screenshots(self, *args, **kwargs):
         employee = self.context['employee']
         screenshots = employee.screenshot_set.filter(date__gt=self.validated_data['since']).order_by('-date')
-        print(screenshots.count())
-        print(screenshots[0].date < screenshots[1].date)
         return ScreenshotActivitySerializer(screenshots, many=True).data
 
     def get_recent_domains(self, *args, **kwargs):
