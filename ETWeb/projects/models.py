@@ -33,6 +33,7 @@ class ProjectInvitationToken(models.Model):
 
     class Meta:
         db_table = 'projects_projectinvitationtokens'
+        default_related_name = 'project_invitation_set'
 
     def save(self, *args, **kwargs):
         if not self.key:

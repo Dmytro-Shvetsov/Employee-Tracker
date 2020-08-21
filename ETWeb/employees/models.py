@@ -3,8 +3,6 @@ from django.contrib.auth.views import get_user_model
 from socket import gethostbyaddr, herror
 from ipaddress import ip_address
 
-# from django.db.models.signals import pre_save
-# from django.dispatch import receiver
 
 User = get_user_model()
 
@@ -22,18 +20,20 @@ class ActivityInfo(models.Model):
 
 
 class ScreenshotActivity(ActivityInfo):
-    # activity_info = models.ForeignKey(ActivityInfo, on_delete=models.CASCADE, null=False)
     image = models.ImageField(upload_to='employee_screenshots', blank=False, null=False,
                               verbose_name='screenshot itself')
 
     class Meta:
+        verbose_name = 'screenshot'
+        verbose_name_plural = 'screenshots'
+        default_related_name = 'screenshot_set'
         db_table = 'employees_screenshots'
 
 
 class NetworkActivity(ActivityInfo):
-    '''
+    """
         NetworkActivity model represents specific amount of internet traffic sent/received by an employee.
-    '''
+    """
 
     MAXIMUM_URL_LENGTH = 2083
 
@@ -62,4 +62,4 @@ class NetworkActivity(ActivityInfo):
 
     class Meta:
         db_table = 'employees_network_messages'
-
+        default_related_name = 'domains_activity_set'

@@ -55,8 +55,8 @@ const userLoggedIn = user => {
     return user && user.token !== null && user.token !== undefined;
 };
 
-const getUserAccount = async (data, cancelToken) => {
-    return await axios.post(accountEndpoint, data, {cancelToken});
+const getUserAccount = async cancelToken => {
+    return await axios.get(accountEndpoint, {cancelToken});
 };
 
 const updateUserAccount = (data, cancelToken) => {
@@ -64,7 +64,7 @@ const updateUserAccount = (data, cancelToken) => {
 };
 
 const getUserProfile = (data, cancelToken) => {
-    return axios.post(profileEndpoint, data, {cancelToken});
+    return axios.get(profileEndpoint, data, {cancelToken});
 };
 
 const updateUserProfile = ({user, ...data}, cancelToken) => {

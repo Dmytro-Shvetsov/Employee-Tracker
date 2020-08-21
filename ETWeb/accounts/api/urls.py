@@ -6,7 +6,8 @@ from .views import (
     AccountConfirmationView,
     AccountView,
     ProfileView,
-    SearchUsersView
+    SearchUsersView,
+    EmployeeActivityLogsView,
 )
 
 
@@ -26,5 +27,6 @@ urlpatterns = [
 urlpatterns += [
     path('account/', AccountView.as_view(), name='account'),
     path('profile/', ProfileView.as_view(), name='profile'),
-    path('search/<str:username>/', SearchUsersView.as_view(), name='search_user')
+    path('search/<str:username>/', SearchUsersView.as_view(), name='search_user'),
+    path('activity_logs/', EmployeeActivityLogsView.as_view(), name='employee_activity_logs')
 ]

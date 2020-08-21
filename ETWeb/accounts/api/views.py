@@ -4,14 +4,18 @@ from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.renderers import JSONRenderer
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from .serializers import (HttpUserSerializer,
                           UserProfileSerializer,
                           RegisterSerializer,
                           UserAccountUpdateSerializer,
                           AccountConfirmationSerializer,
-                          SearchUserSerializer)
-from django.contrib.auth import get_user_model
+                          SearchUserSerializer,
+                          ActivityLogsSerializer)
+from .permissions import IsAdminUser, IsAuthenticated, CanViewUserActivityLogs
 
 
 User = get_user_model()
@@ -70,6 +74,10 @@ class LoginView(ObtainAuthToken):
         _set_signed_cookie(response, key=settings.AUTH_TOKEN_KEY, value=token_key, httponly=True, max_age=age)
         return response
 
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super(LoginView, self).dispatch(*args, **kwargs)
+
 
 class LogoutView(APIView):
     permission_classes = (permissions.AllowAny,)
@@ -84,9 +92,6 @@ class RegisterView(APIView):
     serializer_class = RegisterSerializer
     permission_classes = (permissions.AllowAny, )
     authentication_classes = ()
-
-    def mail_confirmation_link(self, user):
-        pass
 
     """
         Create new user
@@ -133,7 +138,7 @@ class AccountView(APIView):
     """
         Retrieve account information
     """
-    def post(self, request):
+    def get(self, request):
         serializer = HttpUserSerializer(request.user)
         response = serializer.data
         response['token'] = _get_auth_token(request.user)
@@ -158,8 +163,7 @@ class ProfileView(APIView):
     """
         Retrieve profile information
     """
-    def post(self, request):
-        print(request.user.profile)
+    def get(self, request):
         serializer = self.serializer_class(request.user.profile)
         return Response(JSONRenderer().render(serializer.data),
                         status=status.HTTP_200_OK)
@@ -193,4 +197,14 @@ class SearchUsersView(APIView):
         return Response(JSONRenderer().render({
             'users': serializer.data,
         }), status=status.HTTP_200_OK)
+
+
+class EmployeeActivityLogsView(APIView):
+    permission_classes = (IsAdminUser, IsAuthenticated, CanViewUserActivityLogs,)
+    serializer_class = ActivityLogsSerializer
+
+    def get(self, request):
+        serializer = self.serializer_class(data=request.GET)
+        serializer.is_valid(raise_exception=True)
+        return Response(JSONRenderer().render(serializer.data), status=status.HTTP_200_OK)
 

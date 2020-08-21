@@ -35,16 +35,14 @@ class AsyncUserConnectionsConsumer(AsyncJsonWebsocketConsumer):
                 'error': 'User does not exist or account has not been activated.'
             })
             await self.close(3401)
-            return
+            return False
 
         print('Connection accepted')
+        return True
 
     async def disconnect(self, close_code):
         # Called when the socket closes
-        try:
-            await self.remove_user_from_groups()
-        except:
-            pass
+        await self.remove_user_from_groups()
 
         print('Removed user from groups\nDisconnected')
 
@@ -140,7 +138,11 @@ class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectio
             async_to_sync(self.channel_layer.group_discard)(f'project_{project.id}', self.channel_name)
 
     async def connect(self):
-        await super().connect()
+        connected = await super(AsyncClientConnectionsConsumer, self).connect()
+        print(connected, self.user)
+        if not connected:
+            return
+
         await self.add_user_to_groups()
         print('Added user to project groups')
 
@@ -190,16 +192,11 @@ class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectio
         })
 
     async def disconnect(self, close_code):
-        await super().disconnect(close_code)
-        await self.set_status('offline')
-    #
-    # async def employee_status(self, event):
-    #     """
-    #         Function that handles messages of type employee.status sent by other instances of this class.
-    #     """
-    #     # ignore status reports from other employees
-    #     print(f'{self.user.id} ignored {event}')
-    #     pass
+        try:
+            await super().disconnect(close_code)
+            await self.set_status('offline')
+        except:
+            pass
 
 
 class AsyncManagerConnectionsConsumer(AsyncUserConnectionsConsumer):
@@ -227,7 +224,9 @@ class AsyncManagerConnectionsConsumer(AsyncUserConnectionsConsumer):
             async_to_sync(self.channel_layer.group_discard)(f'project_{project.id}_staff', self.channel_name)
 
     async def connect(self):
-        await super().connect()
+        connected = await super().connect()
+        if not connected:
+            return
 
         if not self.user.is_staff:
             print(f'Denied connection from {self.user}')

@@ -45,6 +45,8 @@ class SafeTokenAuthentication(BaseAuthentication):
             if not auth_token:
                 return None
 
+            self.enforce_csrf(request)
+
         try:
             user = Token.objects.get(key=auth_token).user
         except Token.DoesNotExist:
@@ -56,7 +58,6 @@ class SafeTokenAuthentication(BaseAuthentication):
         if not user.is_active:
             raise exceptions.AuthenticationFailed('User is inactive')
 
-        self.enforce_csrf(request)
         # print(user)
         return user, None
 
@@ -84,14 +85,12 @@ class TokenAuthMiddleware:
         self.inner = inner
 
     def __call__(self, scope):
-        print(scope.keys())
-        print(scope['cookies'])
         headers = dict(scope['headers'])
+        # print(scope['cookies'])
         # print('\n'.join(map(str, list(zip(list(headers.keys()), headers.values())))))
 
         token_key = ''
         if b'authorization' in headers:
-            # try:
             token_name, token_key = headers[b'authorization'].decode().split()
             if token_name.lower() != 'token':
                 print('Token name invalid')
