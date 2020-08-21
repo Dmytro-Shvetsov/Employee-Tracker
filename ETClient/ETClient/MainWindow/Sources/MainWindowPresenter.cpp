@@ -12,6 +12,16 @@ namespace ETClient
                 SLOT(onLogout(const QString&)));
 
         connect(this->mwModel,
+                &MainWindowModel::networkInterfaceNotConfigured,
+                this,
+                [this]() {
+                    this->mwForm->showErrorMessage(
+                        "Could not recognize your network device. Please set your active network "
+                        "interface or IP in application's root directory file ' and try again." + NETWORK_INTERFACE_CONF_FILE + "'"
+                    );
+                    this->onLogout();
+                });
+        connect(this->mwModel,
                 SIGNAL(websocketConnected()),
                 this,
                 SLOT(onWebsocketConnected()));
@@ -110,6 +120,7 @@ namespace ETClient
         this->mwModel->disconnectClient();
 
         const auto wsDisconnectCallback = [this, &message]() {
+            this->mwForm->hideView();
             emit this->logout(message);
         };
 

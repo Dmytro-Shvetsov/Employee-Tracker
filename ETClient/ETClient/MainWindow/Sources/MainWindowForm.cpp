@@ -189,6 +189,11 @@ namespace ETClient
         qDebug() << "Loading: " << value;
     }
 
+    int MainWindowForm::showErrorMessage(const QString& message)
+    {
+        return QMessageBox::critical(this, "An error occured", message, QMessageBox::Ok);
+    }
+
     void MainWindowForm::closeEvent(QCloseEvent* event)
     {
         emit this->windowClosed(event);
@@ -222,10 +227,10 @@ namespace ETClient
             this->setFocus();
             this->trayIcon->hide();
             break;
+        }
         default:
         {
             break;
-        }
         }
         }
     }

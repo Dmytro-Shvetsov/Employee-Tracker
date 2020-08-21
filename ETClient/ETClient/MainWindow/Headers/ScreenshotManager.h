@@ -11,6 +11,7 @@
 #include <QWaitCondition>
 #include <QPixmap>
 #include <QLabel>
+#include "definitions.h"
 
 
 namespace ETClient
@@ -24,14 +25,11 @@ namespace ETClient
         QWaitCondition* waitCond;
         QByteArray screenshotBytes;
         QWindow* windowObj;
-        QSize defaultScreenshotSize;
-        qint32 screenshotTimedeltaSeconds;
+        QSize defaultScreenshotSize = DEFAULT_SCREENSHOT_SIZE;
+        qint32 screenshotTimedeltaSeconds = SCREENSHOT_TIMEDELTA_SECONDS;
     public:
         explicit ScreenshotManager(QWaitCondition* waitCond, QObject* parent = nullptr,
-                                   QWindow* windowObj = nullptr,
-                                   QSize defaultScreenshotSize=QSize(1324, 720),
-                                   qint32 screenshotTimedeltaSeconds=600, // 10 mins
-                                   bool running = false);
+                                   QWindow* windowObj = nullptr, bool running = false);
         ~ScreenshotManager();
         void newScreenshot();
         QByteArray getScreenshot()const;

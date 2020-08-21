@@ -2,13 +2,9 @@
 
 namespace ETClient
 {
-    ScreenshotManager::ScreenshotManager(QWaitCondition* waitCond, QObject* parent, QWindow* windowObj,
-                                         QSize defaultScreenshotSize, qint32 screenshotTimedeltaSeconds,
-                                         bool running):
+    ScreenshotManager::ScreenshotManager(QWaitCondition* waitCond, QObject* parent, QWindow* windowObj, bool running):
         QObject(parent),
         windowObj(windowObj),
-        defaultScreenshotSize(defaultScreenshotSize),
-        screenshotTimedeltaSeconds(screenshotTimedeltaSeconds),
         running(running),
         waitCond(waitCond)
     {
@@ -67,7 +63,7 @@ namespace ETClient
 
         // initial pause not to make screenshot at once
         this->mutex.lock();
-//        this->waitCond->wait(&this->mutex, this->screenshotTimedeltaSeconds * 1000);
+        this->waitCond->wait(&this->mutex, this->screenshotTimedeltaSeconds * 1000);
         this->mutex.unlock();
 
         while(this->running)

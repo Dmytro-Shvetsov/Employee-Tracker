@@ -77,6 +77,7 @@ namespace ETClient
             return;
         }
 
+
         QJsonDocument response = QJsonDocument::fromJson(reply->readAll());
         QString errors = response["errors"].toString();
         if (errors.isEmpty() || errors.isNull())

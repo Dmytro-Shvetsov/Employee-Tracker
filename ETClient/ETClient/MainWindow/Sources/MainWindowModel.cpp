@@ -33,6 +33,11 @@ namespace ETClient
                 this,
                 SLOT(onNetworkDataReady()));
 
+        connect(this->networkManager,
+                SIGNAL(networkInterfaceNotConfigured()),
+                this,
+                SLOT(onNetworkInterfaceNotConfigured()));
+
         connect(this->conStatusManager,
                 SIGNAL(statusChanged(const qint8&)),
                 this,
@@ -50,19 +55,18 @@ namespace ETClient
 
     void MainWindowModel::startDataCollection()
     {
-        this->screenshotManager->setRunning(true);
-        this->networkManager->setupDevice("192.168.0.102"); // for now it's explicit
         this->networkManager->setRunning(true);
+        this->screenshotManager->setRunning(true);
         this->conStatusManager->setRunning(true);
 
         this->waitCond.wakeAll();
         if (this->workerStates.size() == 0)
         {
-//            QFuture<void> smFutureObj = QtConcurrent::run(this->screenshotManager, &ScreenshotManager::run);
-//            this->workerStates.append(smFutureObj);
+            QFuture<void> smFutureObj = QtConcurrent::run(this->screenshotManager, &ScreenshotManager::run);
+            this->workerStates.append(smFutureObj);
 
-//            QFuture<void> nmFutureObj = QtConcurrent::run(this->networkManager, &NetworkManager::run);
-//            this->workerStates.append(nmFutureObj);
+            QFuture<void> nmFutureObj = QtConcurrent::run(this->networkManager, &NetworkManager::run);
+            this->workerStates.append(nmFutureObj);
 
             QFuture<void> cmFutureObj = QtConcurrent::run(this->conStatusManager, &ConnectionStatusManager::run);
             this->workerStates.append(cmFutureObj);
@@ -174,6 +178,11 @@ namespace ETClient
         this->socket->sendMessage(message);
         data.clear();
 
+    }
+
+    void MainWindowModel::onNetworkInterfaceNotConfigured()
+    {
+        emit this->networkInterfaceNotConfigured();
     }
 
     void MainWindowModel::onWebsocketConnected()

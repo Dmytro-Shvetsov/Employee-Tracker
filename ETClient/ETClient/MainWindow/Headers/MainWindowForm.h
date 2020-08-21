@@ -41,6 +41,7 @@ namespace ETClient
         virtual QString setStatus(const qint8&) = 0;
         virtual void setUserImage(const QPixmap& img) = 0;
         virtual void setLoadingState(bool value) = 0;
+        virtual int showErrorMessage(const QString& message) = 0;
     public: // signals
         virtual void logout(const QString& message = "") = 0;
         virtual void windowClosed(QCloseEvent* event) = 0;
@@ -75,6 +76,7 @@ namespace ETClient
         QString setStatus(const qint8&)override;
         void setUserImage(const QPixmap& img)override;
         void setLoadingState(bool value)override;
+        int showErrorMessage(const QString& message)override;
 
     signals:
         void logout(const QString& message="")override;

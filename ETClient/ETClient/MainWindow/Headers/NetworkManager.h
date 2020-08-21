@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 #include <QDebug>
+#include <QFile>
 
 #if !defined(WIN32) && !defined(WINx64) && !defined(PCAPPP_MINGW_ENV)  // for using ntohl, ntohs, etc.
 #include <in.h>
@@ -148,6 +149,8 @@ namespace ETClient
          * packet capture callback - called whenever a packet arrives
          */
         static void packetArrive(RawPacket* packet, PcapLiveDevice* dev, void* cookie);
+
+        std::string readInterfaceNameOrIp()const;
     public:
         NetworkManager(QWaitCondition* waitCond, QObject* parent=nullptr);
         ~NetworkManager();
@@ -156,7 +159,7 @@ namespace ETClient
          */
         static std::vector<std::pair<QString, quint32>> sortHostnamesByFreq(std::map<QString, quint32>& map);
 
-        void setupDevice(const std::string& interfaceNameOrIP);
+        bool setupDevice();
         void setRunning(bool value);
         PacketArrivedData& getData();
         /*
@@ -196,5 +199,6 @@ namespace ETClient
         static void printStatsSummary(SSLStatsCollector& collector);
     signals:
         void dataReadyToExtract();
+        void networkInterfaceNotConfigured();
     };
 }

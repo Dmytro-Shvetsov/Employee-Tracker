@@ -31,6 +31,7 @@ namespace ETClient
     private slots:
         void onScreenshotReady();
         void onNetworkDataReady();
+        void onNetworkInterfaceNotConfigured();
         void onWebsocketConnected();
         void onWebsocketDisconnect();
         void onTextMessageReceived(const QString& message);
@@ -48,6 +49,7 @@ namespace ETClient
     signals:
         void websocketConnected();
         void websocketDisconnected();
+        void networkInterfaceNotConfigured();
         void textMessageReceived(const QString&);
         void statusChanged(const qint8& newStatus);
     };

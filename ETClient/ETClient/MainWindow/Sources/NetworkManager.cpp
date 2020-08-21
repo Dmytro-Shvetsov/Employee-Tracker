@@ -21,47 +21,54 @@ namespace ETClient
         qDebug() << "Deleted network manager";
     }
 
-    void NetworkManager::setupDevice(const std::string& interfaceNameOrIP)
+    bool NetworkManager::setupDevice()
     {
         if (this->dev == nullptr)
         {
-           // extract pcap live device by interface name or IP address
-           IPv4Address interfaceIP(interfaceNameOrIP);
-           if (interfaceIP.isValid())
-           {
-               this->dev = PcapLiveDeviceList::getInstance().getPcapLiveDeviceByIp(interfaceIP);
-               if (this->dev == nullptr)
-               {
-                   qDebug() << "Couldn't find interface by provided IP";
-               }
-               else
-               {
-                   this->data.interfaceInUseIP = interfaceNameOrIP;
-               }
-           }
-           else
-           {
-               this->dev = PcapLiveDeviceList::getInstance().getPcapLiveDeviceByName(interfaceNameOrIP);
-               if (this->dev == nullptr)
-               {
-                   qDebug() << "Couldn't find interface by provided name";
-               }
-           }
+            const std::string interfaceNameOrIP = this->readInterfaceNameOrIp();
+            // extract pcap live device by interface name or IP address
+            IPv4Address interfaceIP(interfaceNameOrIP);
+            if (interfaceIP.isValid())
+            {
+                this->dev = PcapLiveDeviceList::getInstance().getPcapLiveDeviceByIp(interfaceIP);
+                if (this->dev == nullptr)
+                {
+                    qDebug() << "Couldn't find interface by provided IP";
+                }
+                else
+                {
+                    this->data.interfaceInUseIP = interfaceNameOrIP;
+                }
+            }
+            else
+            {
+                this->dev = PcapLiveDeviceList::getInstance().getPcapLiveDeviceByName(interfaceNameOrIP);
+                if (this->dev == nullptr)
+                {
+                    qDebug() << "Couldn't find interface by provided name";
+                }
+            }
 
-           std::transform(this->allowedPorts.begin(),
-                          this->allowedPorts.end(),
-                          std::back_inserter(this->portFilterRules), this->portToPortFilter);
+            if (this->dev == nullptr)
+            {
+                return false;
+            }
 
-           this->orFilter = new OrFilter(this->portFilterRules);
+            std::transform(this->allowedPorts.begin(),
+            this->allowedPorts.end(),
+            std::back_inserter(this->portFilterRules), this->portToPortFilter);
 
-           //set the filter for the device
-           if (!this->dev->setFilter(*this->orFilter))
-           {
+            this->orFilter = new OrFilter(this->portFilterRules);
+
+            // set the filter for the device
+            if (!this->dev->setFilter(*this->orFilter))
+            {
                 std::string filterAsString;
                 this->orFilter->parseToString(filterAsString);
                 qDebug("Couldn't set the filter '%s' for the device", filterAsString.c_str());
-           }
-       }
+            }
+        }
+        return true;
     }
 
     void NetworkManager::setRunning(bool value)
@@ -76,13 +83,13 @@ namespace ETClient
 
     void NetworkManager::run()
     {
-        if (!this->dev->open())
+        if (!this->setupDevice() || !this->dev->open())
         {
-            qDebug("Could not open the device");
-            throw std::exception("Network device was not initialized properly.");
+            emit this->networkInterfaceNotConfigured();
+            return;
         }
 
-        qDebug() << "RUN ON THREAD " << QThread::currentThread();
+        // qDebug() << "RUN ON THREAD " << QThread::currentThread();
 
         // start capturing and analyzing traffic
         this->dev->startCapture(this->packetArrive, &data);
@@ -104,10 +111,10 @@ namespace ETClient
         this->dev->stopCapture();
         this->dev->close();
 
-        qDebug("\n\nSTATS SUMMARY\n");
-        qDebug("=============\n");
-        this->printStatsSummary(*this->data.httpStatsCollector);
-        this->printStatsSummary(*this->data.sslStatsCollector);
+//        qDebug("\n\nSTATS SUMMARY\n");
+//        qDebug("=============\n");
+//        this->printStatsSummary(*this->data.httpStatsCollector);
+//        this->printStatsSummary(*this->data.sslStatsCollector);
 //        this->printUnknownHostNames(this->data.unknownHostCount);
 
         QThread::currentThread()->exit();
@@ -308,6 +315,19 @@ namespace ETClient
 
         // give the packet to the collectors
         data->tryCollectStats(&parsedPacket);
+    }
+
+    std::string NetworkManager::readInterfaceNameOrIp()const
+    {
+        QFile file(NETWORK_INTERFACE_CONF_FILE);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        {
+            return "";
+        }
+
+        QString content = file.readAll();
+        file.close();
+        return content.toStdString();
     }
 }
 
