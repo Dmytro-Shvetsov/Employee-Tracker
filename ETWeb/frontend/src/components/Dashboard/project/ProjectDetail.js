@@ -77,7 +77,6 @@ export default class ProjectDetail extends React.Component {
                 }
             }
         };
-
         socket.onclose = event => {
             console.log("Websocket connection closed. ", event.reason, event);
         };
@@ -145,9 +144,9 @@ export default class ProjectDetail extends React.Component {
     async componentWillUnmount() {
         this._isMounted = false;
         await this.cancelPreviousRequests();
-        if (this.state.socket !== undefined) {
-            this.state.socket.close();
-        }
+        // if (this.state.socket !== undefined) {
+        //     this.state.socket.close();
+        // }
     }
 
     renderMembersTable() {

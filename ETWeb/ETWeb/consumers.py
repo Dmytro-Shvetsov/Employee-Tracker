@@ -1,12 +1,12 @@
 import asyncio
 import base64
-from channels.generic.websocket import AsyncJsonWebsocketConsumer, AsyncWebsocketConsumer
+from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
 from asgiref.sync import async_to_sync
 from io import BytesIO
 from django.core.files.base import ContentFile
 from accounts.api.serializers import WebsocketUserSerializer
-from employees.models import ScreenshotActivity, NetworkActivity, ActivityInfo
+from employees.models import ScreenshotActivity, NetworkActivity
 from string import ascii_letters
 from random import choice
 
@@ -61,20 +61,6 @@ class DataCollectionMixin:
         new_screenshot.image.save(f'{self.user}_screenshot_{self.get_random_string(10)}.jpg',
                                   ContentFile(BytesIO(base64.decodebytes(encoded_image)).read()))
         new_screenshot.save()
-    #
-    # async def save_network_activities(self, data):
-    #     unknown_hosts = data['other']['hostnames']
-    #     resolved_hosts = []
-    #     for host_count_dict in unknown_hosts:
-    #         host, count = next(iter(host_count_dict.items()))
-    #         resolved_hostname = await NetworkActivity.resolve_ipv4_host(host)
-    #         if not resolved_hostname:
-    #             continue
-    #         resolved_hosts.append({resolved_hostname: count})
-    #
-    #     print('Resolved unknown hosts')
-    #     data['other']['hostnames'] = resolved_hosts
-    #     await self._save_network_data(data)
 
     @database_sync_to_async
     def save_network_activities(self, data):

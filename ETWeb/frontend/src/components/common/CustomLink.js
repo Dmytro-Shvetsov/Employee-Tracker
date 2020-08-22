@@ -8,7 +8,7 @@ const CustomLink = ({ to, onClick, tag: Tag, staticContext, ...rest }) => {
         {...rest}
         onClick={event => {
             onClick(event);
-            console.log(history);
+            // console.log(history);
             history.push(to);
         }}
     />

@@ -202,6 +202,34 @@ th {
     cursor: pointer;
 }
 
+#profile-image-rounded {
+    border-radius: 15rem;
+    width: 15rem;
+    height: 15rem;
+    margin: auto;
+}
+
+.list-group-item-heading {
+    font-size: 1rem;
+}
+
+.employee-info {
+    list-style-type: none;
+    height: 100%;
+    width: 33%;
+    padding: 0;
+    margin-left: 4%;
+}
+
+.employee-info{
+    border-left: 1pt solid grey;
+    border-right: 1pt solid grey;
+}
+
+.employee-info li > *{
+    padding-left: 1rem;
+}
+
 .form-check-input {
     position: static;
     margin-left: 0;
@@ -248,6 +276,16 @@ span[role=img] {
 
 .user-badge span[role=img]:hover {
     cursor: pointer;
+}
+
+.image-gallery-left-nav .image-gallery-svg, .image-gallery-right-nav .image-gallery-svg {
+    height: 4rem;
+    width: 4rem;
+}
+
+.image-gallery-fullscreen-button .image-gallery-svg, .image-gallery-play-button .image-gallery-svg {
+    width: 1.5rem;
+    height: 1.5rem;
 }
 
 @media(max-width: 1000px) {

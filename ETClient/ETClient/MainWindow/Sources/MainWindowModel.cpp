@@ -71,8 +71,6 @@ namespace ETClient
             QFuture<void> cmFutureObj = QtConcurrent::run(this->conStatusManager, &ConnectionStatusManager::run);
             this->workerStates.append(cmFutureObj);
         }
-
-//        QCoreApplication::instance()->installEventFilter(this->conStatusManager);
     }
 
     void MainWindowModel::stopDataCollection()

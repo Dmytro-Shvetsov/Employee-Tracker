@@ -37,6 +37,17 @@ class HttpUserSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField('get_full_name')
+    work_place = serializers.SerializerMethodField('get_work_place')
+
+    @staticmethod
+    def get_full_name(profile):
+        return profile.full_name
+
+    @staticmethod
+    def get_work_place(profile):
+        return profile.work_place
+
     class Meta:
         model = UserProfile
         exclude = ['id', 'user']
@@ -138,17 +149,17 @@ class ScreenshotActivitySerializer(serializers.ModelSerializer):
 
 
 class NetworkActivitySerializer(serializers.ModelSerializer):
+    HTTP = NetworkActivity.HTTP
+    SSL = NetworkActivity.SSL
+
     class Meta:
         model = NetworkActivity
         fields = ['host_name', 'message_count']
 
 
-
 class ActivityLogsSerializer(serializers.Serializer):
     employee_id = serializers.IntegerField(min_value=0, required=True)
     since = serializers.DateTimeField(required=True)
-    screenshots = serializers.SerializerMethodField('get_recent_screenshots')
-    visited_domains = serializers.SerializerMethodField('get_recent_domains')
 
     def validate_employee_id(self, value):
         try:
@@ -157,22 +168,3 @@ class ActivityLogsSerializer(serializers.Serializer):
             raise exceptions.ValidationError('Unexpected error occurred when retrieving employee instance.')
 
         return value
-
-    def get_recent_screenshots(self, *args, **kwargs):
-        employee = self.context['employee']
-        screenshots = employee.screenshot_set.filter(date__gt=self.validated_data['since']).order_by('-date')
-        return ScreenshotActivitySerializer(screenshots, many=True).data
-
-    def get_recent_domains(self, *args, **kwargs):
-        query = """
-            SELECT 1 AS id, host_name, sum(message_count) AS message_count
-            FROM employees_network_messages
-            WHERE employee_id = %s AND (protocol_type = %s OR protocol_type = %s)
-            GROUP by host_name
-            ORDER by message_count DESC;
-        """
-        domains = list(User.objects.raw(query, [self.context['employee'].id,
-                                                NetworkActivity.HTTP,
-                                                NetworkActivity.SSL]))
-
-        return NetworkActivitySerializer(domains, many=True).data

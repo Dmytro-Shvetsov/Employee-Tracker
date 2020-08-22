@@ -32,15 +32,15 @@ export default class UserProfile extends React.Component {
 
     loadProfileData = async () => {
         await this.cancelPreviousRequests();
-        const {user} = this.state;
         try {
-            const response = await auth.getUserProfile({user: {...user}}, this.reqSource.token);
+            const response = await auth.getUserProfile({}, this.reqSource.token);
             const data = JSON.parse(response.data);
             this.setState({
                 savedData: {...data},
                 unsavedData: {...data}
             });
         } catch (error) {
+            console.log(error.message);
             if (error.response.status === 400) {
                 const fieldErrors = error.response.data;
                 Object.keys(fieldErrors).map((fieldName) => {
@@ -95,14 +95,14 @@ export default class UserProfile extends React.Component {
     handleProfileUpdate = async event => {
         event.preventDefault();
         await this.cancelPreviousRequests();
-        const { user, unsavedData } = this.state;
+        const { unsavedData } = this.state;
 
         if (utils.typeOf(unsavedData.image) === "string") {
             delete unsavedData.image;
         }
 
         try {
-            const response = await auth.updateUserProfile({...unsavedData, user: {...user}}, this.reqSource.token);
+            const response = await auth.updateUserProfile(unsavedData, this.reqSource.token);
             const data = JSON.parse(response.data);
 
             this.setState({
@@ -134,7 +134,7 @@ export default class UserProfile extends React.Component {
     }
 
     renderForm() {
-        const { editing, unsavedData: { image, ...rest }, errors } = this.state;
+        const { editing, unsavedData: { image, full_name, work_place, ...rest }, errors } = this.state;
         return (
             <Form className="row">
                 <div className="col-md-6">
@@ -183,7 +183,7 @@ export default class UserProfile extends React.Component {
             <div className="row">
                 <div className="col-md-12">
                     <div className="card card-primary card-outline">
-                        <h2 className="ml-3 mt-2">Welcome, {user.username}</h2>
+                        <h2 className="ml-3 mt-2">Welcome, {savedData.full_name}</h2>
                         <div className="card-body pt-3">
                             {this.renderForm()}
                         </div>

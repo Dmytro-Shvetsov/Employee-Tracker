@@ -13,9 +13,11 @@
     "@ant-design/icons": "^4.2.1",
     "axios": "^0.19.2",
     "bootstrap": "^4.5.0",
+    "chart": "^0.1.2",
     "prop-types": "^15.7.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-image-gallery": "^1.0.8",
     "react-router-dom": "^5.2.0",
     "reactstrap": "^8.5.1"
   },
@@ -27,6 +29,8 @@
     "babel-plugin-transform-class-properties": "^6.24.1",
     "core-js": "^3.6.5",
     "css-loader": "^3.6.0",
+    "less": "^3.12.2",
+    "less-loader": "^6.2.0",
     "style-loader": "^1.2.1",
     "webpack": "^4.43.0",
     "webpack-cli": "^3.3.12"

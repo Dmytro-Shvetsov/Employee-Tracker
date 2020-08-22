@@ -71,19 +71,25 @@ class UserProfile(models.Model):
     DEFAULT_PROFILE_IMAGE = 'profile_images/default_user_image.jpg'
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    first_name = models.CharField(max_length=100, null=True, blank=True, default='John')
-    last_name = models.CharField(max_length=100, null=True, blank=True, default='Doe')
-    company = models.CharField(max_length=100, null=True, blank=True, default='Unemployed')
-    current_position = models.CharField(max_length=100, null=True, blank=True, default='Unemployed')
+    first_name = models.CharField(max_length=100, null=True, blank=True, default='')
+    last_name = models.CharField(max_length=100, null=True, blank=True, default='D')
+    company = models.CharField(max_length=100, null=True, blank=True, default='')
+    current_position = models.CharField(max_length=100, null=True, blank=True, default='')
     image = models.ImageField(upload_to='profile_images',
                               default=DEFAULT_PROFILE_IMAGE,
                               blank=True)
 
     @property
     def full_name(self):
-        if not (self.first_name or self.last_name):
+        if not (self.first_name and self.last_name):
             return self.user.username
         return f'{self.first_name} {self.last_name}'
+
+    @property
+    def work_place(self):
+        if not (self.company and self.current_position):
+            return ''
+        return f'{self.company} / {self.current_position}'
 
     def __str__(self):
         return self.user.username

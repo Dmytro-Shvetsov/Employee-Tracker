@@ -1,6 +1,7 @@
 import os
 from rest_framework.authtoken.views import ObtainAuthToken, APIView
-from rest_framework import status, permissions
+from rest_framework import status, permissions, exceptions
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.renderers import JSONRenderer
@@ -14,6 +15,8 @@ from .serializers import (HttpUserSerializer,
                           UserAccountUpdateSerializer,
                           AccountConfirmationSerializer,
                           SearchUserSerializer,
+                          ScreenshotActivitySerializer,
+                          NetworkActivitySerializer,
                           ActivityLogsSerializer)
 from .permissions import IsAdminUser, IsAuthenticated, CanViewUserActivityLogs
 
@@ -199,12 +202,57 @@ class SearchUsersView(APIView):
         }), status=status.HTTP_200_OK)
 
 
-class EmployeeActivityLogsView(APIView):
+class EmployeeScreenshotLogsView(APIView):
     permission_classes = (IsAdminUser, IsAuthenticated, CanViewUserActivityLogs,)
-    serializer_class = ActivityLogsSerializer
+    serializer_class = ScreenshotActivitySerializer
 
     def get(self, request):
-        serializer = self.serializer_class(data=request.GET)
-        serializer.is_valid(raise_exception=True)
-        return Response(JSONRenderer().render(serializer.data), status=status.HTTP_200_OK)
+        filter_serializer = ActivityLogsSerializer(data=request.GET)
+        filter_serializer.is_valid(raise_exception=True)
 
+        employee, since = filter_serializer.context['employee'], filter_serializer.validated_data['since']
+
+        screenshots = employee.screenshot_set.filter(date__gt=since).order_by('-date')
+        data = self.serializer_class(screenshots, many=True).data
+        return Response(JSONRenderer().render(data), status=status.HTTP_200_OK)
+
+
+class EmployeeDomainLogsView(APIView):
+    permission_classes = (IsAdminUser, IsAuthenticated, CanViewUserActivityLogs,)
+    serializer_class = NetworkActivitySerializer
+
+    def get(self, request):
+        filter_serializer = ActivityLogsSerializer(data=request.GET)
+        filter_serializer.is_valid(raise_exception=True)
+
+        employee, since = filter_serializer.context['employee'], filter_serializer.validated_data['since']
+
+        query = """
+                    SELECT 1 AS id, host_name, sum(message_count) AS message_count
+                    FROM employees_network_messages
+                    WHERE employee_id = %s AND (protocol_type = %s OR protocol_type = %s)
+                    GROUP by host_name
+                    ORDER by message_count DESC;
+                """
+        domains = list(User.objects.raw(query, [employee.id, self.serializer_class.HTTP, self.serializer_class.SSL]))
+        data = self.serializer_class(domains, many=True).data
+        return Response(JSONRenderer().render(data), status=status.HTTP_200_OK)
+
+
+class EmployeeProfileView(RetrieveAPIView):
+    serializer_class = UserProfileSerializer
+
+    def get_object(self):
+        model_class = self.serializer_class.Meta.model
+        try:
+            return model_class.objects.filter(user__id=self.kwargs['pk']).first()
+        except model_class.DoesNotExist:
+            return model_class.objects.none()
+
+    """
+        Retrieve profile information
+    """
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(JSONRenderer().render(serializer.data))

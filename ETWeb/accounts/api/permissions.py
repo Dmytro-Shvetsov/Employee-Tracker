@@ -25,3 +25,4 @@ class CanViewUserActivityLogs(BasePermission):
             raise PermissionDenied('This user is not a member of any of your projects.')
 
         return True
+

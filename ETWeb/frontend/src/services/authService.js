@@ -1,12 +1,19 @@
 import axios from './configuredAxiosInstance';
 
-const registerEndpoint = '/api/accounts/auth/register/';
-const accountConfirmEndpoint = '/api/accounts/auth/activate/';
-const loginEndpoint = '/api/accounts/auth/login/';
-const logoutEndpoint = '/api/accounts/auth/logout/';
-const passwordResetEndpoint = '/api/accounts/auth/reset_password/';
-const accountEndpoint = '/api/accounts/account/';
-const profileEndpoint = '/api/accounts/profile/';
+const apiEndpoint = '/api/accounts/';
+
+const registerEndpoint = apiEndpoint + 'auth/register/';
+const accountConfirmEndpoint = apiEndpoint + 'auth/activate/';
+const loginEndpoint = apiEndpoint + 'auth/login/';
+const logoutEndpoint = apiEndpoint + 'auth/logout/';
+const passwordResetEndpoint = apiEndpoint + 'auth/reset_password/';
+
+const accountEndpoint = apiEndpoint + 'account/';
+const profileEndpoint = apiEndpoint + 'profile/';
+
+const activityLogsEndpoint = apiEndpoint + 'activity_logs/';
+const screenshotLogsEndpoint = activityLogsEndpoint + 'screenshots/';
+const domainLogsEndpoint = activityLogsEndpoint + 'domains/';
 
 const registerUser = ({username,
                       email,
@@ -63,11 +70,13 @@ const updateUserAccount = (data, cancelToken) => {
     return axios.put(accountEndpoint, data, {cancelToken});
 };
 
-const getUserProfile = (data, cancelToken) => {
-    return axios.get(profileEndpoint, data, {cancelToken});
+const getUserProfile = ({user_id}, cancelToken) => {
+    // if id is not undefined, the call is made by staff user
+    const endpoint = user_id === undefined ? profileEndpoint : profileEndpoint + `${user_id}/`;
+    return axios.get(endpoint, {cancelToken});
 };
 
-const updateUserProfile = ({user, ...data}, cancelToken) => {
+const updateUserProfile = (data, cancelToken) => {
     const formData = new FormData();
 
     Object.keys(data).forEach(key => {
@@ -84,6 +93,14 @@ const updateUserProfile = ({user, ...data}, cancelToken) => {
     );
 };
 
+const getUserScreenshotActivityLogs = (data, cancelToken) => {
+    return axios.get(screenshotLogsEndpoint, {params:data, cancelToken});
+};
+
+const getUserDomainActivityLogs = (data, cancelToken) => {
+    return axios.get(domainLogsEndpoint, {params:data, cancelToken});
+};
+
 export {
     registerUser,
     confirmEmail,
@@ -97,4 +114,6 @@ export {
     getUserProfile,
     updateUserProfile,
     userLoggedIn,
+    getUserScreenshotActivityLogs,
+    getUserDomainActivityLogs,
 }
