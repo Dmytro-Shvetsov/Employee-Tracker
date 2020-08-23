@@ -5,10 +5,6 @@ namespace ETClient
 {
     AuthPresenter::AuthPresenter(QObject* parent)
         :QObject(parent)
-//         appSettings(new QSettings(COMPANY_NAME, APPLICATION_TITLE)),
-//         authForm(new AuthForm),
-//         authModel(new AuthModel(this)),
-//         mvp(new MainWindowPresenter(this))
     {
         this->initUiComponents();
 
@@ -55,13 +51,9 @@ namespace ETClient
                          this,
                          SLOT(onAuthorizationSuccessful()));
         QObject::connect(this->authModel,
-                         SIGNAL(invalidCredentials()),
+                         SIGNAL(authError(const QString&)),
                          this,
-                         SLOT(onInvalidCredentials()));
-        QObject::connect(this->authModel,
-                         SIGNAL(unhandledError()),
-                         this,
-                         SLOT(onUnhandledError()));
+                         SLOT(onAuthError(const QString&)));
     }
 
     AuthPresenter::~AuthPresenter()
@@ -110,14 +102,11 @@ namespace ETClient
         this->mvp->init(this->authModel->getToken());
     }
 
-    void AuthPresenter::onInvalidCredentials()
+    void AuthPresenter::onAuthError(const QString& message)
     {
-        this->authForm->setAlertMessage("Wrong username or password.");
-    }
-
-    void AuthPresenter::onUnhandledError()
-    {
-        this->authForm->setAlertMessage("Couldn't authorize. Make sure you have internet connection, or retry later.");
+        this->authForm->setAlertMessage(
+            message != "" ? message : "Couldn't authorize. Make sure you have internet connection, or retry later."
+        );
     }
 
     void AuthPresenter::onLogout(const QString& message)

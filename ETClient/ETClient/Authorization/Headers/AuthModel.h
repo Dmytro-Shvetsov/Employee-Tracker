@@ -9,6 +9,7 @@
 #include <QNetworkReply>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonArray>
 #include "definitions.h"
 
 
@@ -34,7 +35,6 @@ namespace ETClient
         QString getToken()const;
     signals:
         void authorizationSuccessful();
-        void invalidCredentials();
-        void unhandledError();
+        void authError(const QString& message);
     };
 }

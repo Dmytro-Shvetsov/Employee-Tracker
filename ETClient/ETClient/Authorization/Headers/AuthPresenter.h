@@ -28,8 +28,7 @@ namespace ETClient
         void onFormSubmit();
         void onTextChanged();
         void onAuthorizationSuccessful();
-        void onInvalidCredentials();
-        void onUnhandledError();
+        void onAuthError(const QString&);
         void onLogout(const QString& messaage="");
     };
 }
