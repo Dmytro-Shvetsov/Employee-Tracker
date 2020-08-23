@@ -9,7 +9,7 @@ User = get_user_model()
 class CanViewUserActivityLogs(BasePermission):
     def has_permission(self, request, view):
         staff_instance = request.user
-        user_id = request.query_params.get('employee_id', -1)
+        user_id = request.query_params.get('employee_id', view.kwargs.get('pk'))
 
         try:
             user = User.objects.get(id=user_id)

@@ -26,7 +26,7 @@ class SafeTokenAuthentication(BaseAuthentication):
     """
 
     def authenticate(self, request):
-        print(f'Request cookies {request.COOKIES}')
+        # print(f'Request cookies {request.COOKIES}')
 
         auth_header = request.headers.get('Authorization')
 
@@ -45,8 +45,6 @@ class SafeTokenAuthentication(BaseAuthentication):
             if not auth_token:
                 return None
 
-            self.enforce_csrf(request)
-
         try:
             user = Token.objects.get(key=auth_token).user
         except Token.DoesNotExist:
@@ -58,6 +56,7 @@ class SafeTokenAuthentication(BaseAuthentication):
         if not user.is_active:
             raise exceptions.AuthenticationFailed('User is inactive')
 
+        self.enforce_csrf(request)
         # print(user)
         return user, None
 

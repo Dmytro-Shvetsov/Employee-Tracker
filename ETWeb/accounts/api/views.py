@@ -52,13 +52,10 @@ class LoginView(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data,
                                            context={'request': request})
-        serializer.is_valid(raise_exception=False)
-        if serializer.errors:
-            print(serializer.errors)
-            return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+        serializer.is_valid(raise_exception=True)
 
         user = serializer.validated_data['user']
-
         token_key = _get_auth_token(user)
 
         response = {
@@ -230,24 +227,27 @@ class EmployeeDomainLogsView(APIView):
         query = """
                     SELECT 1 AS id, host_name, sum(message_count) AS message_count
                     FROM employees_network_messages
-                    WHERE employee_id = %s AND (protocol_type = %s OR protocol_type = %s)
+                    WHERE employee_id = %s 
+                            AND date >= %s
+                            AND (protocol_type = %s OR protocol_type = %s)
                     GROUP by host_name
                     ORDER by message_count DESC;
                 """
-        domains = list(User.objects.raw(query, [employee.id, self.serializer_class.HTTP, self.serializer_class.SSL]))
+        domains = list(User.objects.raw(query, [employee.id, since, self.serializer_class.HTTP, self.serializer_class.SSL]))
         data = self.serializer_class(domains, many=True).data
         return Response(JSONRenderer().render(data), status=status.HTTP_200_OK)
 
 
 class EmployeeProfileView(RetrieveAPIView):
+    permission_classes = (IsAdminUser, IsAuthenticated, CanViewUserActivityLogs,)
     serializer_class = UserProfileSerializer
 
     def get_object(self):
         model_class = self.serializer_class.Meta.model
         try:
-            return model_class.objects.filter(user__id=self.kwargs['pk']).first()
+            return model_class.objects.get(user__id=self.kwargs['pk'])
         except model_class.DoesNotExist:
-            return model_class.objects.none()
+            return None
 
     """
         Retrieve profile information

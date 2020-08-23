@@ -288,6 +288,23 @@ span[role=img] {
     height: 1.5rem;
 }
 
+.image-gallery-slide .image-gallery-description {
+    top: 0;
+    bottom: auto;
+}
+
+.image-gallery-content .image-gallery-slide .image-gallery-image {
+    max-height: 100vh;
+}
+
+#employee-collected-data > div {
+    margin: 0 1rem;
+}
+
+#employee-collected-data div.row > * {
+    width: 100%;
+}
+
 @media(max-width: 1000px) {
     #navbar {
         font-size: 1.2rem;

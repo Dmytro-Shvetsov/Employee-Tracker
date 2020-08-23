@@ -46,10 +46,12 @@ export default class ProjectDetail extends React.Component {
         const socket = new WebSocket(url);
 
         socket.onopen = event => {
-            socket.send(JSON.stringify({
-                type: "project.employees.status",
-                project_id: this.state.id
-            }));
+            for (let id in this.state.employeeStatuses) {
+                socket.send(JSON.stringify({
+                    type: "employee.ping",
+                    user_id: id
+                }));
+            }
         };
 
         socket.onmessage = event => {
@@ -61,10 +63,6 @@ export default class ProjectDetail extends React.Component {
             switch(data.type) {
                 case "websocket.accept": {
                     console.log("Websocket connection established. ", data);
-                    break;
-                }
-                case "websocket.message": {
-                    console.log(data.text);
                     break;
                 }
                 case "employee.status": {
@@ -85,9 +83,7 @@ export default class ProjectDetail extends React.Component {
             console.log("Websocket error. ", event.reason, event);
         };
 
-        this.setState({
-            socket
-        });
+        this.setState({socket});
     }
 
     loadProjectInfo = async id => {
@@ -101,7 +97,6 @@ export default class ProjectDetail extends React.Component {
             data.members.forEach(m => {
                 employeeStatuses[m.id] = "offline";
             });
-            employeeStatuses[this.state.user.id] = "online";
             this.setState({
                 ...data,
                 employeeStatuses
@@ -144,9 +139,9 @@ export default class ProjectDetail extends React.Component {
     async componentWillUnmount() {
         this._isMounted = false;
         await this.cancelPreviousRequests();
-        // if (this.state.socket !== undefined) {
-        //     this.state.socket.close();
-        // }
+        if (this.state.socket !== undefined) {
+            this.state.socket.close();
+        }
     }
 
     renderMembersTable() {
