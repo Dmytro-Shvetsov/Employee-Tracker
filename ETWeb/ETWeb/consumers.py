@@ -83,7 +83,16 @@ class DataCollectionMixin:
 
 class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectionMixin):
     STATUS_VALUES = ['online', 'offline', 'idle']
-    status = None
+    status = 'offline'
+    status_change_subscribers = set()
+
+    async def user_status_report(self, event):
+        print('Reporting status to ', event['report_to'])
+        await self.channel_layer.group_send(event['report_to'], {
+            'type': 'employee.status',
+            'user_id': self.user.id,
+            'status': self.status,
+        })
 
     @database_sync_to_async
     def set_status(self, value):
@@ -91,12 +100,24 @@ class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectio
             raise ValueError(f'invalid value for parameter value {repr(value)}')
 
         self.status = value
-        for project in self.user.projects:
-            async_to_sync(self.user_status_report)({
-                'project_id': project.id,
-                'user_id': self.user.id,
-                'status': self.status
-            })
+        for to in self.status_change_subscribers:
+            async_to_sync(self.user_status_report)({'report_to': to})
+
+        # for project in self.user.projects:
+        #     async_to_sync(self.user_status_report)({
+        #         'user_id': self.user.id,
+        #         'status': self.status
+        #     })
+
+    @database_sync_to_async
+    def set_status_change_subscribers(self):
+        if not self.user:
+            raise ValueError('User instance is not set')
+
+        for project in self.user.project_set.prefetch_related():
+            staff = project.members.filter(is_staff=True)
+            self.status_change_subscribers.update([f'client_user_{u.id}' for u in staff])
+        print(self.status_change_subscribers)
 
     @database_sync_to_async
     def add_user_to_groups(self):
@@ -106,9 +127,14 @@ class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectio
         # add user to broadcast group
         async_to_sync(self.channel_layer.group_add)('broadcast', self.channel_name)
 
-        # add user to project groups, so he/she could have online status
-        for project in self.user.projects:
-            async_to_sync(self.channel_layer.group_add)(f'project_{project.id}', self.channel_name)
+        # send message to close all living connections, as the new one is created
+        async_to_sync(self.channel_layer.group_send)(f'client_user_{self.user.id}', {'type': 'disconnect'})
+
+        # create user and project groups, so he/she could have online status
+        async_to_sync(self.channel_layer.group_add)(f'client_user_{self.user.id}', self.channel_name)
+
+        # for project in self.user.projects:
+        #     async_to_sync(self.channel_layer.group_add)(f'project_{project.id}', self.channel_name)
 
     @database_sync_to_async
     def remove_user_from_groups(self):
@@ -118,9 +144,11 @@ class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectio
         # remove user from broadcast group
         async_to_sync(self.channel_layer.group_discard)('broadcast', self.channel_name)
 
-        # remove user from project groups, so he/she could have offline status
-        for project in self.user.projects:
-            async_to_sync(self.channel_layer.group_discard)(f'project_{project.id}', self.channel_name)
+        # remove user from groups, so he/she could have offline status
+        async_to_sync(self.channel_layer.group_discard)(f'client_user_{self.user.id}', self.channel_name)
+
+        # for project in self.user.projects:
+        #     async_to_sync(self.channel_layer.group_discard)(f'project_{project.id}', self.channel_name)
 
     async def connect(self):
         connected = await super(AsyncClientConnectionsConsumer, self).connect()
@@ -128,10 +156,19 @@ class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectio
         if not connected:
             return
 
+        if self.user.is_staff:
+            print(f'Denied connection from {self.user}')
+            await self.send_json({
+                'type': 'websocket.close',
+                'error': 'Manager accounts cannot connect via client.'
+            })
+            await self.close(3403)
+            return False
+
         await self.add_user_to_groups()
         print('Added user to project groups')
 
-        await self.set_status('online')
+        await self.set_status_change_subscribers()
 
         serializer = WebsocketUserSerializer(self.user)
         user_info = await database_sync_to_async(serializer.json)()
@@ -163,19 +200,6 @@ class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectio
             'text': 'message received',
         })
 
-    async def user_status_report(self, event):
-        """
-            Function that handles messages of type user.status.report sent from AsyncManagerConnectionsConsumer instances.
-            Obtained information is sent back to channel of manager that sent the message.
-        """
-        print(event)
-        # await self.channel_layer.send(event['report_to'], {
-        await self.channel_layer.group_send(f"project_{event['project_id']}_staff", {
-            'type': 'employee.status',
-            'user_id': self.user.id,
-            'status': self.status,
-        })
-
     async def disconnect(self, close_code):
         try:
             await super().disconnect(close_code)
@@ -185,6 +209,8 @@ class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectio
 
 
 class AsyncManagerConnectionsConsumer(AsyncUserConnectionsConsumer):
+    status = None
+
     @database_sync_to_async
     def add_user_to_groups(self):
         if not self.user:
@@ -192,9 +218,8 @@ class AsyncManagerConnectionsConsumer(AsyncUserConnectionsConsumer):
         # add user to broadcast group
         async_to_sync(self.channel_layer.group_add)('broadcast', self.channel_name)
 
-        # add user to project staff-only groups, so he/she could receive employees' reports from there
-        for project in self.user.projects:
-            async_to_sync(self.channel_layer.group_add)(f'project_{project.id}_staff', self.channel_name)
+        # create user group
+        async_to_sync(self.channel_layer.group_add)(f'client_user_{self.user.id}', self.channel_name)
 
     @database_sync_to_async
     def remove_user_from_groups(self):
@@ -204,9 +229,7 @@ class AsyncManagerConnectionsConsumer(AsyncUserConnectionsConsumer):
         # remove user from broadcast group
         async_to_sync(self.channel_layer.group_discard)('broadcast', self.channel_name)
 
-        # remove user from project groups, so he/she could have offline status
-        for project in self.user.projects:
-            async_to_sync(self.channel_layer.group_discard)(f'project_{project.id}_staff', self.channel_name)
+        async_to_sync(self.channel_layer.group_discard)(f'client_user_{self.user.id}', self.channel_name)
 
     async def connect(self):
         connected = await super().connect()
@@ -222,6 +245,8 @@ class AsyncManagerConnectionsConsumer(AsyncUserConnectionsConsumer):
             await self.close(3403)
             return
 
+        self.status = 'online'
+
         await self.add_user_to_groups()
 
         await self.send_json({
@@ -233,20 +258,26 @@ class AsyncManagerConnectionsConsumer(AsyncUserConnectionsConsumer):
         print(content.keys())
 
         msg_type = content['type']
-        if msg_type == 'project.employees.status':
-            await self.ping_employees_of_project(content.get('project_id', -1))
+        if msg_type == 'employee.ping':
+            await self.ping_employee(content.get('user_id', -1))
 
         await self.send_json({
             'type': 'websocket.message',
             'text': 'message received'
         })
 
-    async def ping_employees_of_project(self, project_id):
-        print(f'Sending message to project group {project_id}')
-        await self.channel_layer.group_send(f'project_{project_id}', {
+    async def ping_employee(self, id):
+        print(f'Sending message to user {id}')
+        await self.channel_layer.group_send(f'client_user_{id}', {
             'type': 'user.status.report',
-            # 'report_to': str(self.channel_name),
-            'project_id': project_id,
+            'report_to': f'client_user_{self.user.id}',
+        })
+
+    async def user_status_report(self, event):
+        await self.send_json({
+            'type': 'employee.status',
+            'status': 'online',
+            'user_id': self.user.id
         })
 
     async def employee_status(self, event):
