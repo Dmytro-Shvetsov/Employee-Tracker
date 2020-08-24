@@ -9,33 +9,27 @@ This project is currently in development.
 
 ### Features:
 #### Client application
-  - [x] Authorization     
+  - [x] Authorization (only employee users can log in)
   - [x] Websocket connection for real time data transfers
   - [x] Internet traffic analysis(HTTP/SSL/TLS packets)  
   - [x] Screen shots collection
-  - [ ] Idle prompt and timeout
-  - [ ] Tracking how much time the employee has worked as for particular day shift
+  - [x] Idle prompts when a user shows no activity
   
 #### Web application
-  - [x] Authorization 
+  - [x] Authorization (log in, sign up, password reset)
   - [x] User profile/account pages 
-  - [x] Your projects page (for staff members only). Ability to create new projects and view existing ones. Still cannot add new employees
-  - [x] Real time updates when an employee's working status(online, offline, etc) changes. Can be observed in project's detailed view
-  - [ ] Weekly/mounthly reports.  
-  - [ ] Employee activity logs page (visualization of data collected by client app) 
+  - [x] Your projects page (for staff members only). Ability to create new projects, add new members and view existing ones. 
+  - [x] Real time updates when an employee's connection status(online, offline, etc) changes.
+  - [x] Employee activity logs page (visualization of data collected by client app) 
   
-## Project Screen Shot(s)
+## Project Video Demo
 
-TODO
-
-[ PRETEND SCREEN SHOT IS HERE ]
-
-[ PRETEND OTHER SCREEN SHOT IS HERE ]
+<a href="https://www.youtube.com/watch?v=7NNHPWsFx0A&fbclid=IwAR2eyxmjoPDd3WHZ6Co0PcAlOXnlWm8s-eaA2H7O2Rqs-TrQdrMmAaBjLw8" target="_blank"><img src="demo/video_preview.png"
+  alt="demo video" style="width:100%;" /></a>
 
 ## Installation and Setup Instructions
 
 TODO
-
 
 ## Reflection
 
