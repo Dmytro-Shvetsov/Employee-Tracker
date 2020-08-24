@@ -1,4 +1,5 @@
 import * as Dashboard from "./index";
+import {NotFound} from '../Pages/index';
 import { Switch, Route, Redirect, useRouteMatch } from 'react-router-dom';
 import React from "react";
 
@@ -21,6 +22,7 @@ const UserActivityLogsRouter = props => {
 const DashboardRouter = props => {
     const match = useRouteMatch();
     const { user } = props;
+
     return (
         <Switch>
             <Route exact path={`${match.url}`}>
@@ -43,12 +45,11 @@ const DashboardRouter = props => {
                         <Route exact path={`${match.url}/activity-logs/user/:id`}
                                component={({ match }) => <Dashboard.UserActivityLogs match={match} user={user}/>}
                         />
-                    </Switch>
+                       <Route component={NotFound}/>
+                     </Switch>
                 )
             }
-            <Route>
-                <Redirect to="/not-found"/>
-            </Route>
+            <Route component={NotFound}/>
         </Switch>
     );
 };

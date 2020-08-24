@@ -8,7 +8,7 @@ export default class AcceptProjectInvitation extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            user: props.user,
+            user: props.user || props.location.state && props.location.state.user,
             token: undefined,
             successMessage: undefined,
             tokenError: undefined,
@@ -51,6 +51,17 @@ export default class AcceptProjectInvitation extends React.Component {
         this.reqSource = axios.CancelToken.source();
     };
 
+    static getDerivedStateFromProps(props, state) {
+        if (props.user !== state.page) {
+          return {
+            user: props.user,
+          };
+        }
+
+        // Return null to indicate no change to state.
+        return null;
+    }
+
     async componentDidMount() {
         this._isMounted = true;
         // console.log(this.props.match);
@@ -67,7 +78,6 @@ export default class AcceptProjectInvitation extends React.Component {
 
     render() {
         const {user, invitationResolved, successMessage, tokenError} = this.state;
-        // console.log(user);
         return (
             <React.Fragment>
                 {invitationResolved && (

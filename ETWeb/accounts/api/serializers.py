@@ -37,6 +37,8 @@ class HttpUserSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    DEFAULT_PROFILE_IMAGE = UserProfile.DEFAULT_PROFILE_IMAGE
+
     full_name = serializers.SerializerMethodField('get_full_name')
     work_place = serializers.SerializerMethodField('get_work_place')
 

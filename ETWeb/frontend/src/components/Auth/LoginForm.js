@@ -16,7 +16,6 @@ export default class LoginForm extends React.Component {
             },
             rememberMe: false,
             errors: {},
-            loginFinished: false
         };
         this.reqSource = undefined;
         this._isMounted = false;
@@ -52,7 +51,7 @@ export default class LoginForm extends React.Component {
             const { rememberMe } = this.state;
             this.setState({
                 errors: {},
-                loginFinished: true
+                user: response.data
             });
             this.props.onLogin(response.data, rememberMe);
         } catch (error) {
@@ -80,6 +79,7 @@ export default class LoginForm extends React.Component {
 
     componentDidMount() {
         this._isMounted = true;
+        console.log(this.props)
     }
 
     async componentWillUnmount() {
@@ -88,11 +88,17 @@ export default class LoginForm extends React.Component {
     }
 
     render() {
-        const { errors, loginFinished } = this.state;
+        const { user, errors } = this.state;
 
-        if (loginFinished) {
-            const {location} = this.props;
-            return <Redirect to={location.state && location.state.next || "/"}/>
+        if (user !== undefined) {
+            if (this.props.location && this.props.location.state) {
+                const {state} = this.props.location;
+                return <Redirect to={{
+                    pathname: state.next || "/",
+                    state: {user},
+                }}/>
+            }
+            return <Redirect to="/"/>
         }
 
         return (

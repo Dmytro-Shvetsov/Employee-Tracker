@@ -72,3 +72,5 @@ ETWeb/media/employee_screenshots
 *.rdb
 
 ETWeb/node_modules
+builds/
+profile_images/

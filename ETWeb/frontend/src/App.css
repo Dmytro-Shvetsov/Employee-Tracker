@@ -13,6 +13,16 @@
     /*height: 90vh;*/
 }
 
+#logo {
+    background-image: url('/media/logo.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-origin: border-box;
+    width: 3rem;
+    height: 2.5rem;
+    margin-right: 0.5rem;
+}
+
 table, th, td {
     border: 1px solid black !important;
 }

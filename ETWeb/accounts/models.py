@@ -72,7 +72,7 @@ class UserProfile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=100, null=True, blank=True, default='')
-    last_name = models.CharField(max_length=100, null=True, blank=True, default='D')
+    last_name = models.CharField(max_length=100, null=True, blank=True, default='')
     company = models.CharField(max_length=100, null=True, blank=True, default='')
     current_position = models.CharField(max_length=100, null=True, blank=True, default='')
     image = models.ImageField(upload_to='profile_images',

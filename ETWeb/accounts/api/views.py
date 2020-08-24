@@ -176,7 +176,8 @@ class ProfileView(APIView):
         prev_image = profile.image
         serializer = self.serializer_class(instance=profile, data=request.data)
         serializer.is_valid(raise_exception=True)
-        if request.data.get('image', None):
+
+        if request.data.get('image', None) and prev_image.name != self.serializer_class.DEFAULT_PROFILE_IMAGE:
             os.remove(os.path.join(settings.MEDIA_ROOT, prev_image.name))
 
         serializer.save()

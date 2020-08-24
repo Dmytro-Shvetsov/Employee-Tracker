@@ -6,43 +6,15 @@ import {
     Nav,
     NavItem,
     Breadcrumb,
-    BreadcrumbItem, ListGroupItem
+    BreadcrumbItem
 } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import { userLoggedIn } from '../services/authService'
 
 
-
-const AuthItems = props => {
-    const { user } = props;
-
-    if (userLoggedIn(user)) {
-        return (
-            <React.Fragment>
-                <Button color="light" key="profile">
-                    <Link className="text-dark nav-link" to="/dashboard">Profile</Link>
-                </Button>
-                <Button color="light" key="logout">
-                    <Link className="text-dark nav-link" to="/logout">Log Out</Link>
-                </Button>
-            </React.Fragment>
-        );
-    }
-    return (
-        <React.Fragment>
-            <Button color="light" key="login">
-                <Link className="text-dark nav-link" to="/login">Log In</Link>
-            </Button>
-            <Button color="light" key="signup">
-                <Link className="text-dark nav-link" to="/register">Sign Up</Link>
-            </Button>
-        </React.Fragment>
-    );
-};
-
 const MainNavBar = props => {
     const links = [
-        {label: "Here will be logo", href: "/", id:"logo"},
+        {label: "", href: "/", id:"logo"},
         {label: "Features", href: "/features"},
         {label: "How it works", href: "/idea"},
         {label: "Benefits", href: "/benefits"},

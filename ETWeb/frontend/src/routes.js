@@ -16,8 +16,8 @@ const BaseRouter = props => {
                 <Route exact path="/contact" component={Pages.Contact}/>
                 <Route
                     exact path="/projects/confirm-invitation/:token"
-                    component={({match}) => (
-                        <Pages.AcceptProjectInvitation match={match} user={props.user}/>
+                    component={({match, location}) => (
+                        <Pages.AcceptProjectInvitation match={match} location={location} user={props.user}/>
                     )}
                 />
                 {/* Auth component group routes */}

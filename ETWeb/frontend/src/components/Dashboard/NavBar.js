@@ -13,10 +13,10 @@ const DashboardNavBar = props => {
     if (props.user && props.user.is_staff) {
         links.push({label: "My Projects", href: "/projects"})
     }
-    // add some more items to make navbar more extensive (will change in future)
+
     links.push(
-            {label: "item4", href: "/whatever4"},
-            {label: "item5", href: "/whatever5"}
+            {label: "Notifications", href: "/not-found"},
+            {label: "Settings", href: "/not-f"}
         );
 
     let [activeItem, setActiveItem] = useState(utils.getActiveNavItemIdx(links) || 0);
