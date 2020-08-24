@@ -62,11 +62,11 @@ namespace ETClient
         this->waitCond.wakeAll();
         if (this->workerStates.size() == 0)
         {
-//            QFuture<void> smFutureObj = QtConcurrent::run(this->screenshotManager, &ScreenshotManager::run);
-//            this->workerStates.append(smFutureObj);
+            QFuture<void> smFutureObj = QtConcurrent::run(this->screenshotManager, &ScreenshotManager::run);
+            this->workerStates.append(smFutureObj);
 
-//            QFuture<void> nmFutureObj = QtConcurrent::run(this->networkManager, &NetworkManager::run);
-//            this->workerStates.append(nmFutureObj);
+            QFuture<void> nmFutureObj = QtConcurrent::run(this->networkManager, &NetworkManager::run);
+            this->workerStates.append(nmFutureObj);
 
             QFuture<void> cmFutureObj = QtConcurrent::run(this->conStatusManager, &ConnectionStatusManager::run);
             this->workerStates.append(cmFutureObj);

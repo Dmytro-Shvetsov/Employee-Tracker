@@ -17,7 +17,8 @@ namespace ETClient
                 [this]() {
                     this->mwForm->showErrorMessage(
                         "Could not recognize your network device. Please set your active network "
-                        "interface or IP in application's root directory file ' and try again." + NETWORK_INTERFACE_CONF_FILE + "'"
+                        "interface name or IP in application's root directory file "
+                        "'" + NETWORK_INTERFACE_CONF_FILE + "' and try again."
                     );
                     this->onLogout();
                 });
@@ -96,7 +97,9 @@ namespace ETClient
             qDebug() << "Couldn't load user image.";
         }
         qDebug() << "Loaded user data";
-        this->mwForm->setLoadingState(false);
+        this->mwForm->setLoadingState(false);        
+        this->mwModel->startDataCollection();
+        this->mwModel->setConnectionStatus(STATUSES::ONLINE);
     }
 
     void MainWindowPresenter::handleWebsocketCloseResponse(const QJsonDocument& response)
@@ -139,9 +142,6 @@ namespace ETClient
 
     void MainWindowPresenter::onWebsocketConnected()
     {
-        this->mwModel->startDataCollection();
-        this->mwModel->setConnectionStatus(STATUSES::ONLINE);
-
         qDebug() << "Ws connected (presenter slot)";
     }
 
