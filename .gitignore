@@ -64,7 +64,7 @@ db.sqlite3
 /static
 .DS_Store
 
-settings.py
+# settings.py
 ETWeb/media/employee_screenshots
 
 
@@ -74,3 +74,4 @@ ETWeb/media/employee_screenshots
 ETWeb/node_modules
 builds/
 profile_images/
+.env

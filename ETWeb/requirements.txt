@@ -11,7 +11,10 @@ constantly==15.1.0
 coverage==5.2.1
 cryptography==2.9.2
 daphne==2.5.0
+dj-database-url==0.5.0
 Django==3.0.8
+django-environ==0.4.5
+django-heroku==0.3.1
 django-rest-passwordreset==1.1.0
 djangorestframework==3.11.0
 hiredis==1.0.1
@@ -34,4 +37,5 @@ six==1.15.0
 sqlparse==0.3.1
 Twisted==20.3.0
 txaio==20.4.1
+whitenoise==5.2.0
 zope.interface==5.1.0
