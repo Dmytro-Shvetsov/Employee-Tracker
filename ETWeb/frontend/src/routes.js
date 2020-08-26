@@ -11,8 +11,8 @@ const BaseRouter = props => {
                 {/* Main pages routes */}
                 <Route exact path="/" component={Pages.Home}/>
                 <Route exact path="/features" component={Pages.Home}/>
-                {/*<Route exact path="/idea" component={Home}/>*/}
-                {/*<Route exact path="/benefits" component={Home}/>*/}
+                <Route exact path="/idea" component={Pages.Idea}/>
+                <Route exact path="/benefits" component={Pages.Benefits}/>
                 <Route exact path="/contact" component={Pages.Contact}/>
                 <Route
                     exact path="/projects/confirm-invitation/:token"

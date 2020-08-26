@@ -15,6 +15,7 @@ import django_heroku
 import dj_database_url
 import environ
 
+# postgres://rmvuspoa:Pl9lGDq2CzigoEK0JBwNB-_J2AL3a5XB@django.db.backends.postgresql:5432/rmvuspoa
 env = environ.Env(
     # set casting, default value
     DEBUG=(bool, False),
