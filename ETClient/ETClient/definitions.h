@@ -6,9 +6,11 @@
 #define COMPANY_NAME QString("Content Innovations")
 #define APPLICATION_TITLE QString("Employee Tracker Agent")
 
-#define COMMUNICATION_HOST_URL QString("ws://localhost:8000/client/")
-#define AUTH_URL QString("http://localhost:8000/api/accounts/auth/login/")
+//#define COMMUNICATION_HOST_URL QString("ws://localhost:8000/client/")
+#define COMMUNICATION_HOST_URL QString("ws://track-your-employees.herokuapp.com/client/")
 
+//#define AUTH_URL QString("http://localhost:8000/api/accounts/auth/login/")
+#define AUTH_URL QString("http://track-your-employees.herokuapp.com/api/accounts/auth/login/")
 // Dependency definitions
 
 // Windows configuration
