@@ -5,7 +5,11 @@ the gathered data. Built with <code>Qt, Django(Channels, REST framework)</code> 
 
 ## Project Status
 
-This project is currently in development.
+This project is in production.
+
+Stable versions of the client applications can be found <a href="https://github.com/Dmytro-Shvetsov/Employee-Tracker/tree/master/ETClient/deployment">here</a>.
+
+Check out the web application <a href="https://track-your-employees.herokuapp.com/">here</a>. 
 
 ### Features:
 #### Client application
@@ -27,19 +31,14 @@ This project is currently in development.
 <a href="https://www.youtube.com/watch?v=7NNHPWsFx0A&fbclid=IwAR2eyxmjoPDd3WHZ6Co0PcAlOXnlWm8s-eaA2H7O2Rqs-TrQdrMmAaBjLw8" target="_blank"><img src="demo/video_preview.png"
   alt="demo video" style="width:100%;" /></a>
 
-## Installation and Setup Instructions
-
-TODO
-
 ## Reflection
 
-This was an over a month long pet project built during 2020's summer. Project's main goals were consolidating skills in Python, JavaScript, HTML/CSS languages, as well as going through all stages of software development lifecycle.  
+This was an over a month long pet project built during the 2020's summer. Project's main goals were consolidating skills in Python, JavaScript, HTML/CSS languages, as well as object oriented and asynchronous/parallel programming, design patterns and going through main stages of software development lifecycle.  
 
 Originally I wanted to build a free solution that allowed business clients to be able to watch what their employees do during the job. I started this process by developing client 
 application, then planning database architecture and moving to web application to visualize the collected data.  
 
 One of the main challenges I ran into was Networking features. This lead me to spend a few days on a research spike into TCP/IP network model, what data is used on each 
-layer of it, application protocols and means to implement this knowledge in practice. 
+layer of it, application protocols and means to implement this knowledge in practice. In addition, building client application essentially improved my software designing skills, since I was doing my best keeping all the components loosely coupled.
 
-At the end of the day, the technologies implemented in this project are <code>Qt, Django(with Channels and REST framework), Webpack, React, React-Router 5.0, Axios, HTML, CSS(Reactstrap)</code>. 
-
+At the end of the day, the technologies implemented in this project are <code>Qt, Django(with Channels and REST framework), npm, Webpack, React, React-Router 5.0, Axios, Websockets, HTML, CSS(Reactstrap)</code>. 
