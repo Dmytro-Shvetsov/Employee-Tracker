@@ -23,11 +23,22 @@ User = get_user_model()
 
 
 def _get_auth_token(user):
+    """
+    Shortcut function for retrieving the authorization token key for a user.
+    """
     token, _ = Token.objects.get_or_create(user=user)
     return token.key
 
 
 def _set_signed_cookie(response, *, key, value, httponly=False, max_age=86400):
+    """
+    Shortcut function for setting signed cookies.
+    :param response: Response object to set cookies to
+    :param key: cookie key
+    :param value: cookie value
+    :param httponly: whether the cookie should be http-only, meaning it will be available only on backend
+    :param max_age: how much time in seconds the cookie should live
+    """
     if not isinstance(response, Response):
         raise ValueError('response parameter should be an instance of rest_framework.response.Response class')
 
@@ -44,10 +55,10 @@ class LoginView(ObtainAuthToken):
     authentication_classes = ()
     permission_classes = (permissions.AllowAny,)
 
-    """
-        Try authorize with given credentials
-    """
     def post(self, request, *args, **kwargs):
+        """
+        Tries authorize with given credentials. In case of success, set authorization cookie to the http-only cookie
+        """
         serializer = self.serializer_class(data=request.data,
                                            context={'request': request})
 
@@ -77,6 +88,9 @@ class LogoutView(APIView):
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
+        """
+        Removes authorization token cookie
+        """
         response = Response(status=status.HTTP_200_OK)
         _set_signed_cookie(response, key=settings.AUTH_TOKEN_KEY, value=None, httponly=True, max_age=0)
         return response
@@ -87,10 +101,10 @@ class RegisterView(APIView):
     permission_classes = (permissions.AllowAny, )
     authentication_classes = ()
 
-    """
-        Create new user
-    """
     def post(self, request):
+        """
+        Creates new user account. New users are inactive by default and require account confirmation.
+        """
         serializer = self.serializer_class(data=request.data,
                                            context={'request': request})
 
@@ -116,6 +130,9 @@ class AccountConfirmationView(APIView):
     serializer_class = AccountConfirmationSerializer
 
     def post(self, request):
+        """
+        Validates account confirmation data and, in case of success, activates the one.
+        """
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -128,20 +145,20 @@ class AccountConfirmationView(APIView):
 class AccountView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
-    """
-        Retrieve account information
-    """
     def get(self, request):
+        """
+        Retrieves account information.
+        """
         serializer = HttpUserSerializer(request.user)
         response = serializer.data
         response['token'] = _get_auth_token(request.user)
         return Response(JSONRenderer().render(response),
                         status=status.HTTP_200_OK)
 
-    """
-        Update account information
-    """
     def put(self, request):
+        """
+        Updates account information from request data.
+        """
         serializer = UserAccountUpdateSerializer(instance=request.user, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -153,18 +170,18 @@ class ProfileView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = UserProfileSerializer
 
-    """
-        Retrieve profile information
-    """
     def get(self, request):
+        """
+        Retrieves user profile information from request data.
+        """
         serializer = self.serializer_class(request.user.profile)
         return Response(JSONRenderer().render(serializer.data),
                         status=status.HTTP_200_OK)
 
-    """
-        Update user profile information
-    """
     def put(self, request):
+        """
+        Updates user profile information from request data.
+        """
         profile = request.user.profile
         prev_image = profile.image
         serializer = self.serializer_class(instance=profile, data=request.data)
@@ -178,13 +195,18 @@ class ProfileView(APIView):
                         status=status.HTTP_200_OK)
 
 
+"""
+    ALL VIEWS BELOW ARE INTENDED FOR USE BY STAFF MEMBERS ONLY
+"""
+
+
 class SearchUsersView(APIView):
     serializer_class = SearchUserSerializer
 
-    """
-        Search users by username
-    """
     def get(self, request, username, *args, **kwargs):
+        """
+        Searches users by username.
+        """
         # case insensitive search of any usernames that contain the pattern
         matches = User.objects.filter(username__iregex=username)
         serializer = self.serializer_class(matches, many=True)
@@ -198,6 +220,9 @@ class EmployeeScreenshotLogsView(APIView):
     serializer_class = ScreenshotActivitySerializer
 
     def get(self, request):
+        """
+        Retrieves screenshot activity logs for a specific employee user.
+        """
         filter_serializer = ActivityLogsSerializer(data=request.GET)
         filter_serializer.is_valid(raise_exception=True)
 
@@ -213,6 +238,9 @@ class EmployeeDomainLogsView(APIView):
     serializer_class = NetworkActivitySerializer
 
     def get(self, request):
+        """
+        Retrieves domain activity logs for a specific employee user.
+        """
         filter_serializer = ActivityLogsSerializer(data=request.GET)
         filter_serializer.is_valid(raise_exception=True)
 
@@ -243,10 +271,10 @@ class EmployeeProfileView(RetrieveAPIView):
         except model_class.DoesNotExist:
             return None
 
-    """
-        Retrieve profile information
-    """
     def retrieve(self, request, *args, **kwargs):
+        """
+        Retrieves profile information about the specific employee user.
+        """
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response(JSONRenderer().render(serializer.data))

@@ -7,6 +7,10 @@ User = get_user_model()
 
 
 class CanViewUserActivityLogs(BasePermission):
+    """
+    Permission class that restricts access to activity logs of an employee.
+    Note: it is assumed that this class is used with DRF IsAdminUser, IsAuthenticated permission classes
+    """
     def has_permission(self, request, view):
         staff_instance = request.user
         user_id = request.query_params.get('employee_id', view.kwargs.get('pk'))

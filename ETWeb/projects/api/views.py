@@ -23,10 +23,10 @@ class ProjectListView(APIView, PageNumberPagination):
             ('results', data)
         ]))
 
-    """
-        Retrieve one page of all owned projects
-    """
     def get(self, request):
+        """
+        Retrieves one page of all owned projects.
+        """
         projects = self.get_queryset()
 
         page = self.paginate_queryset(projects, request, view=self)
@@ -36,10 +36,10 @@ class ProjectListView(APIView, PageNumberPagination):
 
         return self.get_paginated_response(JSONRenderer().render(serializer.data))
 
-    """
-        Create new project
-    """
     def post(self, request):
+        """
+            Creates new project.
+        """
         projects = self.get_queryset()
         serializer = DetailProjectSerializer(data=request.data,
                                              context={
@@ -58,10 +58,10 @@ class ProjectDetail(generics.RetrieveDestroyAPIView, JSONUpdateMixin):
     serializer_class = DetailProjectSerializer
     model_name = serializer_class.Meta.model.__name__
 
-    """
-    Retrieve a model instance.
-    """
     def retrieve(self, request, *args, **kwargs):
+        """
+        Retrieves detailed project information.
+        """
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response(JSONRenderer().render(serializer.data))
@@ -80,6 +80,9 @@ class ManageMembersView(APIView):
             return None
 
     def put(self, request, pk):
+        """
+        Adds new members to the project with id = pk.
+        """
         project = self.get_project(pk)
         if not project:
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -97,6 +100,9 @@ class ManageMembersView(APIView):
         }), status=status.HTTP_200_OK)
 
     def delete(self, request, pk):
+        """
+        Removes members from the project with id = pk.
+        """
         project = self.get_project(pk)
         if not project:
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -120,7 +126,9 @@ class AcceptProjectInvitationView(APIView):
     serializer_class = ProjectInvitationSerializer
 
     def post(self, request, token):
-        print(request.user)
+        """
+        Accepts project invitation and adds the user to a project.
+        """
         serializer = self.serializer_class(data={'token': token},
                                            context={'request': request})
         serializer.is_valid(raise_exception=True)

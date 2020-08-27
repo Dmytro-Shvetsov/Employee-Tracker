@@ -1,5 +1,5 @@
 from django.middleware.csrf import CsrfViewMiddleware
-from django.core.signing import Signer, BadSignature
+from django.core.signing import BadSignature
 from django.core import signing
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -9,6 +9,7 @@ from rest_framework import exceptions
 from rest_framework.authtoken.models import Token
 from channels.db import database_sync_to_async
 from channels.auth import CookieMiddleware
+
 
 User = get_user_model()
 
@@ -21,8 +22,8 @@ class CSRFCheck(CsrfViewMiddleware):
 
 class SafeTokenAuthentication(BaseAuthentication):
     """
-        Custom token based authentication class for DRF
-        https://github.com/encode/django-rest-framework/blob/master/rest_framework/authentication.py
+    Custom token based authentication class for DRF
+    https://github.com/encode/django-rest-framework/blob/master/rest_framework/authentication.py
     """
 
     def authenticate(self, request):
@@ -62,7 +63,7 @@ class SafeTokenAuthentication(BaseAuthentication):
 
     def enforce_csrf(self, request):
         """
-            Enforce CSRF validation
+        Enforce CSRF validation
         """
         check = CSRFCheck()
         # populates request.META['CSRF_COOKIE'], which is used in process_view()
@@ -77,7 +78,7 @@ class SafeTokenAuthentication(BaseAuthentication):
 
 class TokenAuthMiddleware:
     """
-        Token authorization middleware for Django Channels 2
+    Token authorization middleware for Django Channels 2
     """
 
     def __init__(self, inner):

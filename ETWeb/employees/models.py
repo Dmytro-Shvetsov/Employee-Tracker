@@ -18,6 +18,9 @@ class ActivityInfo(models.Model):
 
 
 class ScreenshotActivity(ActivityInfo):
+    """
+    ScreenshotActivity model represents screenshots taken on an employee computer by the client application.
+    """
     image = models.ImageField(upload_to='employee_screenshots', blank=False, null=False,
                               verbose_name='screenshot itself')
 
@@ -30,7 +33,7 @@ class ScreenshotActivity(ActivityInfo):
 
 class NetworkActivity(ActivityInfo):
     """
-        NetworkActivity model represents specific amount of internet traffic sent/received by an employee.
+    NetworkActivity model represents specific amount of internet messages sent/received by an employee.
     """
 
     MAXIMUM_URL_LENGTH = 2083

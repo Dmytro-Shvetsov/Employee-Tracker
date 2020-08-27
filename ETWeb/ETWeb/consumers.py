@@ -12,6 +12,9 @@ from random import choice
 
 
 class AsyncUserConnectionsConsumer(AsyncJsonWebsocketConsumer):
+    """
+    Django Channels websocket consumer class that accepts connections only from authenticated users.
+    """
     groups = ['broadcast']
     user = None
 
@@ -24,6 +27,9 @@ class AsyncUserConnectionsConsumer(AsyncJsonWebsocketConsumer):
         raise NotImplementedError('remove_user_from_groups() method should be implemented in descendant classes')
 
     async def connect(self):
+        """
+        Function called on every attempt to establish websocket connection.
+        """
         print('New connection')
         self.user = await self.scope['user']
         await self.accept()
@@ -41,12 +47,17 @@ class AsyncUserConnectionsConsumer(AsyncJsonWebsocketConsumer):
         return True
 
     async def disconnect(self, close_code):
-        # Called when the socket closes
+        """
+        Function called when socket closes connection.
+        """
         await self.remove_user_from_groups()
         print('Removed user from groups\nDisconnected')
 
 
 class DataCollectionMixin:
+    """
+    Class containing functions for saving collected data.
+    """
     user = None
 
     @staticmethod
@@ -81,11 +92,18 @@ class DataCollectionMixin:
 
 
 class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectionMixin):
+    """
+    Django Channels websocket consumer that accepts connections only from the authenticated employee users
+    to gather data.
+    """
     STATUS_VALUES = ['online', 'offline', 'idle']
     status = 'offline'
     status_change_subscribers = set()
 
     async def user_status_report(self, event):
+        """
+        Function called to notify all subscribers(employee's staff) about connection status change
+        """
         print('Reporting status to ', event['report_to'])
         await self.channel_layer.group_send(event['report_to'], {
             'type': 'employee.status',
@@ -95,6 +113,9 @@ class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectio
 
     @database_sync_to_async
     def set_status(self, value):
+        """
+        Function called on evert connection status change of an employee.
+        """
         if value not in self.STATUS_VALUES:
             raise ValueError(f'invalid value for parameter value {repr(value)}')
 
@@ -104,6 +125,9 @@ class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectio
 
     @database_sync_to_async
     def set_status_change_subscribers(self):
+        """
+        Find all staff users of the projects that an employee is a member of to notify them about events.
+        """
         if not self.user:
             raise ValueError('User instance is not set')
 
@@ -193,7 +217,10 @@ class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectio
 
 
 class AsyncManagerConnectionsConsumer(AsyncUserConnectionsConsumer):
-    status = None
+    """
+    Django Channels websocket consumer that accepts connections only from the authenticated staff users.
+    to gather data.
+    """
 
     @database_sync_to_async
     def add_user_to_groups(self):
@@ -231,8 +258,6 @@ class AsyncManagerConnectionsConsumer(AsyncUserConnectionsConsumer):
             await self.close(3403)
             return
 
-        self.status = 'online'
-
         await self.add_user_to_groups()
 
         await self.send_json({
@@ -252,6 +277,9 @@ class AsyncManagerConnectionsConsumer(AsyncUserConnectionsConsumer):
         })
 
     async def ping_employee(self, id):
+        """
+        Send a message to report his connection status to the employee with provided id.
+        """
         print(f'Sending message to user {id}')
         await self.channel_layer.group_send(f'client_user_{id}', {
             'type': 'user.status.report',
@@ -259,6 +287,11 @@ class AsyncManagerConnectionsConsumer(AsyncUserConnectionsConsumer):
         })
 
     async def user_status_report(self, event):
+        """
+        Function that handles every incoming request to report the status of a staff user.
+        Since the user can be either 'online' or 'offline' and is online only for the time this websocket connection
+        is active, staff user always responds with status 'online'
+        """
         await self.send_json({
             'type': 'employee.status',
             'status': 'online',
@@ -267,7 +300,7 @@ class AsyncManagerConnectionsConsumer(AsyncUserConnectionsConsumer):
 
     async def employee_status(self, event):
         """
-            Function that handles messages of type employee.status sent from AsyncClientConnectionsConsumer instances.
-            Obtained information is sent back to frontend to update the user's current work status.
+        Function that handles messages of type employee.status sent from AsyncClientConnectionsConsumer instances.
+        Obtained information is sent back to frontend to update the user's current connection status.
         """
         await self.send_json(event)

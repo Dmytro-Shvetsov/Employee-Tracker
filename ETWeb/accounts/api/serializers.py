@@ -14,6 +14,9 @@ User = get_user_model()
 
 
 class WebsocketUserSerializer:
+    """
+    Class that serializes user data which is to be sent via websocket channel.
+    """
     def __init__(self, user_obj):
         self.user_obj = user_obj
 
@@ -97,10 +100,19 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class AccountConfirmationSerializer(serializers.Serializer):
+    """
+    Serializer for account confirmation feature. Confirmation link http(s)://domain/uidb64/token/ is
+    generated after successful registration.
+    uidb64: user id in base64 encoding
+    token: user token created after registration
+    """
     uidb64 = serializers.CharField(max_length=2083, required=True)
     token = serializers.CharField(max_length=2083, required=True)
 
     def validate(self, attrs):
+        """
+        Validate uidb64 and token are bound to the same user.
+        """
         try:
             uid = force_text(urlsafe_base64_decode(attrs['uidb64']))
             user = User.objects.get(pk=uid)
@@ -114,6 +126,9 @@ class AccountConfirmationSerializer(serializers.Serializer):
         return attrs
 
     def save(self, **kwargs):
+        """
+        Setting is_active field to True, make the account active.
+        """
         user = self.context['user']
         user.is_active = True
         user.save(force_update=True)
@@ -122,12 +137,18 @@ class AccountConfirmationSerializer(serializers.Serializer):
 
 
 class UserAccountUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer class for updating user account's information.
+    """
     def validate(self, attrs):
         email = attrs['email']
         validators.is_email_valid(email)
         return attrs
 
     def save(self, **kwargs):
+        """
+        Apply changes and save the model.
+        """
         if self.instance:
             self.instance.email = self.validated_data['email']
             self.instance.save()
@@ -139,18 +160,27 @@ class UserAccountUpdateSerializer(serializers.ModelSerializer):
 
 
 class SearchUserSerializer(serializers.ModelSerializer):
+    """
+    Serializer class used when looking for users by their username.
+    """
     class Meta:
         model = User
         fields = ['id', 'username']
 
 
 class ScreenshotActivitySerializer(serializers.ModelSerializer):
+    """
+    Serializer class for screenshot activity records.
+    """
     class Meta:
         model = ScreenshotActivity
         exclude = ['employee']
 
 
 class NetworkActivitySerializer(serializers.ModelSerializer):
+    """
+    Serializer class for domains activity records.
+    """
     HTTP = NetworkActivity.HTTP
     SSL = NetworkActivity.SSL
 
@@ -160,6 +190,10 @@ class NetworkActivitySerializer(serializers.ModelSerializer):
 
 
 class ActivityLogsSerializer(serializers.Serializer):
+    """
+    General activity logs serializer class used for validating context data for a specific activity logs class
+    like ScreenshotActivitySerializer or NetworkActivitySerializer
+    """
     employee_id = serializers.IntegerField(min_value=0, required=True)
     since = serializers.DateTimeField(required=True)
 

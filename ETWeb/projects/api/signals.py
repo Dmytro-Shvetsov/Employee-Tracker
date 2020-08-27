@@ -7,11 +7,12 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from projects.models import ProjectInvitationToken
 
-send_project_invitation, confirm_project_invitation = Signal(), Signal()
-
 
 @receiver(post_save, sender=ProjectInvitationToken)
 def attempted_to_add_new_members(sender, instance, created, raw, *args, **kwags):
+    """
+    Sends email invitation to the new member.
+    """
     # instance created exactly as presented
     if raw:
         return

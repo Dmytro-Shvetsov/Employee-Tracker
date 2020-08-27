@@ -14,6 +14,10 @@ User = get_user_model()
 
 
 class GeneralProjectSerializer(serializers.ModelSerializer):
+    """
+    Serializer class for representing overall information about a project.
+    """
+
     members_count = serializers.SerializerMethodField('get_members_count')
 
     @staticmethod
@@ -27,6 +31,10 @@ class GeneralProjectSerializer(serializers.ModelSerializer):
 
 
 class DetailProjectSerializer(serializers.ModelSerializer):
+    """
+    Serializer class for representing detailed information about a project.
+    """
+
     members = serializers.SerializerMethodField('get_member_list')
 
     @staticmethod
@@ -51,15 +59,18 @@ class DetailProjectSerializer(serializers.ModelSerializer):
         return attrs
 
     def save(self):
+        """
+        Creates new or updates existing projects.
+        """
         instance = self.instance
         if instance:
             instance.name = self.validated_data['name']
             instance.description = self.validated_data['description']
+            instance.save()
         else:
             instance = Project.objects.create(**self.validated_data)
             instance.members.set([self.context['request'].user])
 
-        instance.save()
         return instance
 
     class Meta:
@@ -68,6 +79,10 @@ class DetailProjectSerializer(serializers.ModelSerializer):
 
 
 class AddMembersSerializer(serializers.Serializer):
+    """
+    Serializer for adding new members to a project.
+    """
+
     new_members = serializers.ListField(child=serializers.IntegerField(min_value=0), required=True)
 
     def __init__(self, instance, *args, **kwargs):
@@ -101,6 +116,9 @@ class AddMembersSerializer(serializers.Serializer):
         return users
 
     def save(self, **kwargs):
+        """
+        Sends invitations to join the project to all the new members.
+        """
         manager = self.context['request'].user
         project = self.instance
         for member in self.validated_data['new_members']:
@@ -118,6 +136,9 @@ class AddMembersSerializer(serializers.Serializer):
 
 
 class RemoveMembersSerializer(serializers.Serializer):
+    """
+    Serializer class for removing members from a project.
+    """
     delete_members = serializers.ListField(child=serializers.IntegerField(min_value=0), required=True)
 
     def __init__(self, instance, *args, **kwargs):
@@ -139,6 +160,9 @@ class RemoveMembersSerializer(serializers.Serializer):
 
 
 class ProjectInvitationSerializer(serializers.Serializer):
+    """
+    Serializer class that represents invitations to join a project.
+    """
     token = serializers.CharField(max_length=80, required=True)
 
     def get_invitation(self, raw_token):
@@ -151,12 +175,18 @@ class ProjectInvitationSerializer(serializers.Serializer):
 
     @staticmethod
     def check_invitation_accepted(invitation):
+        """
+        Verifies the invitation is actual.
+        """
         if invitation.accepted:
             raise ValidationError(f'You are already a member of project \'{invitation.project.name}\'',
                                   code=status.HTTP_200_OK)
 
     @staticmethod
     def check_invitation_expired(invitation):
+        """
+        Verifies the invitation hasn't expired.
+        """
         range_end = timezone.now()
         range_start = range_end - timezone.timedelta(seconds=settings.PROJECT_INVITATION_AGE)
         valid_timestamp = range_start <= invitation.timestamp <= range_end
@@ -170,6 +200,9 @@ class ProjectInvitationSerializer(serializers.Serializer):
         return invitation
 
     def save(self, **kwargs):
+        """
+        Add new member to project and make the invitation resolved.
+        """
         invitation = self.validated_data['token']
 
         invitation.project.members.add(invitation.new_member)
