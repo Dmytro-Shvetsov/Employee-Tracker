@@ -1,13 +1,6 @@
 import React from 'react';
 import { Pagination, PaginationItem, PaginationLink } from "reactstrap";
 
-function joinPaths(p1, p2) {
-    if (p1.charAt(p1.length - 1) !== "/") {
-        p1 += "/"
-    }
-    return p1 + p2;
-}
-
 export default class Paginator extends React.Component {
     static DEFAULT_PAGE_STEP = 2;
     constructor(props) {
@@ -37,7 +30,6 @@ export default class Paginator extends React.Component {
         let { page, count, step } = this.state;
         const range = [];
         for (let i = page - step; i < page + step && i <= count; i++) {
-            // console.log("iter", i);
             if (i <= 0) {
                 step += 1;
                 continue;
@@ -48,8 +40,6 @@ export default class Paginator extends React.Component {
     }
 
     render() {
-        // const { pathname } = window.location;
-        // console.log(location.pathname);
         const { page, count } = this.state;
         const range = this.generatePaginationRange();
         return (
@@ -65,10 +55,7 @@ export default class Paginator extends React.Component {
                         active={idx === page}
                         key={idx}
                     >
-                        <PaginationLink
-                            // href={joinPaths(pathname, `?page=${idx}`)}
-                            onClick={e => {e.preventDefault(); this.onPageChange(idx);}}
-                        >
+                        <PaginationLink onClick={e => {e.preventDefault(); this.onPageChange(idx);}}>
                             {idx}
                         </PaginationLink>
                     </PaginationItem>

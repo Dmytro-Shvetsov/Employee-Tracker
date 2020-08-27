@@ -1,12 +1,10 @@
 import os
 from rest_framework.authtoken.views import ObtainAuthToken, APIView
-from rest_framework import status, permissions, exceptions
+from rest_framework import status, permissions
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.renderers import JSONRenderer
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from .serializers import (HttpUserSerializer,
@@ -74,10 +72,6 @@ class LoginView(ObtainAuthToken):
         _set_signed_cookie(response, key=settings.AUTH_TOKEN_KEY, value=token_key, httponly=True, max_age=age)
         return response
 
-    @method_decorator(csrf_exempt)
-    def dispatch(self, *args, **kwargs):
-        return super(LoginView, self).dispatch(*args, **kwargs)
-
 
 class LogoutView(APIView):
     permission_classes = (permissions.AllowAny,)
@@ -109,7 +103,6 @@ class RegisterView(APIView):
             return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
         serializer.save()
-        # 'token': _get_auth_token(user_instance)
         return Response({
             'detail':
                 'We have sent you an email to activate your account. '

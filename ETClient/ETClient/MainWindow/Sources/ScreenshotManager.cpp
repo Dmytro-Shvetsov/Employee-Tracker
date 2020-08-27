@@ -8,7 +8,6 @@ namespace ETClient
         running(running),
         waitCond(waitCond)
     {
-
     }
 
     ScreenshotManager::~ScreenshotManager()

@@ -1,7 +1,5 @@
 from django.db import models
 from django.contrib.auth.views import get_user_model
-from socket import gethostbyaddr, herror
-from ipaddress import ip_address
 
 
 User = get_user_model()
@@ -44,21 +42,10 @@ class NetworkActivity(ActivityInfo):
         (SSL, 'Secure Sockets Layer / Transport Layer Security'),
     )
 
-    # activity_info = models.ForeignKey(ActivityInfo, on_delete=models.CASCADE, null=False)
     host_name = models.CharField(max_length=MAXIMUM_URL_LENGTH, null=False, blank=False)
     message_count = models.IntegerField(default=0)
     protocol_type = models.CharField(max_length=255, choices=PROTOCOL_CHOICES, default=None,
                                      null=True, blank=True)
-
-    @staticmethod
-    async def resolve_ipv4_host(ip):
-        if ip_address(ip).is_private:
-            return None
-
-        try:
-            return gethostbyaddr(ip)[0]
-        except herror:
-            return None
 
     class Meta:
         db_table = 'employees_network_messages'

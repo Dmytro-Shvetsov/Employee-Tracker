@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ListGroup, ListGroupItem } from "reactstrap";
-import { Link, useRouteMatch} from "react-router-dom";
+import { Link, useRouteMatch } from "react-router-dom";
 import * as utils from "../../utils";
 
 const DashboardNavBar = props => {

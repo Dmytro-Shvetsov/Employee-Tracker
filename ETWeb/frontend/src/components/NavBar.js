@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import * as utils from "../utils";
+import * as utils from '../utils';
 import {
     Button,
     Navbar,
@@ -9,8 +9,6 @@ import {
     BreadcrumbItem
 } from 'reactstrap';
 import { Link } from 'react-router-dom';
-import { userLoggedIn } from '../services/authService'
-
 
 const MainNavBar = props => {
     const links = [
@@ -22,7 +20,7 @@ const MainNavBar = props => {
     ];
 
     const authItems = [];
-    if (userLoggedIn(props.user)) {
+    if (props.user !== undefined && props.user !== null) {
         authItems.push({label: "Profile", href: "/dashboard"}, {label: "Log Out", href: "/logout"})
     } else {
         authItems.push({label: "Log In", href: "/login"}, {label: "Sign Up", href: "/register"})

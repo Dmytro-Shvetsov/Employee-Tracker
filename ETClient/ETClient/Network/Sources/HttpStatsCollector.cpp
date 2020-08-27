@@ -14,8 +14,6 @@ namespace pcpp
 
     uint32_t HttpStatsCollector::collectHttpTrafficStats(Packet *httpPacket)
     {
-    //		pcpp::TcpLayer* tcpLayer = httpPacket->getLayerOfType<pcpp::TcpLayer>();
-
         // calculate a hash key for this flow to be used in the flow table
         uint32_t hashVal = pcpp::hash5Tuple(httpPacket);
 

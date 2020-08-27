@@ -108,14 +108,9 @@ namespace ETClient
         this->onLogout(response["error"].toString());
     }
 
-      void MainWindowPresenter::onWindowClosed(QCloseEvent* event)
+    void MainWindowPresenter::onWindowClosed(QCloseEvent* event)
     {
         this->mwModel->disconnectClient();
-
-//        connect(this->mwModel,
-//                SIGNAL(websocketDisconnected()),
-//                this,
-//                SLOT(destroy()));
     }
 
     void MainWindowPresenter::onLogout(const QString& message)

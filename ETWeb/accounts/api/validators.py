@@ -8,7 +8,7 @@ import re
 def is_email_valid(email):
     try:
         validate_email(email)
-    except ValidationError as ex:
+    except ValidationError:
         raise ValidationError({'email': 'Invalid email.'})
 
     return True

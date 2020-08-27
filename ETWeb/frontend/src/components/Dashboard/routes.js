@@ -1,5 +1,5 @@
 import * as Dashboard from "./index";
-import {NotFound} from '../Pages/index';
+import { NotFound } from '../Pages/index';
 import { Switch, Route, Redirect, useRouteMatch } from 'react-router-dom';
 import React from "react";
 

@@ -3,7 +3,7 @@ import axios from 'axios';
 import * as projectsService from '../../../services/projectsService'
 import { Paginator, CustomLink } from '../../common/index'
 import ProjectCreationForm  from './ProjectCreationForm'
-import Icon, { UploadOutlined, UserOutlined } from '@ant-design/icons';
+import Icon, { UserOutlined } from '@ant-design/icons';
 import { Spinner, Toast, ToastHeader, ToastBody } from 'reactstrap'
 
 export default class MyProjects extends React.Component {
@@ -28,12 +28,10 @@ export default class MyProjects extends React.Component {
     };
 
     loadProjects = async (page=1) => {
-        // console.log("Loading projects");
         await this.cancelPreviousRequests();
         const {user} = this.state;
         try {
             const response = await projectsService.loadProjectList({user: {...user}}, this.reqSource.token, page);
-            // console.log("Successful projects loading", res);
             const {data} = response;
             const projects = JSON.parse(data.results);
             this.setState({
@@ -47,7 +45,7 @@ export default class MyProjects extends React.Component {
                 const fieldErrors = error.response.data;
                 Object.keys(fieldErrors).map((fieldName) => {
                     fieldErrors[fieldName] = fieldErrors[fieldName].join(" ");
-                    console.log(fieldErrors[fieldName]);
+                    // console.log(fieldErrors[fieldName]);
                 });
 
                 this.setState({
@@ -75,7 +73,6 @@ export default class MyProjects extends React.Component {
     }
 
     handlePageChange = async value => {
-        // console.log("changing to ", value);
         await this.loadProjects(value);
     };
 

@@ -43,7 +43,6 @@ class AsyncUserConnectionsConsumer(AsyncJsonWebsocketConsumer):
     async def disconnect(self, close_code):
         # Called when the socket closes
         await self.remove_user_from_groups()
-
         print('Removed user from groups\nDisconnected')
 
 
@@ -103,12 +102,6 @@ class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectio
         for to in self.status_change_subscribers:
             async_to_sync(self.user_status_report)({'report_to': to})
 
-        # for project in self.user.projects:
-        #     async_to_sync(self.user_status_report)({
-        #         'user_id': self.user.id,
-        #         'status': self.status
-        #     })
-
     @database_sync_to_async
     def set_status_change_subscribers(self):
         if not self.user:
@@ -117,7 +110,6 @@ class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectio
         for project in self.user.project_set.prefetch_related():
             staff = project.members.filter(is_staff=True)
             self.status_change_subscribers.update([f'client_user_{u.id}' for u in staff])
-        print(self.status_change_subscribers)
 
     @database_sync_to_async
     def add_user_to_groups(self):
@@ -130,11 +122,8 @@ class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectio
         # send message to close all living connections, as the new one is created
         async_to_sync(self.channel_layer.group_send)(f'client_user_{self.user.id}', {'type': 'disconnect'})
 
-        # create user and project groups, so he/she could have online status
+        # create user group, so he/she could have online status
         async_to_sync(self.channel_layer.group_add)(f'client_user_{self.user.id}', self.channel_name)
-
-        # for project in self.user.projects:
-        #     async_to_sync(self.channel_layer.group_add)(f'project_{project.id}', self.channel_name)
 
     @database_sync_to_async
     def remove_user_from_groups(self):
@@ -144,15 +133,11 @@ class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectio
         # remove user from broadcast group
         async_to_sync(self.channel_layer.group_discard)('broadcast', self.channel_name)
 
-        # remove user from groups, so he/she could have offline status
+        # remove user from his group, so he/she could have offline status
         async_to_sync(self.channel_layer.group_discard)(f'client_user_{self.user.id}', self.channel_name)
-
-        # for project in self.user.projects:
-        #     async_to_sync(self.channel_layer.group_discard)(f'project_{project.id}', self.channel_name)
 
     async def connect(self):
         connected = await super(AsyncClientConnectionsConsumer, self).connect()
-        print(connected, self.user)
         if not connected:
             return
 
@@ -178,8 +163,7 @@ class AsyncClientConnectionsConsumer(AsyncUserConnectionsConsumer, DataCollectio
         })
 
     async def receive_json(self, content, **kwargs):
-        print('New message')
-        print(content.keys())
+        print(f"New message {content.get('type')}")
 
         msg_type = content['type']
         if msg_type == 'data.screenshot':
@@ -215,6 +199,7 @@ class AsyncManagerConnectionsConsumer(AsyncUserConnectionsConsumer):
     def add_user_to_groups(self):
         if not self.user:
             raise ValueError('User instance is not set')
+
         # add user to broadcast group
         async_to_sync(self.channel_layer.group_add)('broadcast', self.channel_name)
 
@@ -229,6 +214,7 @@ class AsyncManagerConnectionsConsumer(AsyncUserConnectionsConsumer):
         # remove user from broadcast group
         async_to_sync(self.channel_layer.group_discard)('broadcast', self.channel_name)
 
+        # remove user from his group
         async_to_sync(self.channel_layer.group_discard)(f'client_user_{self.user.id}', self.channel_name)
 
     async def connect(self):
@@ -254,8 +240,7 @@ class AsyncManagerConnectionsConsumer(AsyncUserConnectionsConsumer):
         })
 
     async def receive_json(self, content, **kwargs):
-        print('New message. ', content['type'])
-        print(content.keys())
+        print(f"New message {content.get('type')}")
 
         msg_type = content['type']
         if msg_type == 'employee.ping':
@@ -285,5 +270,4 @@ class AsyncManagerConnectionsConsumer(AsyncUserConnectionsConsumer):
             Function that handles messages of type employee.status sent from AsyncClientConnectionsConsumer instances.
             Obtained information is sent back to frontend to update the user's current work status.
         """
-        print(event)
         await self.send_json(event)

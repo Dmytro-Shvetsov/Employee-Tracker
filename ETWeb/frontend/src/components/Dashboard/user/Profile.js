@@ -2,11 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import * as auth from '../../../services/authService';
 import * as utils from '../../../utils';
-import {
-    Button,
-    Form,
-    Spinner
-} from 'reactstrap';
+import { Button, Form, Spinner } from 'reactstrap';
 import { SaveOutlined, EditOutlined, CloseSquareOutlined } from '@ant-design/icons';
 import { Input } from '../../common/index';
 
@@ -45,7 +41,7 @@ export default class UserProfile extends React.Component {
                 const fieldErrors = error.response.data;
                 Object.keys(fieldErrors).map((fieldName) => {
                     fieldErrors[fieldName] = fieldErrors[fieldName].join(" ");
-                    console.log(fieldErrors[fieldName]);
+                    // console.log(fieldErrors[fieldName]);
                 });
 
                 this.setState({
@@ -115,7 +111,7 @@ export default class UserProfile extends React.Component {
                 const fieldErrors = error.response.data;
                 Object.keys(fieldErrors).map((fieldName) => {
                     fieldErrors[fieldName] = fieldErrors[fieldName].join(" ");
-                    console.log(fieldErrors[fieldName]);
+                    // console.log(fieldErrors[fieldName]);
                 });
 
                 this.setState({

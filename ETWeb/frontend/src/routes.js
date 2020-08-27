@@ -26,7 +26,7 @@ const BaseRouter = props => {
                     )}
                 />
                 <Route exact path="/register">
-                    <Auth.RegisterForm onLogin={props.onLogin}/>
+                    <Auth.RegisterForm/>
                 </Route>
                 <Route exact path="/logout">
                     <Auth.Logout onLogout={props.onLogout}/>

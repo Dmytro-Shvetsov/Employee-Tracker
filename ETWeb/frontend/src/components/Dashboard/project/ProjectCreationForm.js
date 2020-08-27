@@ -55,13 +55,11 @@ export default class ProjectCreationForm extends React.Component {
 
     handleSubmit = async event => {
         event.preventDefault();
-        console.log("Trying to create new project");
         await this.cancelPreviousRequests();
         // const { user, data } = this.state;
         const { data } = this.state;
         try {
             const response = await projectsService.createNewProject(data, this.reqSource.token);
-            console.log("Successfully created project");
             const {id} = JSON.parse(response.data);
             this.setState({
                 modal: false
@@ -72,7 +70,7 @@ export default class ProjectCreationForm extends React.Component {
                 const fieldErrors = error.response.data;
                 Object.keys(fieldErrors).map((fieldName) => {
                     fieldErrors[fieldName] = fieldErrors[fieldName].join(" ");
-                    console.log(fieldErrors[fieldName]);
+                    // console.log(fieldErrors[fieldName]);
                 });
 
                 this.setState({

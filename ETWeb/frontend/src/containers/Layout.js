@@ -7,6 +7,8 @@ import * as utils from '../utils'
 
 export default props => {
     const { pathname } = useLocation();
+
+    // generate breadcrumb list of items from the current path
     const routeParts = pathname.split("/").filter(Boolean);
     const breadCrumbItems = [{href: "/", text: "Home"}];
     let tempHref = "";

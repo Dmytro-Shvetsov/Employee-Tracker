@@ -66,7 +66,7 @@ export default class RegisterForm extends React.Component {
                 const fieldErrors = error.response.data;
                 Object.keys(fieldErrors).map((fieldName) => {
                     fieldErrors[fieldName] = fieldErrors[fieldName].join(" ");
-                    console.log(fieldErrors[fieldName]);
+                    // console.log(fieldErrors[fieldName]);
                 });
 
                 this.setState({

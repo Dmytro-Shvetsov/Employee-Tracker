@@ -27,7 +27,7 @@ namespace ETClient
         void disconnected();
         void textMessageReceived(const QString& message);
     public:
-        WebsocketClient(QObject* parent = nullptr, bool debug = false);
+        WebsocketClient(QObject* parent = nullptr);
         ~WebsocketClient();
         void connectClient(const QString& token);
         void disconnectClient();

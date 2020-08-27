@@ -14,18 +14,16 @@ account_activated = Signal()
 
 @receiver(account_activated, sender=settings.AUTH_USER_MODEL, weak=False)
 def user_account_activated(sender, instance, token, userprofile, **kwargs):
-    print('user activated')
     # create authentication token and user profile
     token.objects.get_or_create(user=instance)
     userprofile.objects.get_or_create(user=instance)
-    print('created')
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def user_instance_created(sender, instance, created, raw, **kwargs):
     # if created user is already activated, do not send confirmation email
     if created and not instance.is_active:
-        mail_subject = 'Activate your blog account.'
+        mail_subject = 'Activate your account.'
         link = '{protocol}://{domain}/activate/{uid}/{token}'.format(
             protocol='https' if settings.USE_HTTPS else 'http',
             domain=settings.BASE_URL,

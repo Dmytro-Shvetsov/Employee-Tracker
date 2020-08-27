@@ -28,12 +28,11 @@ export default class AccountActivation extends React.Component {
     };
 
     tryConfirmEmail = async () => {
-        console.log(this.props.match);
         const {params} = this.props.match;
         await this.cancelPreviousRequests();
         try {
             const response = await confirmEmail(params, this.reqSource.token);
-            console.log('Confirmation successful', response);
+            // console.log('Confirmation successful', response);
             alert(response.data.detail);
         } catch (error) {
             console.error(error.message);

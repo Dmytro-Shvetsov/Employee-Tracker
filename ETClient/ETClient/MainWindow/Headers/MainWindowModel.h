@@ -19,7 +19,7 @@ namespace ETClient
     {
         Q_OBJECT
     private:
-        WebsocketClient* socket = new WebsocketClient(this, true);
+        WebsocketClient* socket = new WebsocketClient(this);
         bool websocketIsConnected = false;
 
         ScreenshotManager* screenshotManager;

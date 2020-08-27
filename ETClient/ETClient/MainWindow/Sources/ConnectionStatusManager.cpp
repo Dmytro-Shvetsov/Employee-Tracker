@@ -93,27 +93,5 @@ namespace ETClient
         this->currentStatus = statusCode;
         emit this->statusChanged(statusCode);
     }
-
-//    bool ConnectionStatusManager::eventFilter(QObject* obj, QEvent* event)
-//    {
-//        if (event->type() == QEvent::KeyPress || event->type() == QEvent::MouseMove)
-//        {
-//            if (this->currentStatus != STATUSES::ONLINE)
-//            {
-//                this->setStatus(STATUSES::ONLINE);
-//            }
-//            this->restartIdleTimer();
-//            qDebug() << "Reset idle timer";
-
-////            QKeyEvent* key = dynamic_cast<QKeyEvent*>(event);
-//            return true;
-//        }
-//        else
-//        {
-//            return QObject::eventFilter(obj, event);
-//        }
-//        return false;
-//    }
-
 }
 

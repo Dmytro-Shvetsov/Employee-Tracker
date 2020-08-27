@@ -51,13 +51,9 @@ export default class UserActivityLogs extends React.Component {
         try {
             const response = await authService.getUserProfile({user_id: data.employee_id}, this.reqSource.token);
             const profile = JSON.parse(response.data);
-            console.log(profile);
             this.setState({profile});
         } catch (error) {
             console.log(error.message);
-            if (error.response.data !== undefined) {
-                console.log(error.response.data);
-            }
             this.setState({error:error.response.data.detail});
         }
     };
@@ -71,12 +67,10 @@ export default class UserActivityLogs extends React.Component {
                 this.reqSource.token
             );
             const screenshots = JSON.parse(response.data);
-            console.log(screenshots);
             this.setState({screenshots});
         } catch (error) {
             console.log(error.message);
             if (error.response.data !== undefined) {
-                console.log(error.response.data);
                 this.setState({error:error.response.data.detail});
             }
         }
@@ -91,12 +85,10 @@ export default class UserActivityLogs extends React.Component {
                 this.reqSource.token
             );
             const hostnameCount = JSON.parse(response.data);
-            console.log(hostnameCount);
             this.setState({hostnameCount});
         } catch (error) {
             console.log(error.message);
             if (error.response.data !== undefined) {
-                console.log(error.response.data);
                 this.setState({error:error.response.data.detail});
             }
         }
@@ -118,10 +110,9 @@ export default class UserActivityLogs extends React.Component {
 
         socket.onmessage = event => {
             const data = JSON.parse(event.data);
-            console.log(data);
             switch(data.type) {
                 case "websocket.accept": {
-                    console.log("Websocket connection established. ", data);
+                    console.log("Websocket connection established. ");
                     break;
                 }
                 case "employee.status": {
@@ -134,11 +125,11 @@ export default class UserActivityLogs extends React.Component {
             }
         };
         socket.onclose = event => {
-            console.log("Websocket connection closed. ", event.reason, event);
+            console.warn("Websocket connection closed. ", event.reason);
         };
 
         socket.onerror = event => {
-            console.log("Websocket error. ", event.reason, event);
+            console.error("Websocket error. ", event.reason);
         };
 
         this.setState({socket});

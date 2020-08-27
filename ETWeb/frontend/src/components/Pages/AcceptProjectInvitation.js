@@ -32,7 +32,6 @@ export default class AcceptProjectInvitation extends React.Component {
             this.setState({successMessage: response.data.detail + " Redirecting..."});
         } catch (error) {
             console.log(error.message);
-            console.log(error.response.data);
             const {data} = error.response;
             if (data !== undefined) {
                 this.setState({tokenError: data.token.join(" ") +  " Redirecting..."});
@@ -64,7 +63,6 @@ export default class AcceptProjectInvitation extends React.Component {
 
     async componentDidMount() {
         this._isMounted = true;
-        // console.log(this.props.match);
         await this.acceptInvitation(this.props.match.params.token);
     }
 

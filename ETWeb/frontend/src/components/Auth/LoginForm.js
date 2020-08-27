@@ -48,19 +48,18 @@ export default class LoginForm extends React.Component {
         const { data, rememberMe:remember } = this.state;
         try {
             const response = await auth.loginUser({...data, remember}, this.reqSource.token);
-            const { rememberMe } = this.state;
             this.setState({
                 errors: {},
                 user: response.data
             });
-            this.props.onLogin(response.data, rememberMe);
+            this.props.onLogin(response.data);
         } catch (error) {
             console.log(error.message);
             if (error.response.status === 400) {
                 const fieldErrors = error.response.data;
                 Object.keys(fieldErrors).map((fieldName) => {
                     fieldErrors[fieldName] = fieldErrors[fieldName].join(" ");
-                    console.log(fieldErrors[fieldName]);
+                    // console.log(fieldErrors[fieldName]);
                 });
 
                 this.setState({
@@ -79,7 +78,6 @@ export default class LoginForm extends React.Component {
 
     componentDidMount() {
         this._isMounted = true;
-        console.log(this.props)
     }
 
     async componentWillUnmount() {

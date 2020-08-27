@@ -1,6 +1,4 @@
-import React from 'react'
-import { userLoggedIn } from '../../services/authService'
-// import {  UploadOutlined, UserOutlined, VideoCameraOutlined  } from '@ant-design/icons';
+import React from 'react';
 import { DashboardRouter, DashboardNavBar} from './index';
 
 export default class Dashboard extends React.Component{
@@ -12,7 +10,7 @@ export default class Dashboard extends React.Component{
     }
     render() {
         const { user } = this.state;
-        if (!userLoggedIn(user)) {
+        if (user === undefined || user === null) {
             console.warn("Not logged in user accesses dashboard page.");
             window.location.replace("/login");
             return;

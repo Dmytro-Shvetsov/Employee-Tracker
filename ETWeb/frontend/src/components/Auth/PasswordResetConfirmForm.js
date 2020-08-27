@@ -61,7 +61,7 @@ export default class PasswordResetConfirmForm extends React.Component {
 
         try {
             const response = await auth.confirmPasswordReset(data, this.reqSource.token);
-            console.log(response);
+            // console.log(response);
             this.setState({
                 successMessage: "Your password was successfully changed.c" +
                     "You may now log in with a new one. Redirecting...",
@@ -76,7 +76,7 @@ export default class PasswordResetConfirmForm extends React.Component {
                 const fieldErrors = error.response.data;
                 Object.keys(fieldErrors).map((fieldName) => {
                     fieldErrors[fieldName] = fieldErrors[fieldName].join(" ");
-                    console.log(fieldErrors[fieldName]);
+                    // console.log(fieldErrors[fieldName]);
                 });
 
                 this.setState({
@@ -112,7 +112,7 @@ export default class PasswordResetConfirmForm extends React.Component {
         if (passwordResetFinished) {
             return <Redirect to="/login"/>
         } else if (data.token === null) {
-            console.log("invalid token");
+            // console.log("invalid token");
             return <Redirect to="/"/>
         } else if (data.token === undefined) {
             return <span>Wrapping up...</span>;

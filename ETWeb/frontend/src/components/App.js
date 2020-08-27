@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import BaseRouter from '../routes';
 import Layout from '../containers/Layout'
-import {getUserAccount, logoutUser} from "../services/authService";
+import { getUserAccount, logoutUser } from "../services/authService";
 import 'bootstrap/dist/css/bootstrap.css';
 import '../App.css';
 
@@ -23,8 +23,6 @@ class App extends Component {
                 user: user
             });
         } catch (error) {
-            // console.log(error.message);
-            // console.log(error.response.data);
             if (error.response.status === 401 || error.response.status === 403) {
                 console.error("Couldn't restore session.", error.response.statusText);
             } else {
@@ -36,11 +34,10 @@ class App extends Component {
     };
 
     async componentDidMount() {
-        // this.setState({loadingUser: false});
         await this.tryRestoreSession();
     }
 
-    handleLogin = (user, remember) => {
+    handleLogin = (user) => {
         this.setState({
             user: user
         });
@@ -60,7 +57,7 @@ class App extends Component {
             return <div>Loading...</div>
         }
         const { user } = this.state;
-        console.log(user, 'User (App component)');
+        // console.log(user, 'User (App component)');
         return (
             <React.Fragment>
                 <Layout user={user}>

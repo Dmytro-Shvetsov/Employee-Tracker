@@ -40,7 +40,6 @@ export default class DeleteProjectButton extends React.Component {
 
     handleSubmit = async event => {
         event.preventDefault();
-        console.log("Trying to delete project.");
         await this.cancelPreviousRequests();
         const { projectId } = this.state;
         try {
@@ -69,7 +68,6 @@ export default class DeleteProjectButton extends React.Component {
 
     render() {
         const {windowModalOpen, errorDetail} = this.state;
-        // console.log(matchesDropdownOpen);
         return (
             <Modal
                 triggerBtnLabel="Delete this project"

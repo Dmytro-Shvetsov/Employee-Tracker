@@ -7,7 +7,6 @@ from accounts.api.serializers import HttpUserSerializer
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_text, DjangoUnicodeDecodeError
 from django.utils import timezone
-from .signals import send_project_invitation
 from rest_framework import status
 
 
@@ -107,7 +106,6 @@ class AddMembersSerializer(serializers.Serializer):
         for member in self.validated_data['new_members']:
             # if an invitation for the particular user already exists, it's timestamp will be updated
             defaults = {
-                # 'key': ProjectInvitationToken.generate_key(),
                 'timestamp': timezone.now()
             }
             token, created = ProjectInvitationToken.objects.update_or_create(project=project,
@@ -146,7 +144,6 @@ class ProjectInvitationSerializer(serializers.Serializer):
     def get_invitation(self, raw_token):
         try:
             token = force_text(urlsafe_base64_decode(raw_token))
-            # print(repr(token))
             return ProjectInvitationToken.objects.get(key=token, new_member=self.context['request'].user)
         except (ProjectInvitationToken.DoesNotExist, DjangoUnicodeDecodeError):
             raise ValidationError('Invalid token. Make sure you are logged in '

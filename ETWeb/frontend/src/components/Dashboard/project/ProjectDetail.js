@@ -55,14 +55,10 @@ export default class ProjectDetail extends React.Component {
         };
 
         socket.onmessage = event => {
-            console.log(
-                // event.data,
-                // event
-            );
             const data = JSON.parse(event.data);
             switch(data.type) {
                 case "websocket.accept": {
-                    console.log("Websocket connection established. ", data);
+                    console.log("Websocket connection established. ");
                     break;
                 }
                 case "employee.status": {
@@ -76,11 +72,11 @@ export default class ProjectDetail extends React.Component {
             }
         };
         socket.onclose = event => {
-            console.log("Websocket connection closed. ", event.reason, event);
+            console.warn("Websocket connection closed. ", event.reason);
         };
 
         socket.onerror = event => {
-            console.log("Websocket error. ", event.reason, event);
+            console.error("Websocket error. ", event.reason);
         };
 
         this.setState({socket});
@@ -91,7 +87,6 @@ export default class ProjectDetail extends React.Component {
         try {
             const response = await projects.getProject(id, this.reqSource.token);
             const data = JSON.parse(response.data);
-            console.log("Project loaded.", data);
 
             const employeeStatuses = {};
             data.members.forEach(m => {
@@ -107,7 +102,7 @@ export default class ProjectDetail extends React.Component {
                 const fieldErrors = error.response.data;
                 Object.keys(fieldErrors).map((fieldName) => {
                     fieldErrors[fieldName] = fieldErrors[fieldName].join(" ");
-                    console.log(fieldErrors[fieldName]);
+                    // console.log(fieldErrors[fieldName]);
                 });
 
                 this.setState({
@@ -150,7 +145,7 @@ export default class ProjectDetail extends React.Component {
             console.error("renderMembersTable() called when information about the project was not loaded");
             return;
         }
-        // console.log(members);
+
         return (
             <div>
                 <Table>

@@ -58,10 +58,6 @@ const confirmPasswordReset = (data, cancelToken) => {
     return axios.post(passwordResetEndpoint + 'confirm/', data,{cancelToken})
 };
 
-const userLoggedIn = user => {
-    return user && user.token !== null && user.token !== undefined;
-};
-
 const getUserAccount = async cancelToken => {
     return await axios.get(accountEndpoint, {cancelToken});
 };
@@ -113,7 +109,6 @@ export {
     updateUserAccount,
     getUserProfile,
     updateUserProfile,
-    userLoggedIn,
     getUserScreenshotActivityLogs,
     getUserDomainActivityLogs,
 }

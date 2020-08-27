@@ -6,7 +6,7 @@ namespace ETClient
         QObject(parent),
         waitCond(waitCond)
     {
-        this->listInterfaces();
+//        this->listInterfaces();
     }
 
     NetworkManager::~NetworkManager()
@@ -89,8 +89,6 @@ namespace ETClient
             return;
         }
 
-        // qDebug() << "RUN ON THREAD " << QThread::currentThread();
-
         // start capturing and analyzing traffic
         this->dev->startCapture(this->packetArrive, &data);
         while (this->running)
@@ -100,10 +98,10 @@ namespace ETClient
             this->waitCond->wait(&this->mutex, 10000);
             // pause packet capturing
             this->dev->stopCapture();
-            emit this->dataReadyToExtract();
-//            this->data.clear();
-            this->dev->startCapture(this->packetArrive, &data);
 
+            emit this->dataReadyToExtract();
+
+            this->dev->startCapture(this->packetArrive, &data);
             this->mutex.unlock();
         }
 
@@ -139,7 +137,6 @@ namespace ETClient
         columnsWidths.push_back(9);
         columnsWidths.push_back(5);
         TablePrinter printer(columnNames, columnsWidths);
-
 
         // go over the method count table and print each method and count
         for (auto iter = reqStatscollector.methodCount.cbegin();

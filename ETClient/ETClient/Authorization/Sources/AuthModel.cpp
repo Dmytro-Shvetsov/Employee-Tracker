@@ -23,8 +23,7 @@ namespace ETClient
     void AuthModel::authorize(QString username, QString password)
     {
         qDebug() << "Quering " << *this->host;
-        qDebug() << "Username: " << username << "\n" << \
-                    "Password: " << password;
+        qDebug() << "Username: " << username << ";" << "Password: " << password;
 
         QUrlQuery query;
         query.addQueryItem("username", username);
@@ -80,10 +79,6 @@ namespace ETClient
         }
         qDebug() << "Token " << response["token"].toString();
         this->setToken(response["token"].toString());
-//        else
-//        {
-//            emit invalidCredentials();
-//        }
         reply->deleteLater();
     }
 }

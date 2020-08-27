@@ -11,7 +11,7 @@ namespace ETClient
         this->trayIcon = new QSystemTrayIcon(this);
         this->trayIcon->setIcon(this->style()->standardIcon(QStyle::SP_ComputerIcon));
         this->trayIcon->setToolTip("Employee Tracker");
-        // After that create a context menu
+        // Create a context menu for the tray icon
         QMenu* menu = new QMenu(this);
         QAction* quitAction = new QAction("Exit", this);
 

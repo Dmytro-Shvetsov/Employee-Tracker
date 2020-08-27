@@ -12,7 +12,7 @@ import {
     DropdownItem
 } from 'reactstrap';
 import {Modal, Input} from '../../common';
-import * as utils from '../../../utils';
+import * as _ from '../../../utils';
 import * as projectsService from "../../../services/projectsService";
 
 
@@ -53,7 +53,7 @@ export default class AddMembersForm extends React.Component {
                 console.log(error.message);
             }
         }
-        // console.log(searchMembers.map(item => item.username));
+
         this.setState({
             username,
             searchMembers,
@@ -81,7 +81,6 @@ export default class AddMembersForm extends React.Component {
     };
 
     handleMemberSelect = member => {
-        // console.log('adding member');
         const prevSelectedUsers = this.state.data.selectedMembers;
         const newSelectedUsers = prevSelectedUsers.copy();
         newSelectedUsers.add(member);
@@ -91,7 +90,6 @@ export default class AddMembersForm extends React.Component {
     };
 
     handleMemberDeselect = member => {
-        // console.log('removing member');
         const prevSelectedUsers = this.state.data.selectedMembers;
         const newSelectedUsers = prevSelectedUsers.copy();
         newSelectedUsers.delete(member);
@@ -109,7 +107,6 @@ export default class AddMembersForm extends React.Component {
 
     handleSubmit = async event => {
         event.preventDefault();
-        // console.log("Trying to add new members");
         await this.cancelPreviousRequests();
         const { data: { projectId, selectedMembers } } = this.state;
         try {
@@ -133,7 +130,7 @@ export default class AddMembersForm extends React.Component {
                 const fieldErrors = error.response.data;
                 Object.keys(fieldErrors).map((fieldName) => {
                     fieldErrors[fieldName] = fieldErrors[fieldName].join(" ");
-                    console.log(fieldErrors[fieldName]);
+                    // console.log(fieldErrors[fieldName]);
                 });
 
                 this.setState({
@@ -192,7 +189,7 @@ export default class AddMembersForm extends React.Component {
                 </Badge>
             );
         });
-        // console.log("n-selected", children.length);
+
         return (
             <React.Fragment>
                 {children.length === 0 ? (
@@ -210,7 +207,7 @@ export default class AddMembersForm extends React.Component {
 
     render() {
         const {windowModalOpen, matchesDropdownOpen, username, successMessage, errors} = this.state;
-        // console.log(matchesDropdownOpen);
+
         return (
             <Modal
                 triggerBtnLabel="Add new members"
