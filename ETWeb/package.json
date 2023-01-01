@@ -28,11 +28,11 @@
     "babel-loader": "^8.1.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "core-js": "^3.6.5",
-    "css-loader": "^3.6.0",
+    "css-loader": "^6.7.3",
     "less": "^3.12.2",
     "less-loader": "^6.2.0",
     "style-loader": "^1.2.1",
-    "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.12"
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
   }
 }
